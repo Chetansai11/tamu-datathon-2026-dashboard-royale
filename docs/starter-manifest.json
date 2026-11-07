@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "challenge_number": 2,
+  "challenge_name": "Dashboard Royale",
+  "challenge_url": "https://tamudatathon.com/challenges/2",
+  "guide_url": "https://github.com/tamu-datathon-org/dashboard-royale/blob/main/GUIDE.md",
+  "starter_type": "git_repository",
+  "starter_url": "https://github.com/tamu-datathon-org/dashboard-royale.git",
+  "starter_commit": "4a06b97f8a9dfb57204bd8a29a40e7e2e0376923",
+  "starter_local_path": "data/dashboard-royale",
+  "starter_ignored_by_outer_repository": true,
+  "local_guide_path": "data/dashboard-royale/GUIDE.md",
+  "local_data_reference_path": "data/dashboard-royale/reference/DATASET.md",
+  "guide_data_release_label": "0.9.0-draft",
+  "source_note": "The official challenge page links dashboard-royale; the guide's older clone example says dashboard-casino.",
+  "verification": {
+    "date": "2026-11-07",
+    "timezone": "America/Chicago",
+    "command": "C:\\Users\\asus\\Desktop\\MS\\Datathon\\.venv\\Scripts\\python.exe -B -m pytest tests -q -p no:cacheprovider",
+    "result": "passed",
+    "tests_passed": 7,
+    "duration_seconds": 2.79,
+    "implementation_commit": "5b55c43",
+    "scope": "Existing metrics tests against local official data; dashboard application not yet implemented."
+  },
+  "parallel_configuration": {
+    "reserved_port": 8602,
+    "bind_address": "127.0.0.1",
+    "python_executable": "C:\\Users\\asus\\Desktop\\MS\\Datathon\\.venv\\Scripts\\python.exe",
+    "shared_environment_read_only": true,
+    "coordination_file": "coord.py",
+    "agent_instructions": "AGENTS.md"
+  }
+}
