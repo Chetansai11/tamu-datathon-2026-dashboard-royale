@@ -19,8 +19,8 @@ def records(frame: pd.DataFrame) -> list[dict]:
 def build_hourly() -> None:
     """Observed full-hour rate pools exclude partial/down hours from estimation.
 
-    Same-machine month/weekday/local-hour is primary (at least two full hours),
-    then same-machine weekday/hour across the window, then bank/month/hour.
+    Same-machine/location month/weekday/local-hour is primary (at least two full
+    hours), then same-machine/location weekday/hour, then bank/month/hour.
     A separate bank/month/weekday/hour estimate is a sensitivity comparison.
     These are retrospective pools, never forecast features.
     """
@@ -41,8 +41,8 @@ def build_hourly() -> None:
         WHERE h.active AND d.active AND d.location_id IS NOT NULL
     """)
     pools = {
-        "q3_local": "machine_id, period_month, weekday, local_hour",
-        "q3_history": "machine_id, weekday, local_hour",
+        "q3_local": "machine_id, location_id, period_month, weekday, local_hour",
+        "q3_history": "machine_id, location_id, weekday, local_hour",
         "q3_peer": "bank_id, period_month, weekday, local_hour",
         "q3_fallback": "bank_id, period_month, local_hour",
     }
@@ -61,8 +61,8 @@ def build_hourly() -> None:
                      WHEN p.n_full>=2 THEN 'machine_weekday_hour'
                      ELSE 'bank_month_hour' END AS rate_source
             FROM q3_hour h
-            LEFT JOIN q3_local l USING(machine_id,period_month,weekday,local_hour)
-            LEFT JOIN q3_history p USING(machine_id,weekday,local_hour)
+            LEFT JOIN q3_local l USING(machine_id,location_id,period_month,weekday,local_hour)
+            LEFT JOIN q3_history p USING(machine_id,location_id,weekday,local_hour)
             LEFT JOIN q3_peer b USING(bank_id,period_month,weekday,local_hour)
             LEFT JOIN q3_fallback f USING(bank_id,period_month,local_hour)
         )
@@ -186,7 +186,7 @@ def run(output: Path | str = "outputs/q3_downtime.json") -> dict:
     result = {
         "question": "Q3", "period": {"start":"2025-01-01","end":"2025-06-30"},
         "summary": summary, **grouped, "operations": ops, "validation": validation,
-        "method": "Retrospective missing play: down hours times ratio-of-sums fully-available-hour coin-in rate for the same machine/month/gaming weekday/local hour (>=2 full hours); fallback same machine/weekday/hour, then bank/month/hour. Bank/month/weekday/hour and constant floor rate are comparison scenarios.",
+        "method": "Retrospective missing play: down hours times ratio-of-sums fully-available-hour coin-in rate for the same machine/location/month/gaming weekday/local hour (>=2 full hours); fallback same machine/location/weekday/hour, then bank/month/hour. Bank/month/weekday/hour and constant floor rate are comparison scenarios.",
         "limitations": [
             "Missing play is a modeled gross opportunity, not observed lost revenue or causal recovery. Players may transfer to another available machine.",
             "Same-machine full-hour pools assume comparable demand; broken periods may have systematically different demand. Small pools and within-hour timing add error.",
