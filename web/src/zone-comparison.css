@@ -1,0 +1,41 @@
+.zone-comparison { padding: 0 24px 20px; }
+.zone-comparison-intro { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; padding: 3px 0 17px; color: #b7c6df; font-size: 12px; line-height: 1.55; }
+.zone-benchmark-key { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.zone-benchmark-key i { width: 0; height: 13px; border-left: 2px dashed #d5def0; margin-right: 3px; }
+.zone-benchmark-key strong { color: #e9efff; font-weight: 600; }
+.zone-ranking { display: grid; gap: 3px; }
+.zone-ranking-row { appearance: none; width: 100%; min-width: 0; display: block; padding: 10px 10px 8px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: #e6edff; text-align: left; cursor: pointer; transition: background .18s ease, border-color .18s ease; }
+.zone-ranking-row:hover { background: #1b2b47; border-color: #58dfff30; }
+.zone-ranking-row:focus-visible { outline: 2px solid #57e3ff; outline-offset: 1px; }
+.zone-ranking-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; margin-bottom: 8px; }
+.zone-ranking-name { min-width: 0; display: inline-flex; align-items: center; gap: 8px; }
+.zone-ranking-name strong { font-size: 13px; font-weight: 600; line-height: 1.3; color: #edf3ff; }
+.zone-rank-number { color: #768eaf; font-size: 10px; font-variant-numeric: tabular-nums; width: 15px; flex: 0 0 15px; }
+.zone-focus-tag { font-size: 10px; line-height: 1.5; text-transform: uppercase; letter-spacing: .6px; padding: 2px 5px; border-radius: 4px; color: #f6ce82; background: #f4c66b12; white-space: nowrap; }
+.zone-ranking-value { display: inline-flex; align-items: center; gap: 8px; color: #78e5fa; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.zone-ranking-value svg { color: #8da5cb; opacity: .7; }
+.zone-ranking-track { position: relative; display: block; height: 9px; background: #24324b80; border-radius: 3px; }
+.zone-ranking-fill { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #5e79b4, #5bdcf4); transition: width .65s ease; }
+.zone-ranking-benchmark { position: absolute; top: -3px; bottom: -3px; width: 0; border-left: 2px dashed #d5def0; transform: translateX(-1px); opacity: .85; }
+.zone-ranking-context { display: block; margin-top: 5px; color: #8ea3c3; font-size: 10px; line-height: 1.4; }
+.zone-ranking-row.zone-in-focus { background: #f4c66b08; border-color: #f4c66b28; margin-top: 3px; }
+.zone-ranking-row.zone-in-focus:hover { background: #f4c66b12; border-color: #f4c66b60; }
+.zone-in-focus .zone-ranking-name strong, .zone-in-focus .zone-ranking-value { color: #f6cf86; }
+.zone-in-focus .zone-ranking-fill { background: linear-gradient(90deg, #b78552, #f4c66b); }
+.zone-comparison-scale { display: flex; justify-content: space-between; gap: 8px; color: #8ea3c3; font-size: 10px; padding: 10px 10px 0; font-variant-numeric: tabular-nums; }
+.zone-comparison-note { display: flex; gap: 8px; margin: 17px 0 0; padding-top: 14px; border-top: 1px solid #293550; color: #a8b9d6; font-size: 12px; line-height: 1.65; }
+.zone-comparison-note > svg { flex: 0 0 13px; margin-top: 3px; color: #95a9d3; }
+.zone-comparison-empty { color: #a8b9d6; padding-top: 20px; font-size: 13px; }
+@media (max-width: 600px) {
+  .zone-comparison { padding: 0 14px 18px; }
+  .zone-comparison-intro { flex-direction: column; gap: 6px; padding-left: 4px; }
+  .zone-ranking-row { padding: 10px 5px 8px; }
+  .zone-ranking-name { gap: 5px; }
+  .zone-ranking-name strong { font-size: 12px; }
+  .zone-ranking-value { font-size: 14px; gap: 4px; }
+  .zone-rank-number { width: 13px; flex-basis: 13px; }
+  .zone-focus-tag { font-size: 10px; padding: 2px 4px; letter-spacing: .2px; }
+  .zone-comparison-scale { padding-left: 5px; padding-right: 5px; font-size: 10px; }
+}
+.app-shell[data-motion='off'] .zone-ranking-fill, .app-shell[data-motion='off'] .zone-ranking-row { transition: none; }
+@media (prefers-reduced-motion: reduce) { .zone-ranking-fill, .zone-ranking-row { transition: none; } }

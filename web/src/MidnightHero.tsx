@@ -1,10 +1,12 @@
 import { ArrowUpRight, Play, Sparkles, ShieldCheck } from 'lucide-react';
 
+const acePath = 'M230 98C212 123 171 145 171 177C171 207 204 219 225 196C224 218 215 231 204 244H256C245 231 236 218 235 196C256 219 289 207 289 177C289 145 248 123 230 98Z';
+
 export default function MidnightHero({onExplore,onReplay}:{onExplore:()=>void;onReplay:()=>void}) {
   return <section className="midnight-hero" aria-label="Executive introduction">
     <div className="hero-copy">
       <div className="hero-eyebrow"><span className="hero-edition">THE GILDED ACE</span><span>MIDNIGHT ROYALE / 2025</span></div>
-      <h1 className="hero-title">Read the floor.<br/><em>Make the right move.</em></h1>
+      <h1 className="hero-title">Read the floor.<span className="hero-mobile-ace" aria-hidden="true"><svg viewBox="160 88 140 166" fill="none"><defs><linearGradient id="mobile-ace-gold" x1="171" y1="98" x2="289" y2="244" gradientUnits="userSpaceOnUse"><stop stopColor="#ffe8ad"/><stop offset=".55" stopColor="#f4c66b"/><stop offset="1" stopColor="#b97839"/></linearGradient></defs><g className="ace-self-turn"><path d={acePath} fill="url(#mobile-ace-gold)" stroke="#ba803a" strokeWidth="1.5"/></g></svg></span><br/><em>Make the right move.</em></h1>
       <p className="hero-description">Luck, location, or a leak? Go beyond the bottom ten. Discover what really shaped six months of casino performance.</p>
       <div className="hero-actions"><button className="btn btn-primary" onClick={onExplore}>Explore the floor <ArrowUpRight size={17}/></button><button className="hero-replay-link" onClick={onReplay}><span><Play size={13}/></span>Watch the floor evolve</button></div>
       <div className="hero-verdict"><span>THE CALL</span><strong>Pause blanket replacement.</strong> Inspect one signal. Test one zone. Preserve $91,300.</div>
@@ -23,7 +25,7 @@ export default function MidnightHero({onExplore,onReplay}:{onExplore:()=>void;on
         <g className="orbit-track orbit-track-two"><ellipse cx="230" cy="175" rx="155" ry="140" transform="rotate(27 230 175)" stroke="#ad91ff" strokeOpacity=".32" strokeDasharray="3 9"/><circle cx="360" cy="110" r="4" fill="#b49bff"/></g>
         <circle cx="230" cy="175" r="101" fill="#151b3d" fillOpacity=".7" stroke="#a59aff" strokeOpacity=".26"/>
         <circle cx="230" cy="175" r="89" stroke="#f4c66b" strokeOpacity=".23"/>
-        <g className="orbit-ace"><path d="M230 98C212 123 171 145 171 177C171 207 204 219 225 196C224 218 215 231 204 244H256C245 231 236 218 235 196C256 219 289 207 289 177C289 145 248 123 230 98Z" fill="url(#orb-gold)"/><path d="M230 110C213 132 184 151 183 174" stroke="#fff0cc" strokeOpacity=".6" strokeWidth="2" strokeLinecap="round"/></g>
+        <g className="orbit-ace ace-self-turn"><path d={acePath} fill="#8c5628" transform="translate(2.5 3)"/><path d={acePath} fill="url(#orb-gold)" stroke="#f8d690" strokeOpacity=".6" strokeWidth=".8"/><path d="M230 110C213 132 184 151 183 174" stroke="#fff0cc" strokeOpacity=".6" strokeWidth="2" strokeLinecap="round"/></g>
         <g stroke="#7de6ff" strokeOpacity=".5"><path d="M68 95h18m-9-9v18"/><path d="M360 261h12m-6-6v12"/><path d="M303 52h10m-5-5v10"/></g>
         <path d="M96 299H365" stroke="#85b5ef" strokeOpacity=".18"/>
         <text x="230" y="322" textAnchor="middle" fill="#b4bedc" fontFamily="sans-serif" fontSize="9" letterSpacing="4">TURN EVIDENCE INTO AN EDGE</text>

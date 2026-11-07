@@ -1,0 +1,38 @@
+/* The ace turns around its own vertical axis; the surrounding rings orbit separately. */
+.ace-self-turn {
+  transform-box: fill-box;
+  transform-origin: center;
+  backface-visibility: visible;
+  transform: perspective(700px) rotateY(-16deg);
+}
+.app-shell[data-motion='on'] .ace-self-turn {
+  animation: ace-self-revolve 20s linear infinite;
+  will-change: transform;
+}
+@keyframes ace-self-revolve {
+  from { transform: perspective(700px) rotateY(-16deg); }
+  to { transform: perspective(700px) rotateY(344deg); }
+}
+.hero-mobile-ace { display: none; }
+@media (max-width: 720px) {
+  .hero-mobile-ace {
+    display: inline-flex;
+    width: 34px;
+    height: 40px;
+    vertical-align: -5px;
+    margin-left: 10px;
+    filter: drop-shadow(0 0 8px #f4c66b38);
+  }
+  .hero-mobile-ace svg { width: 100%; height: 100%; overflow: visible; }
+}
+@media (max-width: 390px) {
+  .hero-mobile-ace { width: 29px; height: 35px; margin-left: 7px; }
+}
+.app-shell[data-motion='off'] .ace-self-turn {
+  animation: none !important;
+  transform: none;
+  will-change: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ace-self-turn { animation: none !important; transform: none; will-change: auto; }
+}
