@@ -5,6 +5,8 @@ The new `web/` interface preserves the original `dashboard/` and all analytical 
 ## Deliverables
 
 - Seven responsive views with dated zone/bank filtering, clickable floor layout, machine cases, guest cohorts, frozen model validation, sensitivity controls, budget constraints, and searchable evidence.
+- Midnight Royale theme: navy surfaces, cyan/violet charts, gold accents, animated orbit artwork and chart reveals. A persistent motion control honors system reduced-motion settings.
+- Historical January–June floor playback uses real month-scoped aggregates and dated machine placements. It pauses on bank inspection, manual month selection, hidden tabs, or motion disabled; its independent scope is explicit.
 - `web/dist/offline.html`: self-contained dashboard; companion data/docs folders supply downloads.
 - Root `dist/`: the same build prepared for static hosting.
 - `web/public/docs/`: revised write-up, Claims & Evidence, methodology and AI disclosure, and a walkthrough script. A recorded video and Devpost submission are not claimed.
@@ -26,7 +28,7 @@ Use the root Python reproduction commands to regenerate original reports. Then r
 
 The original 45 Python/Node tests passed against pinned official source data. The new aggregation regression passed 13,616 assertions covering all property days, date/zone/bank windows, four dated moves, weighted ratios, DST and empty scopes. Budget tests check lead times, capital and package costs, target conflicts, comp allowances, and catalog limits. DOM interaction checks exercise the seven views, filters, machine drill-down, guest groups, model metrics, sensitivity, downloads and evidence navigation.
 
-The environment stopped browser automation because it could not verify the active browser URL. Browser visual QA and anonymous public access were therefore not established by those tests; inspect the preview at presentation size and on mobile before submitting. DOM checks do not substitute for visual inspection.
+The Midnight Royale revision was visually inspected in the in-app browser at 1440×1000 and 390×844. All seven desktop routes and the machine evidence dialog were reviewed; mobile navigation, overview, action layout and filters were checked. The mobile bank selector was widened after inspection. Historical playback reached June, the motion toggle stopped effects, and June filtering rendered $39.73m. DOM regression checks additionally verify persisted motion preference, system preference changes, playback progression and bank inspection. Negative bar charts explicitly include zero. Anonymous public access is not claimed; the hosted dashboard retains its existing private audience.
 
 ## Provenance
 
