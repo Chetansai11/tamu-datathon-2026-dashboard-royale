@@ -38,6 +38,12 @@ global.scrollTo=()=>{};
 global.document={getElementById:element,querySelectorAll:()=>nav,querySelector:()=>nav[0],addEventListener(){}};
 delete require.cache[require.resolve(process.argv[2])];
 require(process.argv[2]);
+const evidenceIds=new Set(['floor-math','luck-method','guest-scope','validation-data']);
+for(const [reportKey,report] of Object.entries(bundle.reports||{})){
+  const items=report?.evidence||report?.claims||[];
+  if(Array.isArray(items))items.forEach((e,i)=>evidenceIds.add(e.id||`${reportKey}-${i+1}`));
+}
+let evidenceLinksChecked=0;
 for(const page of nav.map(x=>x.dataset.page)){
   location.hash='#'+page;
   DR_APP.render();
@@ -45,7 +51,14 @@ for(const page of nav.map(x=>x.dataset.page)){
   assert.ok(html.includes('page-heading'),page+' has heading');
   assert.ok(!html.includes('NaN'),page+' must not display NaN');
   assert.ok(!html.includes('undefined'),page+' must not display undefined');
+  for(const match of html.matchAll(/data-evidence="([^"]+)"/g)){
+    assert.ok(evidenceIds.has(match[1]),`${page}: unresolved evidence reference ${match[1]}`);
+    evidenceLinksChecked++;
+  }
+  if(page==='actions')assert.ok(html.includes(' proposed.')&&!html.includes(' deployed.'),'fictional action plan must be proposed, not deployed');
+  if(page==='validation'&&bundle.reports.validation)assert.equal([...html.matchAll(/data-evidence="validation-data"/g)].length,5,'validation heading and four KPIs trace dedicated provenance');
 }
+console.log(`Evidence integrity checks passed: ${evidenceLinksChecked} emitted references across 8 pages resolve.`);
 element('start-month').value='2025-06';
 element('start-month').listeners.change();
 assert.equal(DR_APP.state.start,'2025-06');
