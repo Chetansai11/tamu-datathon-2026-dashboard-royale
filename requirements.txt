@@ -44,3 +44,4 @@ tensorboard
 onnx
 pymongo
 psycopg[binary]
+pytest
