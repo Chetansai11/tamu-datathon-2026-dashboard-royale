@@ -25,8 +25,8 @@ versus $218,258 for a constant mean: 68.52% lower error. Its nominal 90% band co
 85.25% of test days. It supports scheduling routine maintenance on Tuesdays
 rather than Saturdays, not buying additional staff.
 
-Tracked guests wagered $163.805 million and received $148.219 million; 16.06% finished
-ahead. The top 1% accounted for 20.41% of tracked wagers. Comps cost $190,669,
+Tracked guests wagered $163.805 million and received $148.219 million; 16.06% of
+active tracked players finished ahead. Their top 1% accounted for 20.41% of tracked wagers. Comps cost $190,669,
 counted once; fixed benefit/tier redemption prices fell roughly 52–54% in May.
 These findings never become incentives aimed at heavy losers.
 

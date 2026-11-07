@@ -22369,17 +22369,17 @@
     },
     "summary": {
       "down_hours": 5021.078888888889,
-      "observed_coin_in": 248905219.25,
+      "observed_coin_in": 248905219.24999976,
       "available_hours": 1316886.921111111,
-      "lost_coin_in": 1114751.9001852649,
-      "lost_theo": 103793.74274829795,
-      "peer_lost_coin_in": 1120575.7908316748,
-      "baseline_lost_coin_in": 949035.7309160279,
+      "lost_coin_in": 1114751.9001852653,
+      "lost_theo": 103793.74274829788,
+      "peer_lost_coin_in": 1120575.7908316753,
+      "baseline_lost_coin_in": 949035.7309160242,
       "scheduled_hours": 1321908.0,
       "availability": 0.9962016427097128,
-      "estimated_lost_coin_in": 1114751.9001852649,
-      "estimated_lost_theo": 103793.74274829795,
-      "peer_alternative_lost_coin_in": 1120575.7908316748,
+      "estimated_lost_coin_in": 1114751.9001852653,
+      "estimated_lost_theo": 103793.74274829788,
+      "peer_alternative_lost_coin_in": 1120575.7908316753,
       "recapture_scenarios": [
         {
           "recapture_share": 0,
@@ -22388,18 +22388,18 @@
         },
         {
           "recapture_share": 0.25,
-          "incremental_coin_in": 278687.9750463162,
-          "incremental_theo": 25948.43568707449
+          "incremental_coin_in": 278687.97504631634,
+          "incremental_theo": 25948.43568707447
         },
         {
           "recapture_share": 0.5,
-          "incremental_coin_in": 557375.9500926324,
-          "incremental_theo": 51896.87137414898
+          "incremental_coin_in": 557375.9500926327,
+          "incremental_theo": 51896.87137414894
         },
         {
           "recapture_share": 1,
-          "incremental_coin_in": 1114751.9001852649,
-          "incremental_theo": 103793.74274829795
+          "incremental_coin_in": 1114751.9001852653,
+          "incremental_theo": 103793.74274829788
         }
       ],
       "technician_comparison": {
@@ -30205,7 +30205,7 @@
         "lost_coin_in": 3140.3659259259,
         "lost_theo": 219.8256148148,
         "peer_lost_coin_in": 1928.0389667874,
-        "baseline_lost_coin_in": 1122.4587904666
+        "baseline_lost_coin_in": 1122.4587904665
       },
       {
         "gaming_date": "2025-01-13T00:00:00.000",
@@ -31045,7 +31045,7 @@
         "lost_coin_in": 1562.4979722222,
         "lost_theo": 180.3540602778,
         "peer_lost_coin_in": 1642.3980519978,
-        "baseline_lost_coin_in": 1363.2894407248
+        "baseline_lost_coin_in": 1363.2894407247
       },
       {
         "gaming_date": "2025-01-15T00:00:00.000",
@@ -41161,7 +41161,7 @@
         "lost_coin_in": 1843.4947222222,
         "lost_theo": 184.3494722222,
         "peer_lost_coin_in": 1469.8721714976,
-        "baseline_lost_coin_in": 791.5857235542
+        "baseline_lost_coin_in": 791.5857235541
       },
       {
         "gaming_date": "2025-02-01T00:00:00.000",
@@ -43177,7 +43177,7 @@
         "lost_coin_in": 0.0,
         "lost_theo": 0.0,
         "peer_lost_coin_in": 201.3642753623,
-        "baseline_lost_coin_in": 678.4945483512
+        "baseline_lost_coin_in": 678.4945483511
       },
       {
         "gaming_date": "2025-02-04T00:00:00.000",
@@ -44437,7 +44437,7 @@
         "lost_coin_in": 151.5885185185,
         "lost_theo": 15.1588518519,
         "peer_lost_coin_in": 165.486147343,
-        "baseline_lost_coin_in": 271.5448273677
+        "baseline_lost_coin_in": 271.5448273676
       },
       {
         "gaming_date": "2025-02-06T00:00:00.000",
@@ -44557,7 +44557,7 @@
         "lost_coin_in": 292.6268518519,
         "lost_theo": 35.1152222222,
         "peer_lost_coin_in": 318.2897539683,
-        "baseline_lost_coin_in": 337.855948204
+        "baseline_lost_coin_in": 337.8559482039
       },
       {
         "gaming_date": "2025-02-06T00:00:00.000",
@@ -53197,7 +53197,7 @@
         "lost_coin_in": 1178.301712963,
         "lost_theo": 117.8301712963,
         "peer_lost_coin_in": 1462.5823420619,
-        "baseline_lost_coin_in": 716.1916067522
+        "baseline_lost_coin_in": 716.1916067521
       },
       {
         "gaming_date": "2025-02-21T00:00:00.000",
@@ -53461,7 +53461,7 @@
         "lost_coin_in": 1747.5521481481,
         "lost_theo": 209.7062577778,
         "peer_lost_coin_in": 2311.2149504831,
-        "baseline_lost_coin_in": 1391.220965891
+        "baseline_lost_coin_in": 1391.2209658909
       },
       {
         "gaming_date": "2025-02-21T00:00:00.000",
@@ -57709,7 +57709,7 @@
         "lost_coin_in": 868.4232222222,
         "lost_theo": 104.2107866667,
         "peer_lost_coin_in": 977.6899371981,
-        "baseline_lost_coin_in": 508.1752482776
+        "baseline_lost_coin_in": 508.1752482775
       },
       {
         "gaming_date": "2025-02-28T00:00:00.000",
@@ -59197,7 +59197,7 @@
         "lost_coin_in": 1122.6531527778,
         "lost_theo": 112.6067419444,
         "peer_lost_coin_in": 1530.4941940339,
-        "baseline_lost_coin_in": 1590.836865669
+        "baseline_lost_coin_in": 1590.8368656689
       },
       {
         "gaming_date": "2025-03-03T00:00:00.000",
@@ -61645,7 +61645,7 @@
         "lost_coin_in": 2136.0233333333,
         "lost_theo": 159.2715194444,
         "peer_lost_coin_in": 1677.1876256039,
-        "baseline_lost_coin_in": 1401.6690363949
+        "baseline_lost_coin_in": 1401.6690363948
       },
       {
         "gaming_date": "2025-03-07T00:00:00.000",
@@ -61825,7 +61825,7 @@
         "lost_coin_in": 974.0136342593,
         "lost_theo": 48.700681713,
         "peer_lost_coin_in": 922.4354021739,
-        "baseline_lost_coin_in": 508.1752482776
+        "baseline_lost_coin_in": 508.1752482775
       },
       {
         "gaming_date": "2025-03-07T00:00:00.000",
@@ -61921,7 +61921,7 @@
         "lost_coin_in": 845.7665277778,
         "lost_theo": 42.2883263889,
         "peer_lost_coin_in": 890.101933642,
-        "baseline_lost_coin_in": 1188.0873740338
+        "baseline_lost_coin_in": 1188.0873740337
       },
       {
         "gaming_date": "2025-03-07T00:00:00.000",
@@ -62605,7 +62605,7 @@
         "lost_coin_in": 2751.4870833333,
         "lost_theo": 192.6040958333,
         "peer_lost_coin_in": 1966.8467138752,
-        "baseline_lost_coin_in": 753.8886651532
+        "baseline_lost_coin_in": 753.8886651531
       },
       {
         "gaming_date": "2025-03-08T00:00:00.000",
@@ -72217,7 +72217,7 @@
         "lost_coin_in": 2423.0794965278,
         "lost_theo": 121.1539748264,
         "peer_lost_coin_in": 1931.557572318,
-        "baseline_lost_coin_in": 1178.321840799
+        "baseline_lost_coin_in": 1178.3218407989
       },
       {
         "gaming_date": "2025-03-24T00:00:00.000",
@@ -75829,7 +75829,7 @@
         "lost_coin_in": 836.5299166667,
         "lost_theo": 100.38359,
         "peer_lost_coin_in": 671.0913802083,
-        "baseline_lost_coin_in": 413.250065006
+        "baseline_lost_coin_in": 413.2500650059
       },
       {
         "gaming_date": "2025-03-30T00:00:00.000",
@@ -87709,7 +87709,7 @@
         "lost_coin_in": 1577.5268148148,
         "lost_theo": 173.5279496296,
         "peer_lost_coin_in": 1592.0711438296,
-        "baseline_lost_coin_in": 734.3575986836
+        "baseline_lost_coin_in": 734.3575986835
       },
       {
         "gaming_date": "2025-04-19T00:00:00.000",
@@ -88645,7 +88645,7 @@
         "lost_coin_in": 1922.0627314815,
         "lost_theo": 153.7650185185,
         "peer_lost_coin_in": 1873.2363660684,
-        "baseline_lost_coin_in": 923.5254279577
+        "baseline_lost_coin_in": 923.5254279576
       },
       {
         "gaming_date": "2025-04-20T00:00:00.000",
@@ -88657,7 +88657,7 @@
         "lost_coin_in": 2173.892,
         "lost_theo": 239.12812,
         "peer_lost_coin_in": 2213.6581231884,
-        "baseline_lost_coin_in": 1301.1785492368
+        "baseline_lost_coin_in": 1301.1785492367
       },
       {
         "gaming_date": "2025-04-20T00:00:00.000",
@@ -102973,7 +102973,7 @@
         "lost_coin_in": 647.069212963,
         "lost_theo": 64.7069212963,
         "peer_lost_coin_in": 983.4436703862,
-        "baseline_lost_coin_in": 696.6605402826
+        "baseline_lost_coin_in": 696.6605402825
       },
       {
         "gaming_date": "2025-05-14T00:00:00.000",
@@ -107521,7 +107521,7 @@
         "lost_coin_in": 2282.0500694444,
         "lost_theo": 136.5339027778,
         "peer_lost_coin_in": 1760.4250108696,
-        "baseline_lost_coin_in": 2396.4408546731
+        "baseline_lost_coin_in": 2396.440854673
       },
       {
         "gaming_date": "2025-05-21T00:00:00.000",
@@ -108793,7 +108793,7 @@
         "lost_coin_in": 2002.7697395833,
         "lost_theo": 100.1384869792,
         "peer_lost_coin_in": 1821.3484869321,
-        "baseline_lost_coin_in": 1556.6574993472
+        "baseline_lost_coin_in": 1556.6574993471
       },
       {
         "gaming_date": "2025-05-23T00:00:00.000",
@@ -109189,7 +109189,7 @@
         "lost_coin_in": 2908.1077430556,
         "lost_theo": 290.8107743056,
         "peer_lost_coin_in": 2478.8007319024,
-        "baseline_lost_coin_in": 1145.5075490154
+        "baseline_lost_coin_in": 1145.5075490153
       },
       {
         "gaming_date": "2025-05-24T00:00:00.000",
@@ -109861,7 +109861,7 @@
         "lost_coin_in": 1038.3166666667,
         "lost_theo": 83.0653333333,
         "peer_lost_coin_in": 1859.9450151515,
-        "baseline_lost_coin_in": 1886.8480289905
+        "baseline_lost_coin_in": 1886.8480289904
       },
       {
         "gaming_date": "2025-05-25T00:00:00.000",
@@ -109885,7 +109885,7 @@
         "lost_coin_in": 674.1823703704,
         "lost_theo": 80.9018844444,
         "peer_lost_coin_in": 1153.6191038647,
-        "baseline_lost_coin_in": 1689.9622782889
+        "baseline_lost_coin_in": 1689.9622782888
       },
       {
         "gaming_date": "2025-05-25T00:00:00.000",
@@ -110917,7 +110917,7 @@
         "lost_coin_in": 899.1404074074,
         "lost_theo": 77.8572503704,
         "peer_lost_coin_in": 1186.463288565,
-        "baseline_lost_coin_in": 1438.6835575268
+        "baseline_lost_coin_in": 1438.6835575267
       },
       {
         "gaming_date": "2025-05-27T00:00:00.000",
@@ -114469,7 +114469,7 @@
         "lost_coin_in": 1150.7769212963,
         "lost_theo": 103.5699229167,
         "peer_lost_coin_in": 1222.1387123257,
-        "baseline_lost_coin_in": 649.8804859159
+        "baseline_lost_coin_in": 649.8804859158
       },
       {
         "gaming_date": "2025-06-02T00:00:00.000",
@@ -118705,7 +118705,7 @@
         "lost_coin_in": 1942.436875,
         "lost_theo": 97.12184375,
         "peer_lost_coin_in": 1404.7757471264,
-        "baseline_lost_coin_in": 1528.725974181
+        "baseline_lost_coin_in": 1528.7259741809
       },
       {
         "gaming_date": "2025-06-08T00:00:00.000",
@@ -120277,7 +120277,7 @@
         "lost_coin_in": 290.7226851852,
         "lost_theo": 29.0722685185,
         "peer_lost_coin_in": 408.3689842995,
-        "baseline_lost_coin_in": 432.0985942065
+        "baseline_lost_coin_in": 432.0985942064
       },
       {
         "gaming_date": "2025-06-11T00:00:00.000",
@@ -125425,7 +125425,7 @@
         "lost_coin_in": 1219.967037037,
         "lost_theo": 134.1963740741,
         "peer_lost_coin_in": 1194.2972041063,
-        "baseline_lost_coin_in": 573.8038318448
+        "baseline_lost_coin_in": 573.8038318447
       },
       {
         "gaming_date": "2025-06-19T00:00:00.000",
@@ -132224,94 +132224,94 @@
       {
         "shift": "day",
         "down_hours": 1211.7977777778,
-        "observed_coin_in": 60550296.000000164,
+        "observed_coin_in": 60550296.00000004,
         "available_hours": 439524.2022222222,
         "lost_coin_in": 198279.3407457767,
         "lost_theo": 18368.4365201714,
         "peer_lost_coin_in": 202981.4361760937,
-        "baseline_lost_coin_in": 229042.2865692595
+        "baseline_lost_coin_in": 229042.2865692582
       },
       {
         "shift": "grave",
         "down_hours": 1926.7680555556,
-        "observed_coin_in": 62185669.59999992,
+        "observed_coin_in": 62185669.599999905,
         "available_hours": 438509.2319444445,
         "lost_coin_in": 327484.6154243827,
         "lost_theo": 30241.2241946914,
-        "peer_lost_coin_in": 328971.9457183616,
-        "baseline_lost_coin_in": 364179.0480440857
+        "peer_lost_coin_in": 328971.9457183618,
+        "baseline_lost_coin_in": 364179.0480440838
       },
       {
         "shift": "swing",
         "down_hours": 1882.5130555556,
-        "observed_coin_in": 126169253.6500001,
+        "observed_coin_in": 126169253.6500002,
         "available_hours": 438853.4869444444,
         "lost_coin_in": 588987.9440151057,
         "lost_theo": 55184.0820334351,
-        "peer_lost_coin_in": 588622.4089372198,
-        "baseline_lost_coin_in": 355814.3963026785
+        "peer_lost_coin_in": 588622.4089372195,
+        "baseline_lost_coin_in": 355814.3963026766
       }
     ],
     "by_month": [
       {
         "period_month": "2025-01",
         "down_hours": 866.5405555556,
-        "observed_coin_in": 41676918.14999996,
+        "observed_coin_in": 41676918.149999954,
         "available_hours": 222333.4594444445,
-        "lost_coin_in": 196970.5714131944,
+        "lost_coin_in": 196970.5714131945,
         "lost_theo": 18896.8449146065,
         "peer_lost_coin_in": 201309.4881667175,
-        "baseline_lost_coin_in": 163785.108282182
+        "baseline_lost_coin_in": 163785.1082821813
       },
       {
         "period_month": "2025-02",
         "down_hours": 772.4908333333,
-        "observed_coin_in": 39577371.949999884,
+        "observed_coin_in": 39577371.94999993,
         "available_hours": 200827.5091666667,
         "lost_coin_in": 180331.7447404684,
         "lost_theo": 17122.6483953976,
-        "peer_lost_coin_in": 181456.2421235566,
-        "baseline_lost_coin_in": 146008.7401257026
+        "peer_lost_coin_in": 181456.2421235565,
+        "baseline_lost_coin_in": 146008.740125702
       },
       {
         "period_month": "2025-03",
         "down_hours": 979.1961111111,
-        "observed_coin_in": 43647425.45000002,
+        "observed_coin_in": 43647425.44999998,
         "available_hours": 223456.8038888889,
         "lost_coin_in": 230723.0491499034,
         "lost_theo": 21206.313177901,
-        "peer_lost_coin_in": 225230.4014144274,
-        "baseline_lost_coin_in": 185078.1709633933
+        "peer_lost_coin_in": 225230.4014144273,
+        "baseline_lost_coin_in": 185078.1709633924
       },
       {
         "period_month": "2025-04",
         "down_hours": 755.0677777778,
-        "observed_coin_in": 41288570.54999996,
+        "observed_coin_in": 41288570.54999993,
         "available_hours": 221004.9322222222,
-        "lost_coin_in": 168577.6254773779,
+        "lost_coin_in": 168577.625477378,
         "lost_theo": 15809.3201677462,
         "peer_lost_coin_in": 171063.0904035417,
-        "baseline_lost_coin_in": 142715.6028080341
+        "baseline_lost_coin_in": 142715.6028080335
       },
       {
         "period_month": "2025-05",
         "down_hours": 1017.3108333333,
-        "observed_coin_in": 42984383.29999999,
+        "observed_coin_in": 42984383.30000002,
         "available_hours": 228134.6891666667,
         "lost_coin_in": 218659.4057584876,
         "lost_theo": 19744.3220876698,
-        "peer_lost_coin_in": 219394.585968116,
-        "baseline_lost_coin_in": 192282.2468329985
+        "peer_lost_coin_in": 219394.5859681159,
+        "baseline_lost_coin_in": 192282.2468329974
       },
       {
         "period_month": "2025-06",
         "down_hours": 630.4727777778,
-        "observed_coin_in": 39730549.85000004,
+        "observed_coin_in": 39730549.849999994,
         "available_hours": 221129.5272222222,
         "lost_coin_in": 119489.5036458333,
-        "lost_theo": 11014.2940049768,
+        "lost_theo": 11014.2940049769,
         "peer_lost_coin_in": 122121.9827553162,
-        "baseline_lost_coin_in": 119165.8619037145
+        "baseline_lost_coin_in": 119165.8619037141
       }
     ],
     "by_manufacturer": [
@@ -132322,28 +132322,28 @@
         "available_hours": 479575.7983333333,
         "lost_coin_in": 233976.4265677274,
         "lost_theo": 21298.898599857,
-        "peer_lost_coin_in": 225776.6032494516,
-        "baseline_lost_coin_in": 182622.0868519743
+        "peer_lost_coin_in": 225776.6032494515,
+        "baseline_lost_coin_in": 182622.0868519733
       },
       {
         "manufacturer": "Northwind",
         "down_hours": 1299.9111111111,
-        "observed_coin_in": 83875425.70000006,
+        "observed_coin_in": 83875425.70000012,
         "available_hours": 436023.0888888889,
         "lost_coin_in": 280531.136282135,
         "lost_theo": 26115.2353551198,
-        "peer_lost_coin_in": 277116.6034942011,
-        "baseline_lost_coin_in": 245696.615958207
+        "peer_lost_coin_in": 277116.6034942013,
+        "baseline_lost_coin_in": 245696.6159582058
       },
       {
         "manufacturer": "Ridgeline",
         "down_hours": 2754.9661111111,
-        "observed_coin_in": 73340866.60000002,
+        "observed_coin_in": 73340866.59999995,
         "available_hours": 401288.0338888889,
-        "lost_coin_in": 600244.3373354027,
-        "lost_theo": 56379.608793321,
-        "peer_lost_coin_in": 617682.5840880226,
-        "baseline_lost_coin_in": 520717.0281058414
+        "lost_coin_in": 600244.3373354026,
+        "lost_theo": 56379.6087933211,
+        "peer_lost_coin_in": 617682.5840880225,
+        "baseline_lost_coin_in": 520717.0281058394
       }
     ],
     "by_machine": [
@@ -132465,7 +132465,7 @@
         "lost_coin_in": 2408.9923611111,
         "lost_theo": 192.7193888889,
         "peer_lost_coin_in": 2011.5940026123,
-        "baseline_lost_coin_in": 2148.5748202565
+        "baseline_lost_coin_in": 2148.5748202564
       },
       {
         "machine_id": "M-1013",
@@ -132620,7 +132620,7 @@
       {
         "machine_id": "M-1028",
         "down_hours": 55.6783333333,
-        "observed_coin_in": 837664.8000000004,
+        "observed_coin_in": 837664.8000000006,
         "available_hours": 4287.3216666667,
         "lost_coin_in": 10481.0503240741,
         "lost_theo": 1152.9155356481,
@@ -132715,7 +132715,7 @@
         "lost_coin_in": 3027.5580324074,
         "lost_theo": 302.7558032407,
         "peer_lost_coin_in": 3103.2053878061,
-        "baseline_lost_coin_in": 2238.6172369107
+        "baseline_lost_coin_in": 2238.6172369106
       },
       {
         "machine_id": "M-1038",
@@ -132825,7 +132825,7 @@
         "lost_coin_in": 5184.4011805556,
         "lost_theo": 414.7520944444,
         "peer_lost_coin_in": 5885.0562224288,
-        "baseline_lost_coin_in": 7973.137863279
+        "baseline_lost_coin_in": 7973.1378632789
       },
       {
         "machine_id": "M-1049",
@@ -132925,7 +132925,7 @@
         "lost_coin_in": 5079.2325925926,
         "lost_theo": 253.9616296296,
         "peer_lost_coin_in": 4807.3808469099,
-        "baseline_lost_coin_in": 2384.5227038973
+        "baseline_lost_coin_in": 2384.5227038972
       },
       {
         "machine_id": "M-1059",
@@ -132975,7 +132975,7 @@
         "lost_coin_in": 2993.3136111111,
         "lost_theo": 239.4650888889,
         "peer_lost_coin_in": 3918.2603976725,
-        "baseline_lost_coin_in": 5360.3326943016
+        "baseline_lost_coin_in": 5360.3326943015
       },
       {
         "machine_id": "M-1064",
@@ -133105,7 +133105,7 @@
         "lost_coin_in": 7927.6616203704,
         "lost_theo": 634.2129296296,
         "peer_lost_coin_in": 10322.2758683627,
-        "baseline_lost_coin_in": 8465.9297715684
+        "baseline_lost_coin_in": 8465.9297715683
       },
       {
         "machine_id": "M-1077",
@@ -133125,7 +133125,7 @@
         "lost_coin_in": 15102.1963611111,
         "lost_theo": 1661.2415997222,
         "peer_lost_coin_in": 15422.7891322522,
-        "baseline_lost_coin_in": 11827.7933419484
+        "baseline_lost_coin_in": 11827.7933419483
       },
       {
         "machine_id": "M-1079",
@@ -133275,7 +133275,7 @@
         "lost_coin_in": 7152.5478472222,
         "lost_theo": 858.3057416667,
         "peer_lost_coin_in": 6650.4496329865,
-        "baseline_lost_coin_in": 3544.0485183626
+        "baseline_lost_coin_in": 3544.0485183625
       },
       {
         "machine_id": "M-1094",
@@ -133485,7 +133485,7 @@
         "lost_coin_in": 6559.1061111111,
         "lost_theo": 787.0927333333,
         "peer_lost_coin_in": 6858.821951194,
-        "baseline_lost_coin_in": 4824.9609609938
+        "baseline_lost_coin_in": 4824.9609609937
       },
       {
         "machine_id": "M-1115",
@@ -134005,7 +134005,7 @@
         "lost_coin_in": 4680.6226666667,
         "lost_theo": 514.8684933333,
         "peer_lost_coin_in": 4101.3171188951,
-        "baseline_lost_coin_in": 4041.0406560003
+        "baseline_lost_coin_in": 4041.0406560002
       },
       {
         "machine_id": "M-1167",
@@ -134825,7 +134825,7 @@
         "lost_coin_in": 2132.2185706019,
         "lost_theo": 170.5774856481,
         "peer_lost_coin_in": 2104.1962973721,
-        "baseline_lost_coin_in": 1518.9604409462
+        "baseline_lost_coin_in": 1518.9604409461
       },
       {
         "machine_id": "M-1249",
@@ -134885,7 +134885,7 @@
         "lost_coin_in": 2896.1378703704,
         "lost_theo": 202.7296509259,
         "peer_lost_coin_in": 2610.1162511244,
-        "baseline_lost_coin_in": 2062.7326329506
+        "baseline_lost_coin_in": 2062.7326329505
       },
       {
         "machine_id": "M-1255",
@@ -134910,7 +134910,7 @@
       {
         "machine_id": "M-1257",
         "down_hours": 9.8827777778,
-        "observed_coin_in": 907076.8000000002,
+        "observed_coin_in": 907076.8000000003,
         "available_hours": 4333.1172222222,
         "lost_coin_in": 3028.8641203704,
         "lost_theo": 333.1750532407,
@@ -135065,7 +135065,7 @@
         "lost_coin_in": 3699.5271469907,
         "lost_theo": 295.9621717593,
         "peer_lost_coin_in": 3406.7232419973,
-        "baseline_lost_coin_in": 2128.3612165178
+        "baseline_lost_coin_in": 2128.3612165177
       },
       {
         "machine_id": "M-1273",
@@ -135205,7 +135205,7 @@
         "lost_coin_in": 290.7226851852,
         "lost_theo": 29.0722685185,
         "peer_lost_coin_in": 408.3689842995,
-        "baseline_lost_coin_in": 432.0985942065
+        "baseline_lost_coin_in": 432.0985942064
       },
       {
         "machine_id": "M-1287",
@@ -135235,7 +135235,7 @@
         "lost_coin_in": 8339.7393402778,
         "lost_theo": 416.9869670139,
         "peer_lost_coin_in": 7404.4594967942,
-        "baseline_lost_coin_in": 5451.0576482249
+        "baseline_lost_coin_in": 5451.0576482248
       },
       {
         "machine_id": "M-1290",
@@ -135305,7 +135305,7 @@
         "lost_coin_in": 4920.8392592593,
         "lost_theo": 590.5007111111,
         "peer_lost_coin_in": 4827.0580214097,
-        "baseline_lost_coin_in": 3744.3469554097
+        "baseline_lost_coin_in": 3744.3469554096
       },
       {
         "machine_id": "M-1297",
@@ -135452,47 +135452,47 @@
       {
         "local_hour": 0,
         "down_hours": 287.4386111111,
-        "observed_coin_in": 10393212.900000002,
+        "observed_coin_in": 10393212.900000008,
         "available_hours": 54804.5613888889,
         "lost_coin_in": 56987.9336041667,
         "lost_theo": 5283.8953471412,
         "peer_lost_coin_in": 58815.95178839,
-        "baseline_lost_coin_in": 54328.8640600677
+        "baseline_lost_coin_in": 54328.8640600676
       },
       {
         "local_hour": 1,
         "down_hours": 254.0602777778,
-        "observed_coin_in": 7871496.000000002,
+        "observed_coin_in": 7871496.000000001,
         "available_hours": 54837.9397222222,
         "lost_coin_in": 43798.4652569444,
         "lost_theo": 3997.8170656134,
         "peer_lost_coin_in": 40158.8450095079,
-        "baseline_lost_coin_in": 48020.0145731861
+        "baseline_lost_coin_in": 48020.014573186
       },
       {
         "local_hour": 2,
         "down_hours": 224.5447222222,
-        "observed_coin_in": 5656864.750000004,
+        "observed_coin_in": 5656864.750000006,
         "available_hours": 54567.4552777778,
-        "lost_coin_in": 26150.0392581019,
+        "lost_coin_in": 26150.0392581018,
         "lost_theo": 2422.8188935185,
         "peer_lost_coin_in": 25350.8970661218,
-        "baseline_lost_coin_in": 42441.2699527729
+        "baseline_lost_coin_in": 42441.2699527728
       },
       {
         "local_hour": 3,
         "down_hours": 209.5952777778,
-        "observed_coin_in": 3914567.3000000035,
+        "observed_coin_in": 3914567.300000001,
         "available_hours": 54882.4047222222,
         "lost_coin_in": 15918.7725289352,
         "lost_theo": 1420.4643968056,
         "peer_lost_coin_in": 15565.4472211431,
-        "baseline_lost_coin_in": 39615.6706644372
+        "baseline_lost_coin_in": 39615.6706644371
       },
       {
         "local_hour": 4,
         "down_hours": 181.5783333333,
-        "observed_coin_in": 2598032.8499999996,
+        "observed_coin_in": 2598032.85,
         "available_hours": 54910.4216666667,
         "lost_coin_in": 9379.6034293981,
         "lost_theo": 873.2776131713,
@@ -135502,7 +135502,7 @@
       {
         "local_hour": 5,
         "down_hours": 164.4630555556,
-        "observed_coin_in": 1873312.8999999997,
+        "observed_coin_in": 1873312.9000000001,
         "available_hours": 54927.5369444444,
         "lost_coin_in": 6778.5149131944,
         "lost_theo": 625.912689537,
@@ -135512,7 +135512,7 @@
       {
         "local_hour": 6,
         "down_hours": 146.1894444444,
-        "observed_coin_in": 2002352.1,
+        "observed_coin_in": 2002352.0999999996,
         "available_hours": 54945.8105555556,
         "lost_coin_in": 6280.313177726,
         "lost_theo": 567.2609472549,
@@ -135522,17 +135522,17 @@
       {
         "local_hour": 7,
         "down_hours": 130.6466666667,
-        "observed_coin_in": 3072471.250000001,
+        "observed_coin_in": 3072471.25,
         "available_hours": 54961.3533333333,
         "lost_coin_in": 7860.4685334376,
         "lost_theo": 739.5497340858,
         "peer_lost_coin_in": 8460.3672325131,
-        "baseline_lost_coin_in": 24693.5683615956
+        "baseline_lost_coin_in": 24693.5683615955
       },
       {
         "local_hour": 8,
         "down_hours": 121.5452777778,
-        "observed_coin_in": 4820179.050000001,
+        "observed_coin_in": 4820179.050000003,
         "available_hours": 54970.4547222222,
         "lost_coin_in": 13034.2725798611,
         "lost_theo": 1194.8191306481,
@@ -135542,7 +135542,7 @@
       {
         "local_hour": 9,
         "down_hours": 121.7211111111,
-        "observed_coin_in": 7012349.750000001,
+        "observed_coin_in": 7012349.750000003,
         "available_hours": 54970.2788888889,
         "lost_coin_in": 16121.5492393207,
         "lost_theo": 1469.061459431,
@@ -135552,7 +135552,7 @@
       {
         "local_hour": 10,
         "down_hours": 139.6455555556,
-        "observed_coin_in": 9036968.550000004,
+        "observed_coin_in": 9036968.55000001,
         "available_hours": 54952.3544444444,
         "lost_coin_in": 25161.9694893207,
         "lost_theo": 2323.9568758894,
@@ -135562,17 +135562,17 @@
       {
         "local_hour": 11,
         "down_hours": 167.7825,
-        "observed_coin_in": 10522599.399999995,
+        "observed_coin_in": 10522599.400000006,
         "available_hours": 54924.2175,
         "lost_coin_in": 34756.3533415033,
         "lost_theo": 3314.768813639,
         "peer_lost_coin_in": 36804.2114986241,
-        "baseline_lost_coin_in": 31712.624128408
+        "baseline_lost_coin_in": 31712.6241284079
       },
       {
         "local_hour": 12,
         "down_hours": 180.7538888889,
-        "observed_coin_in": 11715926.750000007,
+        "observed_coin_in": 11715926.75,
         "available_hours": 54911.2461111111,
         "lost_coin_in": 43806.1460266204,
         "lost_theo": 4027.2487507986,
@@ -135582,12 +135582,12 @@
       {
         "local_hour": 13,
         "down_hours": 203.5133333333,
-        "observed_coin_in": 12367449.14999999,
+        "observed_coin_in": 12367449.149999995,
         "available_hours": 54888.4866666667,
         "lost_coin_in": 51258.2683579869,
         "lost_theo": 4731.7708084246,
         "peer_lost_coin_in": 50994.2106428219,
-        "baseline_lost_coin_in": 38466.1203946741
+        "baseline_lost_coin_in": 38466.120394674
       },
       {
         "local_hour": 14,
@@ -135602,7 +135602,7 @@
       {
         "local_hour": 15,
         "down_hours": 217.7830555556,
-        "observed_coin_in": 12635594.350000009,
+        "observed_coin_in": 12635594.349999998,
         "available_hours": 54874.2169444444,
         "lost_coin_in": 56788.9368860399,
         "lost_theo": 5309.8985788871,
@@ -135612,19 +135612,19 @@
       {
         "local_hour": 16,
         "down_hours": 219.9008333333,
-        "observed_coin_in": 13178387.400000006,
+        "observed_coin_in": 13178387.40000001,
         "available_hours": 54872.0991666667,
         "lost_coin_in": 57017.9515560007,
         "lost_theo": 5307.9861555725,
         "peer_lost_coin_in": 59568.9905542336,
-        "baseline_lost_coin_in": 41563.5270247117
+        "baseline_lost_coin_in": 41563.5270247116
       },
       {
         "local_hour": 17,
         "down_hours": 211.9583333333,
-        "observed_coin_in": 14672886.250000006,
+        "observed_coin_in": 14672886.250000026,
         "available_hours": 54880.0416666667,
-        "lost_coin_in": 59475.3394737357,
+        "lost_coin_in": 59475.3394737358,
         "lost_theo": 5542.1355297774,
         "peer_lost_coin_in": 61547.4153505317,
         "baseline_lost_coin_in": 40062.3125527621
@@ -135632,7 +135632,7 @@
       {
         "local_hour": 18,
         "down_hours": 227.0308333333,
-        "observed_coin_in": 16757176.500000007,
+        "observed_coin_in": 16757176.499999998,
         "available_hours": 54864.9691666667,
         "lost_coin_in": 76395.6692083333,
         "lost_theo": 7198.093641794,
@@ -135642,7 +135642,7 @@
       {
         "local_hour": 19,
         "down_hours": 233.9561111111,
-        "observed_coin_in": 18512674.6,
+        "observed_coin_in": 18512674.599999998,
         "available_hours": 54858.0438888889,
         "lost_coin_in": 88669.4773622685,
         "lost_theo": 8170.8543971181,
@@ -135662,27 +135662,27 @@
       {
         "local_hour": 21,
         "down_hours": 292.9113888889,
-        "observed_coin_in": 18663589.150000002,
+        "observed_coin_in": 18663589.14999999,
         "available_hours": 54799.0886111111,
         "lost_coin_in": 98965.7848020833,
         "lost_theo": 9345.083506956,
         "peer_lost_coin_in": 101649.9015867117,
-        "baseline_lost_coin_in": 55363.2755428205
+        "baseline_lost_coin_in": 55363.2755428204
       },
       {
         "local_hour": 22,
         "down_hours": 306.6386111111,
-        "observed_coin_in": 16416899.650000019,
+        "observed_coin_in": 16416899.650000017,
         "available_hours": 54785.3613888889,
         "lost_coin_in": 91980.3867496142,
         "lost_theo": 8514.6074705363,
         "peer_lost_coin_in": 95086.8739166929,
-        "baseline_lost_coin_in": 57957.8622169996
+        "baseline_lost_coin_in": 57957.8622169995
       },
       {
         "local_hour": 23,
         "down_hours": 298.4491666667,
-        "observed_coin_in": 13461283.25,
+        "observed_coin_in": 13461283.250000004,
         "available_hours": 54793.5508333333,
         "lost_coin_in": 76490.8996840278,
         "lost_theo": 7102.4307183681,
@@ -135694,12 +135694,12 @@
       {
         "rate_source": "machine_month_weekday_hour",
         "down_hours": 4956.1169444444,
-        "observed_coin_in": 248418764.75000018,
+        "observed_coin_in": 248418764.75000006,
         "available_hours": 1315165.8830555556,
-        "lost_coin_in": 1100994.0854467591,
+        "lost_coin_in": 1100994.0854467598,
         "lost_theo": 102600.3272211227,
-        "peer_lost_coin_in": 1106217.12973845,
-        "baseline_lost_coin_in": 936757.2529650051
+        "peer_lost_coin_in": 1106217.1297384498,
+        "baseline_lost_coin_in": 936757.2529650023
       },
       {
         "rate_source": "machine_weekday_hour",
@@ -150815,7 +150815,7 @@
       "baseline": "Keep the full $100,000; no assumed uplift and no disruption.",
       "expected_direct_revenue_uplift": 0,
       "modeled_inspection_downtime_theo": 23.945242517783758,
-      "conditional_gap_29d": 5794.352209944752,
+      "conditional_gap_house_win_29d": 5794.352209944752,
       "conditional_break_even_restoration_fraction": 0.21123072919474012,
       "sensitivity_note": "Conditional scenarios are not the funded inspection's expected return. They assume a confirmed persistent, correctable gap and a separately authorized correction at zero additional cost; any repair cost reduces net value. No defect probability is estimated.",
       "decision": "Use one action type to resolve the strongest payout signal. Schedule routine maintenance on lower-demand Tuesdays using existing staff. Keep remaining funds; do not target heavy losers with promotions."
@@ -150849,22 +150849,22 @@
         "benefit_scenarios": [
           {
             "restored_fraction": 0.0,
-            "gross_conditional_theo": 0.0,
+            "gross_conditional_house_win": 0.0,
             "net_after_inspection_and_modeled_downtime": -1223.9452425177838
           },
           {
             "restored_fraction": 0.25,
-            "gross_conditional_theo": 1448.588052486188,
+            "gross_conditional_house_win": 1448.588052486188,
             "net_after_inspection_and_modeled_downtime": 224.6428099684042
           },
           {
             "restored_fraction": 0.5,
-            "gross_conditional_theo": 2897.176104972376,
+            "gross_conditional_house_win": 2897.176104972376,
             "net_after_inspection_and_modeled_downtime": 1673.2308624545922
           },
           {
             "restored_fraction": 1.0,
-            "gross_conditional_theo": 5794.352209944752,
+            "gross_conditional_house_win": 5794.352209944752,
             "net_after_inspection_and_modeled_downtime": 4570.406967426968
           }
         ]
@@ -150965,22 +150965,22 @@
     "scenario_rows": [
       {
         "restored_fraction": 0.0,
-        "gross_conditional_theo": 0.0,
+        "gross_conditional_house_win": 0.0,
         "net_after_inspection_and_modeled_downtime": -1223.9452425177838
       },
       {
         "restored_fraction": 0.25,
-        "gross_conditional_theo": 1448.588052486188,
+        "gross_conditional_house_win": 1448.588052486188,
         "net_after_inspection_and_modeled_downtime": 224.6428099684042
       },
       {
         "restored_fraction": 0.5,
-        "gross_conditional_theo": 2897.176104972376,
+        "gross_conditional_house_win": 2897.176104972376,
         "net_after_inspection_and_modeled_downtime": 1673.2308624545922
       },
       {
         "restored_fraction": 1.0,
-        "gross_conditional_theo": 5794.352209944752,
+        "gross_conditional_house_win": 5794.352209944752,
         "net_after_inspection_and_modeled_downtime": 4570.406967426968
       }
     ]

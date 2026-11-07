@@ -26,7 +26,7 @@ for key, report in reports.items():
         values = [f"{label} ({row['id']})", source, row.get("result"), row.get("alternative"), row.get("limitation")]
         lines.append("| " + " | ".join(cell(v) for v in values) + " |")
 lines += ["", "## Every machine in the GM list", "",
-          "Baseline: rank total actual house win ascending. Local demand index = total theo / available-hour exposure times leave-one-out same-config, same-zone, same-date peer theo rate (minimum three peers; floor same-config fallback). Intervals are descriptive 95% weekly block bootstrap intervals, not simultaneous causal tests. Location index compares that local expectation to same-game floor peers. Payout p-values use a two-sided normal approximation and Bonferroni correction over all 310 machines.", "",
+          "Baseline: rank total actual house win ascending. Local demand index = SUM(theo) / SUM(available_hours × same-date peer theo per available hour). Peers are leave-one-out, same-config, same-zone, same-date (minimum three peers; floor same-config fallback). Intervals are descriptive 95% weekly block bootstrap intervals, not simultaneous causal tests. Location index compares that local expectation to same-game floor peers. Payout p-values use a two-sided normal approximation and Bonferroni correction over all 310 machines.", "",
           "| Machine | On-floor days | Actual win | Theo per available hour | Local demand index and 95% interval | Location index | Availability | Payout z and adjusted p | Decision |",
           "| --- | ---: | ---: | ---: | --- | ---: | ---: | --- | --- |"]
 for x in reports["q1"]["bottom10"]:

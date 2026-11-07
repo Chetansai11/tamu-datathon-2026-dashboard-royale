@@ -58,7 +58,10 @@ number, then rebuild the ZIP. This avoids submitting stale draft-release claims.
 ## Verification limits
 
 Dataset hashes, all CSV/Parquet pairs, accounting invariants, analysis tests and
-local browser interactions were checked. Public anonymous access, the recorded
+local HTTP browser interactions were checked, including a narrow-screen layout.
+The browser tool blocks file URLs, so directly opening the offline file remains
+a human check; the bundle uses ordinary local scripts and no fetch calls or CDN.
+Public anonymous access, the recorded
 video and Devpost receipt cannot be verified before the human completes them.
 The plan's simulated action has not been executed, and none of its conditional
 benefits are claimed as measured treatment effects.

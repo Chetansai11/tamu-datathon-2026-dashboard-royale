@@ -57,7 +57,7 @@ def build_report(q1=None, q3=None, q5=None):
     spend = price(row)
     disruption = row["downtime_minutes"]/60*target["theo_per_avail_hour"]
     conditional_gap = max(0., -target["luck_residual"])/target["machine_days"]*days
-    scenario_rows = [{"restored_fraction": f, "gross_conditional_theo": f*conditional_gap,
+    scenario_rows = [{"restored_fraction": f, "gross_conditional_house_win": f*conditional_gap,
                       "net_after_inspection_and_modeled_downtime": f*conditional_gap-spend-disruption}
                      for f in [0., .25, .5, 1.]]
     action = {"action_type_id": "A-INSPECT", "name": "Inspect M-1158 and verify its payout configuration", "quantity": 1,
@@ -93,7 +93,7 @@ def build_report(q1=None, q3=None, q5=None):
     summary = {"headline": "Inspect one machine. Preserve $98,800.", "budget": 100000, "spend": actual_cost, "reserve": 100000-actual_cost,
                "action_types": 1, "horizon": "2025-07-01 to 2025-07-30", "baseline": "Keep the full $100,000; no assumed uplift and no disruption.",
                "expected_direct_revenue_uplift": 0, "modeled_inspection_downtime_theo": disruption,
-               "conditional_gap_29d": conditional_gap, "conditional_break_even_restoration_fraction": (spend+disruption)/conditional_gap,
+               "conditional_gap_house_win_29d": conditional_gap, "conditional_break_even_restoration_fraction": (spend+disruption)/conditional_gap,
                "sensitivity_note": "Conditional scenarios are not the funded inspection's expected return. They assume a confirmed persistent, correctable gap and a separately authorized correction at zero additional cost; any repair cost reduces net value. No defect probability is estimated.",
                "decision": "Use one action type to resolve the strongest payout signal. Schedule routine maintenance on lower-demand Tuesdays using existing staff. Keep remaining funds; do not target heavy losers with promotions."}
     evidence = [
