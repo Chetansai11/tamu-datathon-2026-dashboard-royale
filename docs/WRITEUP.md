@@ -1,38 +1,42 @@
 # The Gilded Ace decision dashboard
 
 The general manager wants to replace the ten lowest-earning machines. Our answer:
-inspect one, preserve $98,800, and avoid treating low earnings as proof of weak machines.
+the machines aren't the problem. Back Forty is.
 
-We compare 310 machines across 55,092 on-floor machine-days using theoretical win,
-available hours and dated, same-game local peers. Three of the GM's ten candidates
-had short exposure; two were already retired. M-1158 generated 109% of its local
-peer expectation but held 3.04% against 10% configured theoretical hold. Its payout
-signal survives screening all 310 machines: adjusted p=0.00151. That warrants
-verification, not an accusation. Weekly bootstrap intervals show ranking uncertainty.
+We split each machine's gap to an average machine into five dollar amounts that add up exactly: time on the floor, game
+math, location, the machine itself, and luck. The GM's ten earned $541,425 less
+than ten average machines. Game math explains 39% (eight run 5–8% hold titles),
+location 26%, short exposure 24% (three partial-period machines, two
+retired) and luck 12%. The machines themselves earned $3,662 more than the same
+games in the same zones. Replacing them treats a cause that isn't there.
 
-Demand also reflects place and time. June daily wagers were 1.49% below January,
-and wagers per available hour fell 4.15%. During a documented walkway closure,
-Back Forty's rate relative to other zones dropped 30.77%; this observational
-contrast does not prove relocation would reverse the loss. Tourism and weather
-provide cited retrospective context only.
+Nine of the ten stand in Back Forty, which earns 65% of what its game mix earns
+elsewhere: $1.27 million of theo short in six months. The gap existed before the
+March walkway closure, which deepened it to 52%. It is footfall. In June, Back Forty seats were occupied 24.9% of available hours versus 37.0%
+elsewhere, with 22 sensor entries per covered hour versus 94. Seated players
+earned within 5% of the rest of the floor.
 
-We reconcile 5,021 unavailable machine-hours across meters and tickets. Hourly
-comparisons estimate $1.115 million in missing wagers versus a $949,036 uniform-rate
-baseline. Switching to other machines could make property-level recovery much smaller.
+One machine shows a possible leak. M-1158 held 3.04% against a configured 10%
+(z = −4.57). Only it survives a Bonferroni screen of all 310 (p = 0.0015):
+a reason to inspect, not to accuse.
 
-A weekday forecast trained on January–April scores $68,699 daily MAE on May–June,
-versus $218,258 for a constant mean: 68.52% lower error. Its nominal 90% band covers
-85.25% of test days. It supports scheduling routine maintenance on Tuesdays
-rather than Saturdays, not buying additional staff.
+Demand: June wagers per day were 1.49% below January, and wagers per available
+hour fell 4.15%. A weekday forecast fitted on January–April and frozen on April 30
+scored $68,699 daily MAE on May–June, against $218,258 for a constant mean, 68.5%
+lower. Its nominal 90% band covered 85.25% of days. It supports moving routine
+maintenance to Tuesdays, the quietest weekday.
 
-Tracked guests wagered $163.805 million and received $148.219 million; 16.06% of
-active tracked players finished ahead. Their top 1% accounted for 20.41% of tracked wagers. Comps cost $190,669,
-counted once; fixed benefit/tier redemption prices fell roughly 52–54% in May.
-These findings never become incentives aimed at heavy losers.
+Downtime: 5,021 unavailable machine-hours cost an estimated $1.115 million in
+wagers, but even perfect recovery would not pay for an extra technician. Tracked
+guests wagered $163.8 million and 16.06% finished ahead. The top 1% placed 20.41%
+of tracked wagers. Comps cost $190,669, and redemption point prices fell about 53%
+in May. Nothing here targets heavy losers.
 
-Our July plan buys one $1,200 inspection, allowing one lead day and two hours of
-downtime. Success means a documented configuration/meter finding, not a promised
-profit increase. Technician and comp-pilot scenarios do not justify their costs
-within July. Interactive filters, machine details, validation and evidence cards
-make every decision auditable. All casino data is synthetic; code, limitations
-and AI-use disclosure accompany the dashboard.
+July plan, $8,700 of $100,000:
+- Inspect M-1158 ($1,200).
+- Wayfinding and sightlines for Back Forty ($7,500). It pays back within July
+  if occupancy rises 0.72 points. Sensors, a difference-in-differences against
+  similar zones and the frozen forecast measure it and check for displacement.
+
+We keep $91,300 and replace no machines. All data is synthetic. Code, tests, the
+claims appendix and AI disclosure accompany it.

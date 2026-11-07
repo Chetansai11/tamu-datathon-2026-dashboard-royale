@@ -10,16 +10,22 @@ dataset, refreshed to official commit `5f9274bdc3efa6614e6c081becaeadda34c57a32`
 ## Judge walkthrough
 
 1. Change the month range, then choose a zone or bank from the persistent filters.
-2. Open **Machine review** and click a GM candidate for its luck, location,
-   exposure and downtime evidence. The full-window investigation is labeled
+2. Open **Machine review**: each GM candidate's gap is split into time on floor,
+   game math, location, the machine and luck. Click one for its evidence. The full-window investigation is labeled
    separately from the filtered explorer.
 3. Open **Guests & comps** and choose a guest group. Player concentration is
    recomputed from person totals for the exact selected whole-month window.
 4. Open **Validation** for the frozen Jan–Apr model and May–Jun holdout.
 5. Open **July action plan** and click its evidence links.
 
-The plan spends **$1,200** on one diagnostic inspection and preserves **$98,800**.
-An inspection's expected result is information; no revenue uplift is guaranteed.
+**Answer: the machines aren't the problem; Back Forty is.** The GM's ten earned
+$541,425 less than ten average machines: game math 39%, location 26%, short
+exposure 24%, luck 12%, and the machines themselves +$3,662 (`src/q1_decomposition.py`).
+Nine of the ten stand in Back Forty, a zone short of footfall.
+
+The plan spends **$8,700**: **$1,200** to inspect M-1158, the one payout signal,
+and **$7,500** for Back Forty wayfinding with a sensor-based measurement plan. It
+preserves **$91,300** and replaces no machines. No revenue uplift is guaranteed.
 The weekday forecast has **$68,698.55 MAE**, versus **$218,258.10** for the
 constant-training-mean baseline. The nominal 90% band covers **85.25%** of test days.
 

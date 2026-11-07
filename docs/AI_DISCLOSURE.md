@@ -1,30 +1,40 @@
 # AI use disclosure
 
-OpenAI Codex, using a GPT-based lead agent and parallel GPT agents, assisted with
-data exploration, Python analysis, static dashboard implementation, test writing,
-independent code review, browser verification and drafting submission documents.
-The exact underlying deployment identifier was not exposed in the task and is
-not asserted here. No other model's contribution is claimed for this work.
+Two AI coding assistants worked on this entry.
 
-The human supplied the challenge objectives, repository and task priorities.
-An existing shared metrics module was retained and tested. The agents wrote the
-additional machine ranking, demand and forecast, downtime, guest/comp and action
-analyses. Parallel review identified a placement-pooling issue in the downtime
-comparison; it was corrected and retested before the final bundle.
+- **OpenAI Codex**, with a GPT-based lead agent and parallel GPT agents, did the
+  data exploration, the machine screening rank, the demand and forecast, downtime,
+  guest and comp analyses, the static dashboard, most tests, browser checks and
+  first drafts of the submission documents. The exact deployment identifier was
+  not exposed and is not asserted here.
+- **Anthropic Claude (Claude Opus 5.5)** wrote the shared money-math module
+  (`src/metrics.py`, with calibrated payout z-scores), the shortfall
+  decomposition (`src/q1_decomposition.py`), the Back Forty footfall analysis
+  and the wayfinding action in `src/q6_actions.py`, and the dashboard's
+  decomposition views. It also fixed a layout bug, and rewrote this write-up and
+  the video script around the decomposition finding.
 
-All reported numerical findings were computed from the supplied challenge data.
-AI was not used to invent observations, treatment effects or measured returns.
-Action sensitivities are labeled assumptions. The fictional casino and guest
-records are synthetic; the separate tourism/weather inputs are retrospective
+The decomposition also corrected an interpretation in the earlier screening
+rank. Where a zone had fewer than three same-game peers, that rank compared a
+machine against the whole floor, so Back Forty machines looked individually weak
+when the zone was the cause. The dashboard labels the earlier rank accordingly.
+
+The human supplied the challenge objectives, repository and task priorities, and
+reviews the findings.
+
+All reported numbers were computed from the supplied challenge data. AI was not
+used to invent observations, treatment effects or measured returns. Action
+sensitivities are labeled assumptions. The fictional casino and guest records
+are synthetic. The separate tourism and weather inputs are retrospective
 public-source context, excluded from forecast features.
 
 Reproducibility includes source code, explicit formulas, seeded bootstrap
 procedures, tests, dataset checksums and dated source provenance. Automated
-checks do not replace human review of interpretation. The team member submitting
-this entry should review the findings, complete the recording and confirm public
-access before attesting to the submission.
+checks do not replace human review of interpretation. The team member who
+submits this entry should review the findings, record the video and confirm
+public access before attesting to the submission.
 
-The agents did not create hosting accounts, publish the dashboard, push commits,
-change repository visibility, record the video or submit to Devpost. Those remain
-human actions. No player-level identities or raw LVCVA/Missouri tables are included
-in the public dashboard bundle.
+The agents did not create hosting accounts, publish the dashboard, change
+repository visibility, record the video or submit to Devpost. Those remain human
+actions. No player-level identities or raw LVCVA/Missouri tables are included in
+the public dashboard bundle.

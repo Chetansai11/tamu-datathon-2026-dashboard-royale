@@ -25,7 +25,18 @@ for key, report in reports.items():
             source += ". " + row["method"]
         values = [f"{label} ({row['id']})", source, row.get("result"), row.get("alternative"), row.get("limitation")]
         lines.append("| " + " | ".join(cell(v) for v in values) + " |")
-lines += ["", "## Every machine in the GM list", "",
+lines += ["", "## Why each GM machine earned less", "",
+          "Gap to an average machine (on the floor all 181 days at the floor's daily availability, earning the floor's daily theo rate) = time on floor + game math + location + the machine itself + luck/payout. The identity is exact. Rates leave the machine out; location uses the dated zone and a monthly zone factor (zone theo / its game-mix expectation). Source: src/q1_decomposition.py.", "",
+          "| Machine | Zone | Gap | Time on floor | Game math | Location | The machine | Luck / payout | Machine factor [95%] |",
+          "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |"]
+for x in reports["decomp"]["gm_bottom10"]:
+    values = [x["machine_id"], ", ".join(x["zones"]), f"${x['gap']:,.0f}", f"${x['exposure']:,.0f}", f"${x['game']:,.0f}",
+              f"${x['location']:,.0f}", f"${x['machine']:,.0f}", f"${x['luck']:,.0f}",
+              f"{x['machine_factor']:.3f} [{x['machine_ci'][0]:.3f}, {x['machine_ci'][1]:.3f}]"]
+    lines.append("| " + " | ".join(cell(v) for v in values) + " |")
+t = reports["decomp"]["gm_bottom10_totals"]
+lines.append(f"| **All ten** | | **${t['gap']:,.0f}** | ${t['exposure']:,.0f} | ${t['game']:,.0f} | ${t['location']:,.0f} | ${t['machine']:,.0f} | ${t['luck']:,.0f} | |")
+lines += ["", "## Every machine in the GM list (earlier screening index)", "",
           "Baseline: rank total actual house win ascending. Local demand index = SUM(theo) / SUM(available_hours × same-date peer theo per available hour). Peers are leave-one-out, same-config, same-zone, same-date (minimum three peers; floor same-config fallback). Intervals are descriptive 95% weekly block bootstrap intervals, not simultaneous causal tests. Location index compares that local expectation to same-game floor peers. Payout p-values use a two-sided normal approximation and Bonferroni correction over all 310 machines.", "",
           "| Machine | On-floor days | Actual win | Theo per available hour | Local demand index and 95% interval | Location index | Availability | Payout z and adjusted p | Decision |",
           "| --- | ---: | ---: | ---: | --- | ---: | ---: | --- | --- |"]
@@ -38,7 +49,7 @@ lines += ["", "Each machine's full report also provides down hours, peer fallbac
           "## July action and tradeoffs", "",
           "| Choice | Cost | Timing and effect | Why |", "| --- | ---: | --- | --- |"]
 for a in reports["actions"]["actions"]:
-    lines.append(f"| {cell(a['name'])} | ${a['cost']:,.0f} | {a['lead_days']} lead day; {a['operating_days']} remaining days; {a['downtime_minutes']} minutes unavailable. {cell(a['expected_effect'])} | {cell(a['measurement'])} |")
+    lines.append(f"| {cell(a['name'])} | ${a['cost']:,.0f} | {a['lead_days']} lead days; {a['operating_days']} remaining days; {a['downtime_minutes']} minutes unavailable. {cell(a['expected_effect'])} | {cell(a['measurement'])} |")
 for a in reports["actions"]["alternatives"]:
     cost = f"${a['cost']:,.0f}" if "cost" in a else "Not funded"
     lines.append(f"| {cell(a['name'])} | {cost} | {cell(a['status'])} | {cell(a['reason'])} |")

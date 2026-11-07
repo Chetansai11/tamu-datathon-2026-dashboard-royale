@@ -52,7 +52,7 @@ def build(output=ROOT / "dashboard", reports_dir=ROOT / "outputs"):
         FROM floor ORDER BY gaming_date,machine_id""")
     reports = {}
     for key, filename in {
-        "q1": "q1_machines.json", "q2": "q2_demand.json", "q3": "q3_downtime.json",
+        "q1": "q1_machines.json", "decomp": "q1_decomposition.json", "q2": "q2_demand.json", "q3": "q3_downtime.json",
         "guests": "q4_guests.json", "comps": "q5_comps.json", "forecast": "forecast.json",
         "actions": "actions.json", "guest_windows": "guest_windows.json", "validation": "validation.json",
     }.items():
