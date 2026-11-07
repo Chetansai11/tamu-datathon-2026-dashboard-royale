@@ -18,3 +18,9 @@ runs/*
 coord/STATUS.md
 coord/.lock
 coord/.status.*
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+web/test-output/
+web/data/source/

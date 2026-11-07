@@ -62,6 +62,6 @@ if __name__ == "__main__":
     if args.verify_data:
         run("src.validate_release")
     if args.rebuild:
-        for module in ["src.q1_machines", "src.q2_demand", "src.q3_downtime", "src.forecast", "src.q4_q5_players", "src.q6_actions", "src.build_dashboard"]:
+        for module in ["src.q1_machines", "src.q1_decomposition", "src.q2_demand", "src.q3_downtime", "src.forecast", "src.q4_q5_players", "src.q6_actions", "src.build_dashboard"]:
             run(module)
     package()
