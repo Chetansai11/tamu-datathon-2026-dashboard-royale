@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Evidence-led floor decisions for The Gilded Ace. A fictional casino analysis for TAMU Datathon 2026.">
+  <title>The Gilded Ace · Floor Intelligence</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to analysis</a>
+<aside class="sidebar">
+  <a class="brand" href="#overview" aria-label="The Gilded Ace overview"><span class="brand-mark">♠</span><span>THE GILDED ACE<small>FLOOR INTELLIGENCE</small></span></a>
+  <div class="nav-label">THE INVESTIGATION</div>
+  <nav aria-label="Analysis pages" id="navigation">
+    <a href="#overview" data-page="overview"><span>01</span> Decision brief</a>
+    <a href="#machines" data-page="machines"><span>02</span> Machine review</a>
+    <a href="#demand" data-page="demand"><span>03</span> Demand & forecast</a>
+    <a href="#downtime" data-page="downtime"><span>04</span> Reliability</a>
+    <a href="#guests" data-page="guests"><span>05</span> Guests & comps</a>
+    <a href="#actions" data-page="actions"><span>06</span> July action plan</a>
+    <div class="nav-label">SHOW YOUR WORK</div>
+    <a href="#validation" data-page="validation"><span>✓</span> Validation</a>
+    <a href="#evidence" data-page="evidence"><span>↗</span> Claims & evidence</a>
+  </nav>
+  <div class="sidebar-footer"><span class="status-dot"></span> Synthetic casino · real questions<p>TAMU DATATHON 2026<br>Data release <span id="release">0.9.0-draft</span></p></div>
+</aside>
+<div class="workspace">
+  <header class="topbar"><div><span class="eyebrow">MANAGEMENT REVIEW</span><span class="header-date">JAN — JUN 2025</span></div><a class="quiet-link" href="#evidence">Follow the evidence ↗</a></header>
+  <div class="filters" aria-label="Analysis filters">
+    <div class="filter-heading"><span class="filter-icon">⌘</span><strong>Explore the floor</strong></div>
+    <label>From<select id="start-month" aria-label="Start month"></select></label>
+    <label>Through<select id="end-month" aria-label="End month"></select></label>
+    <label>Zone<select id="zone" aria-label="Zone"><option value="">All zones</option></select></label>
+    <label>Bank<select id="bank" aria-label="Bank"><option value="">All banks</option></select></label>
+    <button class="reset" id="reset">Reset</button>
+  </div>
+  <main id="main" tabindex="-1"><div id="view" aria-live="polite"><p class="empty">Loading the evidence…</p></div></main>
+  <footer class="page-footer"><span>Fictional property. Synthetic guest and machine data.</span><span>Gaming day: 06:00–06:00 Las Vegas · All amounts USD</span></footer>
+</div>
+<dialog id="evidence-dialog" aria-labelledby="dialog-title"><div class="dialog-top"><span class="eyebrow">EVIDENCE CARD</span><button id="close-dialog" aria-label="Close evidence">×</button></div><div id="dialog-body"></div></dialog>
+<noscript>This dashboard needs JavaScript enabled. The static reports.json file contains the analysis results.</noscript>
+<script src="data.js"></script><script src="app.js"></script>
+</body>
+</html>
