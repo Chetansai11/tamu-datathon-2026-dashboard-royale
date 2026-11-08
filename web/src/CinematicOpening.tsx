@@ -47,23 +47,38 @@ function CourtPortrait({ joker = false }: { joker?: boolean }) {
   </g>;
 }
 
-const CardArtwork = memo(function CardArtwork({ kind }: { kind: 'king' | 'joker' | 'ace' | 'back' }) {
+type Suit = '♠' | '♥' | '♣' | '♦';
+const pipPositions: Record<number, [number, number][]> = {
+  2: [[100, 87], [100, 203]],
+  4: [[65, 87], [135, 87], [65, 203], [135, 203]],
+  6: [[65, 80], [135, 80], [65, 145], [135, 145], [65, 210], [135, 210]],
+  8: [[65, 80], [135, 80], [100, 112], [65, 145], [135, 145], [100, 178], [65, 210], [135, 210]],
+  9: [[65, 70], [135, 70], [65, 120], [135, 120], [100, 145], [65, 170], [135, 170], [65, 220], [135, 220]],
+  10: [[65, 70], [135, 70], [100, 95], [65, 120], [135, 120], [65, 170], [135, 170], [100, 195], [65, 220], [135, 220]],
+};
+const CardArtwork = memo(function CardArtwork({ kind, rank = 8, suit = '♠', symbolId }: { kind: 'king' | 'joker' | 'ace' | 'back' | 'pip'; rank?: number; suit?: Suit; symbolId?: string }) {
   const front = kind !== 'back';
-  return <svg viewBox="0 0 200 290" fill="none" aria-hidden="true">
+  const ArtworkElement = symbolId ? 'symbol' : 'svg';
+  const label = kind === 'king' ? 'K' : kind === 'joker' ? 'J' : kind === 'pip' ? String(rank) : 'A';
+  const symbol = kind === 'joker' ? '✧' : kind === 'pip' ? suit : '♠';
+  const ink = kind === 'pip' && (suit === '♥' || suit === '♦') ? '#a18146' : '#292d2e';
+  return <ArtworkElement id={symbolId} viewBox="0 0 200 290" fill="none" aria-hidden="true">
     <rect x="1" y="1" width="198" height="288" rx="11" fill={front ? '#e5e7e3' : '#181c20'} stroke={front ? '#f3f3ea' : '#92794e'} strokeWidth="1.4" />
     <rect x="9" y="9" width="182" height="272" rx="6" stroke={front ? '#ad9568' : '#8a754f'} strokeWidth=".65" />
     <rect x="13" y="13" width="174" height="264" rx="4" stroke={front ? '#b6b7ac' : '#42484b'} strokeWidth=".4" />
     {front ? <>
-      <g fill="#292d2e" fontFamily="Georgia,serif" textAnchor="middle">
-        <text x="29" y="43" fontSize={kind === 'joker' ? '24' : '30'}>{kind === 'king' ? 'K' : kind === 'joker' ? 'J' : 'A'}</text>
-        <text x="29" y="64" fontSize="18">{kind === 'joker' ? '✧' : '♠'}</text>
-        <g transform="rotate(180 100 145)"><text x="29" y="43" fontSize={kind === 'joker' ? '24' : '30'}>{kind === 'king' ? 'K' : kind === 'joker' ? 'J' : 'A'}</text><text x="29" y="64" fontSize="18">{kind === 'joker' ? '✧' : '♠'}</text></g>
+      <g fill={ink} fontFamily="Georgia,serif" textAnchor="middle">
+        <text x="29" y="43" fontSize={kind === 'joker' || label === '10' ? '24' : '30'}>{label}</text>
+        <text x="29" y="64" fontSize="18">{symbol}</text>
+        <g transform="rotate(180 100 145)"><text x="29" y="43" fontSize={kind === 'joker' || label === '10' ? '24' : '30'}>{label}</text><text x="29" y="64" fontSize="18">{symbol}</text></g>
       </g>
       {kind === 'ace' ? <>
         <g className="cinema-card-mark" transform="translate(37 78) scale(.63)"><path d={spade} fill="#252a2d"/><path d={spade} fill="none" stroke="#ba9b5c" strokeWidth="1.6"/><path d="M100 29C84 51 52 70 50 94" stroke="#d0b477" strokeWidth=".8" /></g>
         <text x="100" y="221" fill="#8c734b" fontSize="6" letterSpacing="2.3" textAnchor="middle" fontFamily="monospace">THE GILDED ACE</text>
-      </> : <CourtPortrait joker={kind === 'joker'} />}
-      <text x="100" y="256" fill="#6c6658" fontSize="8" letterSpacing="3" textAnchor="middle" fontFamily="monospace">{kind === 'ace' ? 'A C E' : kind.toUpperCase()}</text>
+      </> : kind === 'pip' ? <g fill={ink} fontFamily="Georgia,serif" fontSize="36" textAnchor="middle">
+        {pipPositions[rank].map(([cx, cy], index) => <text key={index} x={cx} y={cy + 12} transform={cy > 145 ? `rotate(180 ${cx} ${cy})` : undefined}>{suit}</text>)}
+      </g> : <CourtPortrait joker={kind === 'joker'} />}
+      {kind !== 'pip' && <text x="100" y="256" fill="#6c6658" fontSize="8" letterSpacing="3" textAnchor="middle" fontFamily="monospace">{kind === 'ace' ? 'A C E' : kind.toUpperCase()}</text>}
       <path d="M61 33H85M115 33H139M61 260H78M122 260H139" stroke="#ad9568" strokeWidth=".6" />
     </> : <>
       {Array.from({ length: 9 }, (_, i) => <path key={i} d={`M${18 + i * 20} 18L182 ${182 - i * 20}M18 ${108 + i * 20}L${182 - i * 20} 272M${18 + i * 20} 272L182 ${108 + i * 20}M18 ${182 - i * 20}L${182 - i * 20} 18`} stroke="#7b6a4c" strokeWidth=".4" opacity=".35" />)}
@@ -72,21 +87,37 @@ const CardArtwork = memo(function CardArtwork({ kind }: { kind: 'king' | 'joker'
       <g transform="translate(54 101) scale(.46)"><path d={spade} fill="#b99c63" /></g>
       <path d="M86 85H114M86 205H114" stroke="#b99c63" strokeWidth=".6"/>
     </>}
-  </svg>;
+  </ArtworkElement>;
 });
 
-const deck = [
-  [-45, -58, -31, .67, 70], [-31, -22, 23, .50, 330], [37, -52, 29, .69, 100], [47, -8, -20, .43, 360],
-  [-39, 25, 36, .50, -540], [31, 22, -37, .58, -400], [-18, -62, -12, .44, 140], [17, -83, 31, .53, 470],
-  [-49, -84, 53, .34, 650], [43, -92, -44, .41, 700],
+// Fixed seeds make each fall irregular but repeatable on replay. The first 16
+// cards form the mobile composition; the rest fill the wider desktop wings.
+const deckPositions = [
+  [-37, -49], [33, -35], [-22, -15], [43, 5], [-42, 15], [23, 12], [-29, -67], [19, -57],
+  [-48, -27], [46, -64], [-19, -43], [31, -82], [-34, 33], [40, 31], [-24, -92], [23, -103],
+  [-51, -67], [52, -21], [-43, -101], [39, -114], [-54, 17], [53, -85], [-37, -134], [46, -143],
 ] as const;
+const noise = (seed: number) => { const n = Math.sin(seed * 127.1 + 311.7) * 43758.5453; return n - Math.floor(n); };
+const deck = deckPositions.map(([x, y], index) => ({
+  x, y, depth: -280 + noise(index + 1) * 350, scale: .47 + noise(index + 2) * .34,
+  speed: 40 + noise(index + 3) * 24, sway: 2 + noise(index + 4) * 4,
+  pitch: -65 + noise(index + 5) * 130,
+  yaw: (index % 3 === 0 ? 155 : 25) + noise(index + 6) * 50,
+  roll: -75 + noise(index + 7) * 150,
+  spinX: (index % 2 ? -1 : 1) * (38 + noise(index + 8) * 58),
+  spinY: (index % 3 ? 1 : -1) * (58 + noise(index + 9) * 94),
+  spinZ: (index % 2 ? 1 : -1) * (20 + noise(index + 10) * 35),
+  rank: [2, 8, 4, 10, 6, 9][index % 6], suit: (['♠', '♦', '♣', '♥'] as const)[index % 4],
+}));
 
 function fallingCardTransform(index: number, time: number) {
-  const [x, y, turn, scale, delay] = deck[index];
-  // Every visible card is already falling; delayed cards no longer freeze and
-  // then jump straight to full velocity when their delay expires.
-  const fall = (time - delay) / 2450;
-  return `translate3d(calc(-50% + ${x + Math.sin(fall * 1.4 + index) * 6}vw),calc(-50% + ${y + fall * 125}vh),0) rotateX(${18 + fall * 45}deg) rotateY(${(index % 2 ? -1 : 1) * (22 + fall * 75)}deg) rotateZ(${turn + fall * (index % 2 ? -55 : 65)}deg) scale(${scale})`;
+  const card = deck[index], t = time / 1000;
+  // Cards enter already in flight, without delayed starts or velocity jumps.
+  // Slight acceleration, independent spin axes and depth avoid a flat cascade.
+  const x = card.x + Math.sin(t * .9 + index * 2.4) * card.sway;
+  const y = card.y + t * card.speed + t * t * 3;
+  const z = card.depth + Math.sin(t * .8 + index) * 45;
+  return `translate3d(calc(-50% + ${x}vw),calc(-50% + ${y}vh),${z}px) rotateX(${card.pitch + t * card.spinX}deg) rotateY(${card.yaw + t * card.spinY}deg) rotateZ(${card.roll + t * card.spinZ}deg) scale(${card.scale})`;
 }
 
 type Layer = HTMLElement | SVGElement;
@@ -95,7 +126,7 @@ type SceneLayers = {
   bottomline: HTMLElement | null; copy: HTMLElement | null; king: HTMLElement | null;
   joker: HTMLElement | null; ace: HTMLElement | null; mark: SVGElement | null;
   rain: HTMLElement | null; particles: HTMLElement | null; progress: HTMLElement | null;
-  progressTrack: HTMLElement | null; cards: HTMLElement[];
+  progressTrack: HTMLElement | null; cards: HTMLElement[]; cardBacks: HTMLElement[];
 };
 
 type LayerStyle = { transform?: string; opacity?: number };
@@ -109,12 +140,18 @@ function sceneFrame(time: number, compact: boolean): Record<string, LayerStyle> 
     topline: { opacity: ui }, bottomline: { opacity: ui }, progressTrack: { opacity: ui },
     progress: { transform: `scaleX(${clamp(time / DURATION)})` },
     rain: { opacity: rain }, orbit: { opacity: rain * .5 },
-    king: { opacity: court, transform: `translate3d(calc(-50% + ${(-100 - part * 320) * x}px),calc(-50% + ${(-135 * (1 - arrival) + time * .025 + part * 380) * y}px),0) rotateY(${-19 + arrival * 12 + part * 16}deg) rotateZ(${-19 + arrival * 5 - part * 42}deg)` },
-    joker: { opacity: court, transform: `translate3d(calc(-50% + ${(104 + part * 330) * x}px),calc(-50% + ${(-205 * (1 - arrival) + 15 + time * .021 + part * 310) * y}px),18px) rotateY(${24 - arrival * 18 - part * 23}deg) rotateZ(${21 - arrival * 6 + part * 48}deg)` },
+    king: { opacity: court, transform: `translate3d(calc(-50% + ${(-110 - part * 320) * x}px),calc(-50% + ${(-135 * (1 - arrival) + time * .025 + part * 380) * y}px),-12px) rotateX(${18 - arrival * 7 + part * 35}deg) rotateY(${-43 + arrival * 11 - part * 34}deg) rotateZ(${-24 + arrival * 8 - part * 42}deg)` },
+    joker: { opacity: court, transform: `translate3d(calc(-50% + ${(114 + part * 330) * x}px),calc(-50% + ${(-205 * (1 - arrival) + 15 + time * .021 + part * 310) * y}px),18px) rotateX(${-23 + arrival * 9 - part * 28}deg) rotateY(${49 - arrival * 10 + part * 30}deg) rotateZ(${27 - arrival * 7 + part * 48}deg)` },
     ace: { opacity: ease(450, 1100, time) * (1 - ease(2400, 2860, time)), transform: `translate3d(-50%,calc(-50% + ${58 * (1 - emergence)}px),0) rotateY(${-28 * (1 - emergence)}deg) rotateZ(${-8 * (1 - emergence)}deg) scale(${.76 + emergence * .24})` },
     mark: { opacity: 1 - ease(2100, 2500, time) }, particles: { opacity: ease(2080, 2490, time) },
   };
-  deck.forEach((_, index) => { frame[`rain-card-${index}`] = { transform: fallingCardTransform(index, time) }; });
+  deck.forEach((_, index) => {
+    const transform = fallingCardTransform(index, time);
+    // Independent flat faces avoid expensive animated preserve-3d subtrees.
+    // Their shared path and opposite normals form one two-sided card.
+    frame[`rain-card-${index}`] = { transform };
+    frame[`rain-back-${index}`] = { transform: transform + ' rotateY(180deg)' };
+  });
   return frame;
 }
 
@@ -151,14 +188,16 @@ export default function CinematicOpening({ motionEnabled, onSkip, onComplete, on
         bottomline: find('.cinema-bottomline'), copy: find('.cinema-copy'), king: find('.cinema-king'),
         joker: find('.cinema-joker'), ace: find('.cinema-flying-card'), mark: section.querySelector<SVGElement>('.cinema-card-mark'),
         rain: find('.cinema-deck-rain'), particles: find('.cinema-particle-field'), progress: find('.cinema-progress>span'),
-        progressTrack: find('.cinema-progress'), cards: Array.from(section.querySelectorAll<HTMLElement>('.cinema-rain-card')),
+        progressTrack: find('.cinema-progress'), cards: Array.from(section.querySelectorAll<HTMLElement>('.cinema-rain-card:not(.cinema-rain-card-back)')),
+        cardBacks: Array.from(section.querySelectorAll<HTMLElement>('.cinema-rain-card-back')),
       };
     }
     return layers.current;
   };
   const layerNode = (key: string, scene: SceneLayers): Layer | null => key === 'root' ? root.current
     : key.startsWith('rain-card-') ? scene.cards[Number(key.slice(10))]
-    : scene[key as Exclude<keyof SceneLayers, 'cards'>];
+    : key.startsWith('rain-back-') ? scene.cardBacks[Number(key.slice(10))]
+    : scene[key as Exclude<keyof SceneLayers, 'cards' | 'cardBacks'>];
   const writeFrame = (time: number) => {
     const scene = getLayers();
     if (!scene) return;
@@ -321,8 +360,15 @@ export default function CinematicOpening({ motionEnabled, onSkip, onComplete, on
       <div className="cinema-backdrop" aria-hidden="true" />
       <div className="cinema-orbit" aria-hidden="true" />
       <div className="cinema-topline"><span><i />THE GILDED ACE</span><button type="button" className="cinema-close" aria-label="Skip cinematic introduction" title="Enter dashboard · Esc" onClick={skip}><X size={17} /></button></div>
+      <svg className="cinema-card-library" aria-hidden="true"><defs>
+        <CardArtwork kind="back" symbolId={id + '-deck-back'} />
+        {deck.slice(0, 12).map((card, index) => <CardArtwork key={index} kind="pip" rank={card.rank} suit={card.suit} symbolId={`${id}-deck-${index}`} />)}
+      </defs></svg>
       <div className="cinema-card-scene" aria-hidden="true">
-        <div className="cinema-deck-rain">{deck.map((_, index) => <div key={index} className={`cinema-rain-card cinema-rain-card-${index}`} style={{ transform: fallingCardTransform(index, 0) }}><CardArtwork kind="back" /></div>)}</div>
+        <div className="cinema-deck-rain">{deck.flatMap((_, index) => [
+          <div key={`${index}-front`} className={`cinema-rain-card cinema-rain-card-${index}`} style={{ transform: fallingCardTransform(index, 0) }}><svg viewBox="0 0 200 290"><use href={`#${id}-deck-${index % 12}`} /></svg></div>,
+          <div key={`${index}-back`} className={`cinema-rain-card cinema-rain-card-back cinema-rain-card-${index}`} style={{ transform: fallingCardTransform(index, 0) + ' rotateY(180deg)' }}><svg viewBox="0 0 200 290"><use href={`#${id}-deck-back`} /></svg></div>,
+        ])}</div>
         <div className="cinema-flying-card"><CardArtwork kind="ace" /></div>
         <div className="cinema-court-card cinema-king"><CardArtwork kind="king" /></div>
         <div className="cinema-court-card cinema-joker"><CardArtwork kind="joker" /></div>
