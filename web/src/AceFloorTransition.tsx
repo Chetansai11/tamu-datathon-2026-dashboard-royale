@@ -1,56 +1,21 @@
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowRight, Check, ChevronRight, SkipForward, X } from 'lucide-react';
-import { aggregate, niceName, type AnyRecord } from './data';
+import { ArrowLeft, ArrowRight, X } from 'lucide-react';
+import { aggregate, money, niceName, type AnyRecord } from './data';
 import './floor-transition.css';
 
 type Props = { data: any; motionEnabled: boolean; onContinue: () => void; onClose: () => void };
-type Point = { x: number; y: number };
-type PositionedMachine = AnyRecord & { actualX: number; actualY: number };
-type MachineMark = PositionedMachine & { px: number; py: number; origin: Point; candidate: boolean; inspection: boolean };
-type Chapter = 'candidates' | 'location' | 'inspection';
-const SNAPSHOT = '2025-06-30';
+type Candidate = {
+  id: string; rank: number; win: number; expected: number; days: number;
+  firstDate: string; lastDate: string; activeAtEnd: boolean; shortExposure: boolean;
+  backFortyHistory: boolean; locationNames: string[]; inspectionSignal: boolean;
+  z: number; adjustedP: number;
+};
 const START = '2025-01-01';
-const INSPECTION_ID = 'M-1158';
-
-// The starting positions are decorative. Only the final positions encode data.
-const spadeOutline: Point[] = [{ x: 0, y: -1 }];
-function curve(a: Point, b: Point, end: Point) {
-  const start = spadeOutline[spadeOutline.length - 1];
-  for (let i = 1; i <= 20; i++) {
-    const t = i / 20, s = 1 - t;
-    spadeOutline.push({ x: s ** 3 * start.x + 3 * s * s * t * a.x + 3 * s * t * t * b.x + t ** 3 * end.x, y: s ** 3 * start.y + 3 * s * s * t * a.y + 3 * s * t * t * b.y + t ** 3 * end.y });
-  }
-}
-curve({ x: -.25, y: -.64 }, { x: -.88, y: -.25 }, { x: -.92, y: .15 });
-curve({ x: -.99, y: .65 }, { x: -.35, y: .89 }, { x: -.12, y: .5 });
-curve({ x: -.14, y: .8 }, { x: -.22, y: .95 }, { x: -.36, y: 1.12 });
-spadeOutline.push({ x: .36, y: 1.12 });
-curve({ x: .22, y: .95 }, { x: .14, y: .8 }, { x: .12, y: .5 });
-curve({ x: .35, y: .89 }, { x: .99, y: .65 }, { x: .92, y: .15 });
-curve({ x: .88, y: -.25 }, { x: .25, y: -.64 }, { x: 0, y: -1 });
-const spadePath = spadeOutline.map((p, i) => `${i ? 'L' : 'M'}${360 + p.x * 185},${275 + p.y * 185}`).join(' ') + 'Z';
-function insideSpade(p: Point) {
-  let inside = false;
-  for (let i = 0, j = spadeOutline.length - 1; i < spadeOutline.length; j = i++) {
-    const a = spadeOutline[i], b = spadeOutline[j];
-    if ((a.y > p.y) !== (b.y > p.y) && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) inside = !inside;
-  }
-  return inside;
-}
-function halton(index: number, base: number) {
-  let result = 0, fraction = 1 / base;
-  while (index > 0) { result += fraction * (index % base); index = Math.floor(index / base); fraction /= base; }
-  return result;
-}
-function decorativeOrigins(count: number) {
-  const points: Point[] = [];
-  for (let i = 1; points.length < count; i++) {
-    const p = { x: halton(i, 2) * 2 - 1, y: halton(i, 3) * 2.12 - 1 };
-    if (insideSpade(p)) points.push({ x: 360 + p.x * 185, y: 275 + p.y * 185 });
-  }
-  return points;
-}
+const END = '2025-06-30';
+const steps = ['Shortlist', 'Location', 'Decision'];
+const exactMoney = (value: number) => Number.isFinite(value) ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value) : '—';
+const dateLabel = (date: string) => date ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Unknown';
 
 export default function AceFloorTransition({ data, motionEnabled, onContinue, onClose }: Props) {
   const id = 'ace-floor-' + useId().replace(/:/g, '');
@@ -62,56 +27,44 @@ export default function AceFloorTransition({ data, motionEnabled, onContinue, on
   closeRef.current = onClose;
   const [reducedMotion, setReducedMotion] = useState(() => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
   const animate = motionEnabled && !reducedMotion;
-  const [formed, setFormed] = useState(!animate);
-  const [chapter, setChapter] = useState<Chapter>('candidates');
+  const [entered, setEntered] = useState(!animate);
+  const [step, setStep] = useState(0);
 
-  const floor = useMemo(() => {
-    const snapshot = aggregate(data, SNAPSHOT, SNAPSHOT, 'all', 'all');
-    const reported = data.reports?.q1?.bottom10;
-    const candidates: string[] = Array.isArray(reported) && reported.length
-      ? reported.map((row: AnyRecord) => row.machine_id)
-      : aggregate(data, START, SNAPSHOT, 'all', 'all').machines.sort((a, b) => a.win - b.win).slice(0, 10).map(m => m.id);
-    const candidateSet = new Set(candidates);
-    const activeSet = new Set(snapshot.machines.map(m => m.id));
-    const locations = new Map<string, AnyRecord>((data.locations || []).map((loc: AnyRecord) => [loc.location_id, loc]));
-    // Resolve the location attached to this machine-day. Never substitute an
-    // index grid or the machine catalogue's potentially later placement.
-    const positioned = snapshot.machines.flatMap<PositionedMachine>(m => {
-      const loc = locations.get(m.location);
-      return loc && Number.isFinite(loc.x_m) && Number.isFinite(loc.y_m)
-        ? [{ ...m, actualX: loc.x_m, actualY: loc.y_m }] : [];
-    });
-    const minX = Math.min(...positioned.map(m => m.actualX), 0);
-    const maxX = Math.max(...positioned.map(m => m.actualX), 1);
-    const minY = Math.min(...positioned.map(m => m.actualY), 0);
-    const maxY = Math.max(...positioned.map(m => m.actualY), 1);
-    // A common scale for both axes preserves the supplied spatial geometry.
-    const scale = Math.min(614 / (maxX - minX || 1), 494 / (maxY - minY || 1));
-    const offsetX = (720 - (maxX - minX) * scale) / 2;
-    const offsetY = 67 + (494 - (maxY - minY) * scale) / 2;
-    const origins = decorativeOrigins(positioned.length);
-    const marks = positioned.map<MachineMark>((m, i) => ({ ...m, px: offsetX + (m.actualX - minX) * scale, py: offsetY + (m.actualY - minY) * scale, origin: origins[i], candidate: candidateSet.has(m.id), inspection: m.id === INSPECTION_ID }));
-    const zones = [...new Set(marks.map(m => m.zone))].map(zone => {
-      const members = marks.filter(m => m.zone === zone);
-      return { id: zone, name: niceName(zone, data.zones), x: members.reduce((total, m) => total + m.px, 0) / members.length, y: Math.min(...members.map(m => m.py)) - 15 };
-    });
-    const backForty = snapshot.machines.filter(m => m.zone === 'Z-B40');
-    const historicalBackForty = new Set<string>();
-    const ix = Object.fromEntries(data.dailyColumns.map((column: string, i: number) => [column, i]));
+  const story = useMemo(() => {
+    const reported: AnyRecord[] = data.reports?.q1?.bottom10 || [];
+    const source: AnyRecord[] = reported.length ? reported.slice(0, 10) : aggregate(data, START, END, 'all', 'all').machines
+      .sort((a, b) => a.win - b.win).slice(0, 10)
+      .map(m => ({ machine_id: m.id, house_win: m.win, theo: m.theo, machine_days: m.days, luck_z: m.z, payout_p_bonferroni: m.metrics?.bonferroniP, inspect_signal: m.metrics?.bonferroniP < .05 }));
+    const histories = new Map<string, { dates: Set<string>; zones: Set<string> }>(source.map(row => [row.machine_id, { dates: new Set<string>(), zones: new Set<string>() }] as const));
+    const ix = Object.fromEntries((data.dailyColumns || []).map((column: string, index: number) => [column, index]));
     for (const row of data.daily || []) {
-      const date = data.dates[row[ix.date]], machineId = data.machines[row[ix.machine]]?.id;
-      if (date >= START && date <= SNAPSHOT && row[ix.zone] === 'Z-B40' && candidateSet.has(machineId)) historicalBackForty.add(machineId);
+      const date = data.dates[row[ix.date]];
+      const history = histories.get(data.machines[row[ix.machine]]?.id);
+      if (history && date >= START && date <= END) { history.dates.add(date); history.zones.add(row[ix.zone]); }
     }
-    const signal = (data.reports?.q1?.ranking || []).find((row: AnyRecord) => row.machine_id === INSPECTION_ID)
-      || (reported || []).find((row: AnyRecord) => row.machine_id === INSPECTION_ID);
+    const candidates: Candidate[] = source.map((row, index) => {
+      const history = histories.get(row.machine_id)!;
+      const dates = [...history.dates].sort();
+      const days = dates.length || row.machine_days;
+      const locationNames = history.zones.size ? [...history.zones].map(zone => niceName(zone, data.zones)) : row.zone_names || [];
+      return {
+        id: row.machine_id, rank: index + 1, win: row.house_win, expected: row.theo, days,
+        firstDate: dates[0] || row.first_day || '', lastDate: dates[dates.length - 1] || row.last_day || '',
+        activeAtEnd: dates.length ? history.dates.has(END) : !!row.on_floor_at_end,
+        shortExposure: row.short_exposure ?? days < 181,
+        backFortyHistory: history.zones.size ? history.zones.has('Z-B40') : locationNames.includes('Back Forty'),
+        locationNames, inspectionSignal: row.inspect_signal ?? row.payout_p_bonferroni < .05,
+        z: row.luck_z, adjustedP: row.payout_p_bonferroni,
+      };
+    });
     return {
-      marks, zones, activeCount: snapshot.machines.length, candidateCount: candidates.length,
-      activeCandidates: candidates.filter(machineId => activeSet.has(machineId)).length,
-      absent: candidates.filter(machineId => !activeSet.has(machineId)),
-      unmapped: snapshot.machines.length - marks.length, backFortyCount: backForty.length,
-      backFortyCandidates: backForty.filter(m => candidateSet.has(m.id)).length,
-      historicalBackFortyCount: historicalBackForty.size,
-      signalPresent: activeSet.has(INSPECTION_ID), signalZ: signal?.luck_z,
+      candidates,
+      locationCount: candidates.filter(machine => machine.backFortyHistory).length,
+      signalCount: candidates.filter(machine => machine.inspectionSignal).length,
+      inactiveCount: candidates.filter(machine => !machine.activeAtEnd).length,
+      shortCount: candidates.filter(machine => machine.shortExposure).length,
+      arrival: candidates.find(machine => machine.firstDate > START),
+      signal: candidates.find(machine => machine.id === 'M-1158'),
     };
   }, [data]);
 
@@ -122,11 +75,11 @@ export default function AceFloorTransition({ data, motionEnabled, onContinue, on
     return () => query?.removeEventListener?.('change', change);
   }, []);
   useEffect(() => {
-    if (!animate) { setFormed(true); return; }
-    if (formed) return;
-    const timer = window.setTimeout(() => setFormed(true), 2500);
+    if (!animate) { setEntered(true); return; }
+    if (entered) return;
+    const timer = window.setTimeout(() => setEntered(true), 1100);
     return () => window.clearTimeout(timer);
-  }, [animate, formed]);
+  }, [animate, entered]);
   useEffect(() => {
     if (!previousFocusRef.current) previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     mountedRef.current = true;
@@ -147,69 +100,66 @@ export default function AceFloorTransition({ data, motionEnabled, onContinue, on
       mountedRef.current = false;
       document.removeEventListener('keydown', keydown, true);
       document.body.style.overflow = previousOverflow;
-      // Defer until root removes inert. A StrictMode remount cancels restoration.
+      // Root clears background inert in this commit; StrictMode remounts cancel restoration.
       queueMicrotask(() => { if (!mountedRef.current && previousFocusRef.current?.isConnected) previousFocusRef.current.focus({ preventScroll: true }); });
     };
   }, []);
 
-  const selectChapter = (next: Chapter) => { setFormed(true); setChapter(next); };
-  const phase = formed || !animate ? 'floor' : 'forming';
+  const selectStep = (next: number) => {
+    setEntered(true);
+    setStep(Math.max(0, Math.min(2, next)));
+    // Keep each new explanation visible when advancing from the sticky controls.
+    if (dialogRef.current) dialogRef.current.scrollTop = 0;
+  };
+  const phase = entered || !animate ? 'ready' : 'entering';
+  const signal = story.signal;
+  const headlines = ['Ten low earners. Look closer.', 'Nine share a location history.', 'One payout signal. Check it.'];
+  const explanations = [
+    'These are the ten lowest earners by actual house win over January–June; low totals alone do not justify replacement.',
+    'Nine candidates spent time in Back Forty during January–June, including M-1158.',
+    'M-1158 warrants a payout inspection after correcting for tests across all machines screened.',
+  ];
+
   return createPortal(
-    <div className="ace-floor-transition" data-phase={phase} data-motion={animate ? 'on' : 'off'} onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
+    <div className="ace-floor-transition" data-step={step} data-phase={phase} data-motion={animate ? 'on' : 'off'} onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
       <div className="af-dialog" ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={id + '-title'} aria-describedby={id + '-description'}>
         <header className="af-header">
-          <div><span className="af-eyebrow">FIELD STUDY / 01</span><h2 id={id + '-title'} tabIndex={-1} ref={headingRef}>Behind the ace.<br />{' '}<span>A floor of decisions.</span></h2></div>
+          <div className="af-title-group"><span className="af-ace-stamp" aria-hidden="true">♠</span><div><h2 id={id + '-title'} tabIndex={-1} ref={headingRef}>Explore the floor</h2><p>January–June 2025</p></div></div>
+          <nav className="af-steps" aria-label="Floor story steps">{steps.map((label, index) => <button key={label} aria-pressed={step === index} onClick={() => selectStep(index)}><span>{String(index + 1).padStart(2, '0')}</span>{label}</button>)}</nav>
           <button className="af-close" onClick={onClose} aria-label="Close floor preview"><X size={19} /></button>
         </header>
-        <p id={id + '-description'} className="af-description">One mark, one active machine. Follow the evidence from a six-month shortlist to its place on the floor.</p>
+        <div className="af-story-heading" aria-live="polite" aria-atomic="true"><span className="af-eyebrow">{step === 0 ? 'THE SHORTLIST' : step === 1 ? 'THE SHARED CONTEXT' : 'THE NEXT DECISION'}</span><h3>{headlines[step]}</h3><p id={id + '-description'}>{explanations[step]}</p></div>
         <div className="af-content">
-          <div className="af-map-column">
-            <div className="af-map-meta"><span><i /> JUNE 30, 2025</span><span>{floor.activeCount} ACTIVE MACHINES</span></div>
-            <div className="af-map-wrap">
-              <svg className="af-map" viewBox="0 0 720 610" role="img" aria-labelledby={id + '-map-title ' + id + '-map-description'}>
-                <title id={id + '-map-title'}>Casino floor snapshot, June 30, 2025</title>
-                <desc id={id + '-map-description'}>{floor.marks.length} machines at their dated floor coordinates. Brass diamonds identify {floor.activeCandidates} present members of the fixed January–June bottom {floor.candidateCount}. Sage marks identify other Back Forty machines. M-1158 has a clay inspection outline. {floor.absent.length} historical candidates are absent from this snapshot. Decorative initial positions do not encode data.</desc>
-                <defs><pattern id={id + '-grid'} width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".8" fill="#c4a77d" fillOpacity=".13" /></pattern></defs>
-                <rect className="af-floor-grid" x="15" y="15" width="690" height="580" rx="5" fill={'url(#' + id + '-grid)'} />
-                <path className="af-spade-ghost" d={spadePath} fill="#c4a77d" fillOpacity=".025" stroke="#c4a77d" strokeWidth="1" strokeOpacity=".24" aria-hidden="true" />
-                <g className="af-zone-labels" aria-hidden="true">{floor.zones.map(zone => <text key={zone.id} x={zone.x} y={zone.y} textAnchor="middle" className={zone.id === 'Z-B40' ? 'af-back-forty-label' : undefined}>{zone.name.toUpperCase()}</text>)}</g>
-                {floor.marks.map((machine, index) => {
-                  const emphasis = chapter === 'candidates' ? machine.candidate : chapter === 'location' ? machine.zone === 'Z-B40' : machine.inspection;
-                  const style = { '--af-start-x': `${machine.origin.x - machine.px}px`, '--af-start-y': `${machine.origin.y - machine.py}px`, '--af-delay': `${(index % 17) * 8}ms` } as CSSProperties;
-                  return <g key={machine.id} transform={`translate(${machine.px} ${machine.py})`} data-machine-id={machine.id} data-candidate={String(machine.candidate)} data-zone={machine.zone} data-inspection-signal={String(machine.inspection)} className={'af-machine-position' + (emphasis ? ' af-emphasized' : '')}>
-                    <g className="af-machine" style={style}>
-                      <path className={'af-machine-mark' + (machine.candidate ? ' af-candidate' : machine.zone === 'Z-B40' ? ' af-back-forty' : '') + (machine.inspection ? ' af-inspection' : '')} d={machine.candidate ? 'M0 -5.2 5.2 0 0 5.2 -5.2 0Z' : 'M-3.1 -3.1H3.1V3.1H-3.1Z'} />
-                      <title>{machine.id} · {niceName(machine.zone, data.zones)} · {machine.bank}{machine.candidate ? ' · January–June bottom 10' : ''}{machine.inspection ? ' · Payout inspection signal; not proof of a fault' : ''}</title>
-                    </g>
-                  </g>;
-                })}
-                <text className="af-map-coordinate-note" x="360" y="593" textAnchor="middle">DATED MACHINE PLACEMENTS · EQUAL SCALE ON BOTH AXES</text>
-              </svg>
-              <div className="af-formation-note" aria-hidden="true"><span>FROM SYMBOL TO SIGNAL</span><i /></div>
-            </div>
-            <div className="af-legend" aria-label="Map legend">
-              <span><i className="af-key-other" />Other machines</span><span><i className="af-key-back" />Other Back Forty</span><span><i className="af-key-candidate" />Bottom 10 candidate</span><span><i className="af-key-signal" />Inspection signal</span>
-            </div>
-            {floor.unmapped > 0 && <p className="af-data-note">{floor.unmapped} active machine{floor.unmapped === 1 ? ' has' : 's have'} no valid dated coordinates and {floor.unmapped === 1 ? 'is' : 'are'} omitted from the map.</p>}
-          </div>
-          <aside className="af-evidence" aria-label="Explore the floor evidence">
-            <div className="af-chapters" aria-label="Evidence layers">
-              <button aria-pressed={chapter === 'candidates'} onClick={() => selectChapter('candidates')}><span>01</span>Candidates<ChevronRight size={14} /></button>
-              <button aria-pressed={chapter === 'location'} onClick={() => selectChapter('location')}><span>02</span>Back Forty<ChevronRight size={14} /></button>
-              <button aria-pressed={chapter === 'inspection'} onClick={() => selectChapter('inspection')}><span>03</span>Inspection signal<ChevronRight size={14} /></button>
-            </div>
-            <div className="af-chapter-copy" aria-live="polite" aria-atomic="true">
-              {chapter === 'candidates' && <><span className="af-copy-kicker">THE MANAGER’S SHORTLIST</span><div className="af-big-number">{floor.activeCandidates}<span> / {floor.candidateCount}</span></div><h3>Still on the floor.</h3><p>The bottom {floor.candidateCount} are fixed by total actual house win over January 1–June 30, 2025. This is a shortlist to investigate, not a replacement verdict.</p><div className="af-evidence-note"><strong>{floor.absent.length} absent from this snapshot</strong><span>{floor.absent.length ? floor.absent.join(' · ') : 'All historical candidates are present.'}</span></div></>}
-              {chapter === 'location' && <><span className="af-copy-kicker">PLACEMENT IS PART OF THE STORY</span><div className="af-big-number">{floor.backFortyCount}<span> machines</span></div><h3>One shared location.</h3><p>{floor.backFortyCount} machines occupy Back Forty on June 30, including {floor.backFortyCandidates} of the historical candidates. Sage marks show the rest of this zone.</p><div className="af-evidence-note"><strong>{floor.historicalBackFortyCount} of {floor.candidateCount} spent time here</strong><span>January–June history. A location association supports a placement test; it does not establish a cause.</span></div></>}
-              {chapter === 'inspection' && <><span className="af-copy-kicker">A SEPARATE STATISTICAL SIGNAL</span><div className="af-machine-id">M-1158</div><h3>Inspect. Then decide.</h3><p>The January–June payout screen flags M-1158 after correcting for tests across the floor{Number.isFinite(floor.signalZ) ? ` (z = ${floor.signalZ.toFixed(2)})` : ''}. Its clay outline is separate from candidate and location membership.</p><div className="af-evidence-note af-inspection-note"><strong>A signal is not proof of a defect.</strong><span>{floor.signalPresent ? 'Present in the June 30 snapshot. ' : 'Absent from this snapshot. '}Check payout configuration and records before recommending replacement.</span></div></>}
-            </div>
+          <section className="af-card-field" aria-label="The fixed ten lowest-earning machines">
+            <div className="af-card-grid-caption"><span>Actual house win · rounded dollars</span><span>Fixed rank order</span></div>
+            <svg className="af-deal-ghost" viewBox="0 0 240 260" aria-hidden="true"><path d="M120 15C101 48 35 85 25 125C10 182 76 210 110 174C108 203 99 222 82 244H158C141 222 132 203 130 174C164 210 230 182 215 125C205 85 139 48 120 15Z" /></svg>
+            <div className="af-card-grid">{story.candidates.map((machine, index) => {
+              const emphasized = step === 0 || (step === 1 ? machine.backFortyHistory : machine.inspectionSignal);
+              const status = !machine.activeAtEnd ? 'Inactive June 30' : machine.firstDate > START ? `New ${dateLabel(machine.firstDate)}` : 'Active June 30';
+              const style = { '--af-card-order': index, '--af-deal-x': `${(2 - index % 5) * 18}px`, '--af-deal-turn': `${(index % 5 - 2) * 3}deg` } as CSSProperties;
+              return <article key={machine.id} className={'af-candidate-card' + (emphasized ? ' af-emphasized' : '')} style={style} data-machine-id={machine.id} data-back-forty-history={String(machine.backFortyHistory)} data-inspection-signal={String(machine.inspectionSignal)} data-active-at-end={String(machine.activeAtEnd)} data-short-exposure={String(machine.shortExposure)} aria-label={`Rank ${machine.rank}, ${machine.id}`}>
+                <div className="af-card-top"><span className="af-rank" aria-label={`Rank ${machine.rank}`}>{String(machine.rank).padStart(2, '0')}</span><h4>{machine.id}</h4><span className="af-card-suit" aria-hidden="true">♠</span></div>
+                <div className="af-card-win" title={`Exact actual house win: ${exactMoney(machine.win)}`}>{money(machine.win)}</div>
+                <span className="af-card-metric-label">Actual house win</span>
+                <div className="af-card-days"><strong>{machine.days}</strong> active days</div>
+                <div className={'af-location-badge' + (machine.backFortyHistory ? ' af-location-back' : '')} title={`January–June location history: ${machine.locationNames.join(', ')}`}><i aria-hidden="true" />{machine.backFortyHistory ? 'Back Forty' : machine.locationNames.includes('High-Limit Room') ? 'High-Limit Room' : machine.locationNames.join(', ') || 'Location unknown'}</div>
+                <div className="af-card-status" data-inactive={String(!machine.activeAtEnd)}>{status}</div>
+                <span className="af-inspection-badge" aria-hidden={step !== 2 || !machine.inspectionSignal}>{machine.inspectionSignal && step === 2 ? 'Inspection signal' : '\u00a0'}</span>
+              </article>;
+            })}</div>
+            <p className="af-layout-note">Ranked evidence cards · location badges show January–June history.</p>
+          </section>
+          <aside className="af-evidence" aria-label="Evidence for the current step">
+            {step === 0 && <><span className="af-rail-kicker">CONTEXT BEFORE ACTION</span><div className="af-rail-number">{story.candidates.length}<span> candidates</span></div><dl className="af-rail-facts"><div><dt>Shorter exposure</dt><dd>{story.shortCount} machines</dd></div><div><dt>Inactive by June 30</dt><dd>{story.inactiveCount} machines</dd></div></dl><p className="af-context-note">{story.arrival?.id} joined on {dateLabel(story.arrival?.firstDate || '')}, with only {story.arrival?.days} active days to earn its place.</p></>}
+            {step === 1 && <><span className="af-rail-kicker">SHARED LOCATION HISTORY</span><div className="af-rail-number af-sage">{story.locationCount}<span> of {story.candidates.length}</span></div><p className="af-rail-label">Spent time in Back Forty</p><div className="af-location-key"><i /><span>Sage cards share this history.<br />M-1158 is one of the nine.</span></div><p className="af-context-note">A shared location is an association. Test placement before attributing cause.</p></>}
+            {step === 2 && <><span className="af-rail-kicker">{story.signalCount} PAYOUT INSPECTION SIGNAL</span><div className="af-signal-id">{signal?.id || 'M-1158'}</div><dl className="af-signal-facts"><div><dt>Actual house win</dt><dd>{exactMoney(signal?.win ?? NaN)}</dd></div><div><dt>Expected house win</dt><dd>{money(signal?.expected ?? NaN)}</dd></div></dl><div className="af-statistical-evidence"><span>z = {Number.isFinite(signal?.z) ? signal!.z.toFixed(2) : '—'}</span><span>Adjusted p = {Number.isFinite(signal?.adjustedP) ? signal!.adjustedP.toFixed(6) : '—'}</span></div><p className="af-context-note af-clay-note">Bonferroni-adjusted across the floor. A signal is not proof of a defect.</p></>}
           </aside>
         </div>
         <footer className="af-footer">
-          <div className="af-snapshot-caption"><span>FLOOR / JUNE 30, 2025</span><p>Candidates / January–June 2025<br />Explorer opens the full six-month history.</p></div>
-          <div className="af-actions"><button className="af-skip" onClick={() => setFormed(true)} disabled={phase === 'floor'}>{phase === 'floor' ? <Check size={15} /> : <SkipForward size={15} />}{phase === 'floor' ? 'Floor revealed' : 'Skip animation'}</button><button className="af-continue" onClick={onContinue}>Open six-month explorer<ArrowRight size={16} /></button></div>
+          <div className="af-step-controls"><button onClick={() => selectStep(step - 1)} disabled={step === 0} aria-label="Previous floor story step"><ArrowLeft size={16} /><span>Back</span></button><span className="af-step-count">{step + 1} / 3</span><button onClick={() => selectStep(step + 1)} disabled={step === 2} aria-label="Next floor story step"><span>Next</span><ArrowRight size={16} /></button></div>
+          <div className="af-takeaway"><strong>Pause blanket replacement.</strong><span>Inspect M-1158. Test Back Forty.</span></div>
+          <button className="af-continue" onClick={onContinue}>Open six-month explorer<ArrowRight size={16} /></button>
         </footer>
-        <span className="af-sr-only" role="status">{phase === 'forming' ? 'Revealing the floor. You can skip the animation or open the explorer immediately.' : `Floor revealed: ${floor.activeCount} active machines on June 30, 2025.`}</span>
       </div>
     </div>, document.body,
   );

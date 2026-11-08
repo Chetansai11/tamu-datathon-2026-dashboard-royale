@@ -17,7 +17,7 @@ The new `web/` interface preserves the original `dashboard/` and all analytical 
 
 ## Evidence presentation
 
-The approved desktop opening remains in place. **Explore the floor** now transitions the decorative ace into a dated June 30 snapshot, then opens the full six-month explorer. Eight of the original ten candidates remain active on the snapshot; two absent candidates are disclosed. The waterfall expands the existing earnings decomposition into signed, sequential dollar contributions with manual controls and an accessible exact-value list. **Present** opens a six-chapter, manually navigated decision walkthrough with its own scope demonstration and direct routes to the evidence. Larger analytical labels and a persistent selection summary improve readability. See `PRESENTATION_GUIDE.md`.
+The approved desktop opening remains in place. **Explore the floor** introduces ten readable machine cards in a manually controlled three-step story: the low-earning shortlist, nine shared Back Forty histories, and one corrected payout inspection signal. The same ten historical candidates stay visible, including the two absent by June 30, and the next action is stated plainly. A brief card entrance and focused highlights guide attention. The full six-month explorer remains one click away. The waterfall expands the existing earnings decomposition into signed, sequential dollar contributions with manual controls and an accessible exact-value list. **Present** opens a six-chapter, manually navigated decision walkthrough with its own scope demonstration and direct routes to the evidence. Larger analytical labels and a persistent selection summary improve readability. See `PRESENTATION_GUIDE.md`.
 
 ## Rebuild
 

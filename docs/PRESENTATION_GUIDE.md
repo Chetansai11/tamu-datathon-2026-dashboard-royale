@@ -6,9 +6,11 @@ The desktop overview retains its particle ace, floating totals, IBM Plex type an
 
 The overview's earnings decomposition now shows signed dollar components as a waterfall. Read the comparison, then use the playback or manual step controls. The final total is the fixed January–June gap for the manager's ten lowest earners. The positive machine component offsets part of the deficit. Published component amounts differ from the published total by one cent because of source rounding; the dashboard discloses this instead of adjusting the data. Attribution is retrospective and descriptive, not a causal estimate.
 
-## Ace to floor
+## Explore the floor
 
-Select **Explore the floor** from the overview. The decorative ace transitions into a dated snapshot with one mark per machine active on June 30, 2025. The snapshot contains 308 machines, including 47 in Back Forty. Eight of the fixed January–June bottom ten are still active; M-1118 and M-1120 are absent on this date. The candidate group, Back Forty and M-1158 inspection signal use separate highlights and explanations. Skip the animation at any time. **Open six-month explorer** resets the explorer to the full January–June period and all zones/banks.
+Select **Explore the floor** from the overview. Ten readable machine cards introduce the fixed January–June shortlist, with actual house win and the number of active days. A short card entrance connects the ace motif to the evidence; the story advances only when requested. The same cards remain in place through three steps: the shortlist, the nine machines with Back Forty history, and M-1158's corrected payout signal. M-1158 belongs to both groups; a signal does not establish a defect. M-1118 and M-1120 remain visible as historical candidates even though they were absent by June 30. The card arrangement is a narrative layout, not physical floor coordinates. **Open six-month explorer** resets the detailed explorer to the full January–June period and all zones/banks.
+
+The detailed explorer opens with its machine list before the full-floor charts. Its lowest-earner ranking follows the selected period, zone and bank; the story uses the fixed January–June shortlist. The table's Bottom 10 / All machines toggle does not change which machines the charts include.
 
 ## Guided presentation
 
