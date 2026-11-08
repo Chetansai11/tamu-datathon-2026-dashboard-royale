@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { memo, useEffect, useId, useRef, useState } from 'react';
 import { Pause, Play, RotateCcw, X } from 'lucide-react';
 import ParticleAce from './ParticleAce';
 
@@ -47,7 +47,7 @@ function CourtPortrait({ joker = false }: { joker?: boolean }) {
   </g>;
 }
 
-function CardArtwork({ kind }: { kind: 'king' | 'joker' | 'ace' | 'back' }) {
+const CardArtwork = memo(function CardArtwork({ kind }: { kind: 'king' | 'joker' | 'ace' | 'back' }) {
   const front = kind !== 'back';
   return <svg viewBox="0 0 200 290" fill="none" aria-hidden="true">
     <rect x="1" y="1" width="198" height="288" rx="11" fill={front ? '#e5e7e3' : '#181c20'} stroke={front ? '#f3f3ea' : '#92794e'} strokeWidth="1.4" />
@@ -73,7 +73,7 @@ function CardArtwork({ kind }: { kind: 'king' | 'joker' | 'ace' | 'back' }) {
       <path d="M86 85H114M86 205H114" stroke="#b99c63" strokeWidth=".6"/>
     </>}
   </svg>;
-}
+});
 
 const deck = [
   [-45, -58, -31, .67, 70], [-31, -22, 23, .50, 330], [37, -52, 29, .69, 100], [47, -8, -20, .43, 360],
@@ -81,9 +81,51 @@ const deck = [
   [-49, -84, 53, .34, 650], [43, -92, -44, .41, 700],
 ] as const;
 
+function fallingCardTransform(index: number, time: number) {
+  const [x, y, turn, scale, delay] = deck[index];
+  // Every visible card is already falling; delayed cards no longer freeze and
+  // then jump straight to full velocity when their delay expires.
+  const fall = (time - delay) / 2450;
+  return `translate3d(calc(-50% + ${x + Math.sin(fall * 1.4 + index) * 6}vw),calc(-50% + ${y + fall * 125}vh),0) rotateX(${18 + fall * 45}deg) rotateY(${(index % 2 ? -1 : 1) * (22 + fall * 75)}deg) rotateZ(${turn + fall * (index % 2 ? -55 : 65)}deg) scale(${scale})`;
+}
+
+type Layer = HTMLElement | SVGElement;
+type SceneLayers = {
+  backdrop: HTMLElement | null; orbit: HTMLElement | null; topline: HTMLElement | null;
+  bottomline: HTMLElement | null; copy: HTMLElement | null; king: HTMLElement | null;
+  joker: HTMLElement | null; ace: HTMLElement | null; mark: SVGElement | null;
+  rain: HTMLElement | null; particles: HTMLElement | null; progress: HTMLElement | null;
+  progressTrack: HTMLElement | null; cards: HTMLElement[];
+};
+
+type LayerStyle = { transform?: string; opacity?: number };
+function sceneFrame(time: number, compact: boolean): Record<string, LayerStyle> {
+  const arrival = ease(0, 1150, time), part = ease(1100, 2450, time), emergence = ease(1450, 2250, time);
+  const court = 1 - ease(2100, 2700, time), rain = 1 - ease(1650, 2650, time);
+  const ui = 1 - ease(3850, 4700, time), x = compact ? .62 : 1, y = compact ? .75 : 1;
+  const frame: Record<string, LayerStyle> = {
+    root: { opacity: 1 - ease(REVEAL_START, 4750, time) },
+    backdrop: { opacity: 1 - ease(3650, 4700, time) }, copy: { opacity: 1 - ease(1300, 2050, time) },
+    topline: { opacity: ui }, bottomline: { opacity: ui }, progressTrack: { opacity: ui },
+    progress: { transform: `scaleX(${clamp(time / DURATION)})` },
+    rain: { opacity: rain }, orbit: { opacity: rain * .5 },
+    king: { opacity: court, transform: `translate3d(calc(-50% + ${(-100 - part * 320) * x}px),calc(-50% + ${(-135 * (1 - arrival) + time * .025 + part * 380) * y}px),0) rotateY(${-19 + arrival * 12 + part * 16}deg) rotateZ(${-19 + arrival * 5 - part * 42}deg)` },
+    joker: { opacity: court, transform: `translate3d(calc(-50% + ${(104 + part * 330) * x}px),calc(-50% + ${(-205 * (1 - arrival) + 15 + time * .021 + part * 310) * y}px),18px) rotateY(${24 - arrival * 18 - part * 23}deg) rotateZ(${21 - arrival * 6 + part * 48}deg)` },
+    ace: { opacity: ease(450, 1100, time) * (1 - ease(2400, 2860, time)), transform: `translate3d(-50%,calc(-50% + ${58 * (1 - emergence)}px),0) rotateY(${-28 * (1 - emergence)}deg) rotateZ(${-8 * (1 - emergence)}deg) scale(${.76 + emergence * .24})` },
+    mark: { opacity: 1 - ease(2100, 2500, time) }, particles: { opacity: ease(2080, 2490, time) },
+  };
+  deck.forEach((_, index) => { frame[`rain-card-${index}`] = { transform: fallingCardTransform(index, time) }; });
+  return frame;
+}
+
 /** A 4.8-second native deck-to-particle opening. Only active, visible time counts. */
 export default function CinematicOpening({ motionEnabled, onSkip, onComplete, onRevealStart, onReplayStart }: Props) {
   const root = useRef<HTMLElement>(null);
+  const layers = useRef<SceneLayers | null>(null);
+  const styleCache = useRef(new WeakMap<Layer, Record<string, string>>());
+  const compact = useRef(typeof window !== 'undefined' && window.innerWidth <= 720);
+  const nativeTracks = useRef<Animation[]>([]);
+  const nativeAttempted = useRef(false);
   const elapsed = useRef(0);
   const pausedRef = useRef(false);
   const completed = useRef(false);
@@ -99,36 +141,113 @@ export default function CinematicOpening({ motionEnabled, onSkip, onComplete, on
   const animate = motionEnabled && !systemReduced;
   const id = 'cinema-' + useId().replace(/:/g, '');
 
+  const getLayers = () => {
+    const section = root.current;
+    if (!section) return null;
+    if (!layers.current) {
+      const find = (selector: string) => section.querySelector<HTMLElement>(selector);
+      layers.current = {
+        backdrop: find('.cinema-backdrop'), orbit: find('.cinema-orbit'), topline: find('.cinema-topline'),
+        bottomline: find('.cinema-bottomline'), copy: find('.cinema-copy'), king: find('.cinema-king'),
+        joker: find('.cinema-joker'), ace: find('.cinema-flying-card'), mark: section.querySelector<SVGElement>('.cinema-card-mark'),
+        rain: find('.cinema-deck-rain'), particles: find('.cinema-particle-field'), progress: find('.cinema-progress>span'),
+        progressTrack: find('.cinema-progress'), cards: Array.from(section.querySelectorAll<HTMLElement>('.cinema-rain-card')),
+      };
+    }
+    return layers.current;
+  };
+  const layerNode = (key: string, scene: SceneLayers): Layer | null => key === 'root' ? root.current
+    : key.startsWith('rain-card-') ? scene.cards[Number(key.slice(10))]
+    : scene[key as Exclude<keyof SceneLayers, 'cards'>];
+  const writeFrame = (time: number) => {
+    const scene = getLayers();
+    if (!scene) return;
+    for (const [key, style] of Object.entries(sceneFrame(time, compact.current))) {
+      const node = layerNode(key, scene);
+      if (!node) continue;
+      let previous = styleCache.current.get(node);
+      if (!previous) { previous = {}; styleCache.current.set(node, previous); }
+      for (const [property, value] of Object.entries(style)) {
+        const next = String(value);
+        if (previous[property] === next) continue;
+        previous[property] = next;
+        node.style[property as 'transform' | 'opacity'] = next;
+      }
+    }
+  };
+  const prepareNative = () => {
+    const scene = getLayers(), section = root.current;
+    if (nativeAttempted.current || !scene || !section || typeof section.animate !== 'function') return;
+    nativeAttempted.current = true;
+    const frames = new Map<Layer, Keyframe[]>();
+    // Browser-owned transform/opacity tracks keep moving through main-thread
+    // data work. Sampling only builds the curves once; playback is interpolated.
+    for (let sample = 0; sample <= 80; sample++) {
+      const time = sample * DURATION / 80;
+      for (const [key, style] of Object.entries(sceneFrame(time, compact.current))) {
+        const node = layerNode(key, scene);
+        if (!node) continue;
+        const track = frames.get(node) || [];
+        track.push({ offset: sample / 80, ...style }); frames.set(node, track);
+      }
+    }
+    try {
+      frames.forEach((keyframes, node) => {
+        const animation = node.animate(keyframes, { duration: DURATION, fill: 'both', easing: 'linear' });
+        animation.pause(); animation.currentTime = elapsed.current;
+        nativeTracks.current.push(animation);
+      });
+    } catch {
+      nativeTracks.current.forEach(animation => animation.cancel()); nativeTracks.current = [];
+      writeFrame(elapsed.current);
+    }
+  };
+  const captureNativeTime = () => {
+    const time = nativeTracks.current[0]?.currentTime;
+    if (typeof time === 'number' && Number.isFinite(time)) elapsed.current = Math.max(0, Math.min(DURATION, time));
+  };
+  const synchronizeTracks = (playing: boolean) => {
+    const clock = document.timeline?.currentTime;
+    nativeTracks.current.forEach(animation => {
+      animation.pause(); animation.currentTime = elapsed.current;
+      if (playing) {
+        animation.play();
+        if (typeof clock === 'number') animation.startTime = clock - elapsed.current;
+      }
+    });
+  };
   paint.current = (time: number) => {
     const section = root.current;
     if (!section) return;
-    const arrival = ease(0, 650, time), part = ease(1450, 2450, time), emergence = ease(1450, 2250, time);
-    const reveal = ease(REVEAL_START, 4750, time);
-    const set = (name: string, value: string | number) => section.style.setProperty(`--cinema-${name}`, String(value));
-    set('progress', clamp(time / DURATION)); set('opacity', 1 - reveal); set('bed-opacity', 1 - ease(3650, 4700, time));
-    set('copy-opacity', 1 - ease(1300, 2050, time)); set('ui-opacity', 1 - ease(3850, 4700, time));
-    set('court-opacity', 1 - ease(2100, 2700, time)); set('deck-opacity', 1 - ease(1650, 2650, time));
-    set('king-x', `${-100 - part * 320}px`); set('king-y', `${-135 * (1 - arrival) + time * .014 + part * 380}px`);
-    set('king-turn', `${-19 + arrival * 5 - part * 42}deg`); set('king-tilt', `${-19 + arrival * 12 + part * 16}deg`);
-    set('joker-x', `${104 + part * 330}px`); set('joker-y', `${-205 * (1 - arrival) + 15 + time * .009 + part * 310}px`);
-    set('joker-turn', `${21 - arrival * 6 + part * 48}deg`); set('joker-tilt', `${24 - arrival * 18 - part * 23}deg`);
-    set('card-y', `${58 * (1 - emergence)}px`); set('card-scale', .76 + emergence * .24);
-    set('card-turn', `${-8 * (1 - emergence)}deg`); set('card-tilt', `${-28 * (1 - emergence)}deg`);
-    set('card-opacity', ease(450, 1100, time) * (1 - ease(2400, 2860, time))); set('mark-opacity', 1 - ease(2100, 2500, time));
-    set('particle-opacity', ease(2080, 2490, time));
+    // The fallback also writes to local layers, never inherited root variables.
+    if (!nativeTracks.current.length) writeFrame(time);
+    section.dataset.animationDriver = nativeTracks.current.length ? 'compositor' : 'frames';
     section.dataset.progress = clamp(time / DURATION).toFixed(4);
-    section.dataset.aceFront = time >= 1840 ? 'true' : 'false';
-    const cards = section.querySelectorAll<HTMLElement>('.cinema-rain-card');
-    cards.forEach((card, index) => {
-      const [x, y, turn, scale, delay] = deck[index];
-      const fall = Math.max(0, time - delay) / 2450;
-      card.style.transform = `translate3d(calc(-50% + ${x + Math.sin(fall * 1.4 + index) * 6}vw),calc(-50% + ${y + fall * 125}vh),0) rotateX(${18 + fall * 45}deg) rotateY(${(index % 2 ? -1 : 1) * (22 + fall * 75)}deg) rotateZ(${turn + fall * (index % 2 ? -55 : 65)}deg) scale(${scale})`;
-    });
+    const aceFront = time >= 1840 ? 'true' : 'false';
+    if (section.dataset.aceFront !== aceFront) section.dataset.aceFront = aceFront;
     const nextPhase: Phase = time < 1450 ? 'deal' : time < 2750 ? 'ace' : time < REVEAL_START ? 'zoom' : 'reveal';
-    section.dataset.phase = nextPhase;
+    if (section.dataset.phase !== nextPhase) section.dataset.phase = nextPhase;
     if (phaseRef.current !== nextPhase) { phaseRef.current = nextPhase; setPhase(nextPhase); }
     if (time >= REVEAL_START && !revealed.current) { revealed.current = true; callbacks.current.onRevealStart?.(); }
   };
+
+  useEffect(() => {
+    const resize = () => {
+      const nextCompact = window.innerWidth <= 720;
+      if (nextCompact !== compact.current) {
+        captureNativeTime();
+        compact.current = nextCompact;
+        nativeTracks.current.forEach(animation => animation.cancel()); nativeTracks.current = []; nativeAttempted.current = false;
+        if (animate && !completed.current) { prepareNative(); synchronizeTracks(!pausedRef.current && !document.hidden); }
+      }
+      paint.current(elapsed.current);
+    };
+    window.addEventListener('resize', resize);
+    return () => {
+      window.removeEventListener('resize', resize);
+      nativeTracks.current.forEach(animation => animation.cancel()); nativeTracks.current = []; nativeAttempted.current = false;
+    };
+  }, [animate]);
 
   useEffect(() => {
     const query = window.matchMedia?.('(prefers-reduced-motion: reduce)');
@@ -141,7 +260,7 @@ export default function CinematicOpening({ motionEnabled, onSkip, onComplete, on
     let disposed = false, frame = 0, lastTime: number | null = null;
     const finish = () => {
       if (disposed || completed.current) return;
-      elapsed.current = DURATION; paint.current(DURATION); completed.current = true;
+      elapsed.current = DURATION; synchronizeTracks(false); paint.current(DURATION); completed.current = true;
       callbacks.current.onComplete();
     };
     const tick = (timestamp: number) => {
@@ -149,7 +268,11 @@ export default function CinematicOpening({ motionEnabled, onSkip, onComplete, on
       if (disposed || completed.current) return;
       if (pausedRef.current || document.hidden) { lastTime = null; return; }
       const delta = lastTime === null ? 0 : Math.max(0, timestamp - lastTime);
-      lastTime = timestamp; elapsed.current = Math.min(DURATION, elapsed.current + delta);
+      lastTime = timestamp;
+      // Native tracks are the canonical clock. A blocked first RAF must not
+      // leave the particle/ref and phase clock behind the moving card layers.
+      if (nativeTracks.current.length) captureNativeTime();
+      else elapsed.current = Math.min(DURATION, elapsed.current + delta);
       paint.current(elapsed.current);
       if (elapsed.current >= DURATION) { finish(); return; }
       frame = requestAnimationFrame(tick);
@@ -157,13 +280,13 @@ export default function CinematicOpening({ motionEnabled, onSkip, onComplete, on
     const start = () => { if (!disposed && !frame && !completed.current && !pausedRef.current && !document.hidden) frame = requestAnimationFrame(tick); };
     const visibilityChanged = () => {
       lastTime = null;
-      if (document.hidden) { if (frame) cancelAnimationFrame(frame); frame = 0; }
-      else start();
+      if (document.hidden) { if (frame) cancelAnimationFrame(frame); frame = 0; captureNativeTime(); synchronizeTracks(false); paint.current(elapsed.current); }
+      else { synchronizeTracks(!pausedRef.current); start(); }
     };
     if (!animate) { finish(); return () => { disposed = true; }; }
-    paint.current(elapsed.current); start();
+    paint.current(elapsed.current); prepareNative(); synchronizeTracks(!pausedRef.current && !document.hidden); start();
     document.addEventListener('visibilitychange', visibilityChanged);
-    return () => { disposed = true; if (frame) cancelAnimationFrame(frame); document.removeEventListener('visibilitychange', visibilityChanged); };
+    return () => { disposed = true; if (frame) cancelAnimationFrame(frame); nativeTracks.current.forEach(animation => animation.pause()); document.removeEventListener('visibilitychange', visibilityChanged); };
   }, [animate, paused, replayVersion]);
 
   const skip = () => { if (completed.current) return; completed.current = true; callbacks.current.onSkip(); };
@@ -181,12 +304,15 @@ export default function CinematicOpening({ motionEnabled, onSkip, onComplete, on
     document.addEventListener('keydown', handleKey, true);
     return () => document.removeEventListener('keydown', handleKey, true);
   }, []);
-  const togglePaused = () => { pausedRef.current = !pausedRef.current; setPaused(pausedRef.current); };
+  const togglePaused = () => {
+    if (!pausedRef.current) { captureNativeTime(); synchronizeTracks(false); paint.current(elapsed.current); }
+    pausedRef.current = !pausedRef.current; setPaused(pausedRef.current);
+  };
   const replay = () => {
     if (!animate) return;
     callbacks.current.onReplayStart?.(); elapsed.current = 0; completed.current = false; revealed.current = false;
     pausedRef.current = false; phaseRef.current = 'deal'; setPaused(false); setPhase('deal');
-    paint.current(0); setReplayVersion(value => value + 1);
+    synchronizeTracks(false); paint.current(0); setReplayVersion(value => value + 1);
   };
   const phaseLabel = phase === 'deal' ? '01 / THE DEAL' : phase === 'ace' ? '02 / THE ACE' : '03 / THE SIGNAL';
 
@@ -196,7 +322,7 @@ export default function CinematicOpening({ motionEnabled, onSkip, onComplete, on
       <div className="cinema-orbit" aria-hidden="true" />
       <div className="cinema-topline"><span><i />THE GILDED ACE</span><button type="button" className="cinema-close" aria-label="Skip cinematic introduction" title="Enter dashboard · Esc" onClick={skip}><X size={17} /></button></div>
       <div className="cinema-card-scene" aria-hidden="true">
-        <div className="cinema-deck-rain">{deck.map((_, index) => <div key={index} className={`cinema-rain-card cinema-rain-card-${index}`}><CardArtwork kind="back" /></div>)}</div>
+        <div className="cinema-deck-rain">{deck.map((_, index) => <div key={index} className={`cinema-rain-card cinema-rain-card-${index}`} style={{ transform: fallingCardTransform(index, 0) }}><CardArtwork kind="back" /></div>)}</div>
         <div className="cinema-flying-card"><CardArtwork kind="ace" /></div>
         <div className="cinema-court-card cinema-king"><CardArtwork kind="king" /></div>
         <div className="cinema-court-card cinema-joker"><CardArtwork kind="joker" /></div>

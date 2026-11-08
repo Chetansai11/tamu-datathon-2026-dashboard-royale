@@ -2,7 +2,7 @@
 
 ## Current opening: the royal deal
 
-An original native SVG/CSS deck falls through a dark graphite stage. The king and joker remain readable in the foreground; the ace emerges from behind them, then dissolves into the same inflated particle spade used in the overview. The particles mix silver-white with gold, and the camera zoom blends directly into “Read the floor. Find the signal.” No scrolling or media download is required.
+An original native SVG/CSS deck falls through a dark graphite stage. The king and joker remain readable in the foreground; the ace emerges from behind them, then dissolves into the same inflated particle spade used in the overview. The particles mix approximately 70% warm gold with 30% silver-white, and the camera zoom blends directly into “Read the floor. Find the signal.” No scrolling or media download is required.
 
 The full active sequence lasts **4.8 seconds**, with the dashboard blend beginning at 3.55 seconds. The stage uses existing local IBM Plex typography and preserves the approved desktop layout. All artwork and particle geometry are native code; this revision uses no generation service or paid assets.
 
@@ -40,3 +40,15 @@ The film prompt was shortened to a single card flourish and throw. The gold embl
 ## Delivery checks
 
 Checks cover the bounded 4.8-second sequence, keyboard access, pause/resume, hidden-tab suspension, replay, reduced motion, cleanup, concurrent data loading and focus handoff. Browser review covers actual particle rendering, desktop/mobile composition and automatic entry. Production and offline checks remain part of publication; the existing hosted audience is preserved.
+
+## Smoothness revision
+
+The original production opening showed a 666.8 ms maximum requestAnimationFrame gap on a cold desktop load and a 266.7 ms maximum gap on replay in the local browser check at 1440×1000. These are main-thread frame intervals, not a direct measurement of compositor presentation.
+
+The revision uses browser-managed transform/opacity animation tracks for the cards, continuous falling paths without delayed starts, persistent particle GPU resources, cached geometry, and no GPU drawing while the cinematic particles are invisible. The dashboard hero alone responds to the opening handoff; unrelated analytical charts do not rerender for that transition.
+
+Location lookup during aggregation now uses an index while retaining first-match semantics. In three alternating warmed Node 24 runs, full-period plus six monthly aggregates had a median of 719.14 ms before and 428.95 ms after (40.4% less CPU). Exact complete-output comparisons passed for 72 real-data selections and five location edge cases. This is an aggregation benchmark, not a browser frame-rate guarantee.
+
+`web/performance.html` is a local Vite profiling entry, excluded from the normal production build. Its hidden `cinema-frame-report` output records frame intervals by phase and long tasks without changing application clocks. `web/tests/particles.mjs` verifies resource persistence through pause, hidden tabs, replay, hero handoff and WebGL context recovery. The standard cinematic and dashboard interaction checks remain required.
+
+After the revision, the same production-browser check measured a 66.6 ms maximum main-thread interval on replay (previously 266.7 ms), with no long tasks on that replay. Its reveal phase had a 17 ms maximum interval (previously 250 ms). Initial data loading still produced a 450.2 ms main-thread interval, reduced from 666.8 ms; the card tracks run independently on the browser animation timeline during that work. Desktop and mobile browser checks confirmed the native animation path, frozen pause position, resumed handoff and no horizontal overflow. These local observations do not guarantee identical performance on every device.

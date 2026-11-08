@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
+import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 
 type Props = { motionEnabled: boolean; className?: string; cinematicTime?: MutableRefObject<number> };
 const smooth = (start: number, end: number, time: number) => {
@@ -33,6 +33,7 @@ uniform float uHeight;
 uniform float uScale;
 uniform float uOpacity;
 uniform float uCinema;
+uniform float uTrailsActive;
 uniform vec2 uGaze;
 uniform vec4 uTrails[8];
 varying vec3 vColor;
@@ -50,7 +51,7 @@ void main() {
   p.xy=mat2(cos(angle),sin(angle),-sin(angle),cos(angle))*p.xy;
   float viewDistance=3.25-p.z;
   vec2 screen=vec2(p.x/uAspect,p.y)*2.8/viewDistance;
-  for(int i=0;i<8;i++) {
+  if(uTrailsActive>.5) for(int i=0;i<8;i++) {
     vec4 trail=uTrails[i];
     float age=max(0.,uTime-trail.z);
     vec2 delta=vec2((screen.x-trail.x)*uAspect,screen.y-trail.y);
@@ -67,9 +68,9 @@ void main() {
   float size=mix(1.5,2.85,aSeed.y)+glimmer*.55+rim*.3;
   gl_PointSize=clamp(size*uDpr*(uHeight/760.)*(3.25/viewDistance)*sqrt(uScale),.8,7.0*uDpr);
   float front=smoothstep(-.24,.27,aPosition.z);
-  vec3 silver=mix(vec3(.72,.76,.81),vec3(.98,.985,1.),aSeed.y);
-  vec3 gold=mix(vec3(.63,.43,.18),vec3(1.,.80,.40),aSeed.y);
-  vColor=mix(silver,gold,step(.80,aSeed.x));
+  vec3 silver=mix(vec3(.79,.80,.81),vec3(1.,1.,.99),aSeed.y);
+  vec3 gold=mix(vec3(.78,.52,.18),vec3(1.,.86,.46),aSeed.y);
+  vColor=mix(silver,gold,step(.30,aSeed.x));
   float shimmer=1.+sin(t*.65+aSeed.y*30.)*.12*glimmer;
   vColor*=mix(.68,1.16,front)*shimmer+rim*.13;
   vAlpha=mix(.56,.94,aSeed.y)*mix(.6,1.,front)*mix(.3,1.,assemble);
@@ -109,7 +110,10 @@ function spadeContour(): Point[] {
   return result;
 }
 
+const geometryCache = new Map<number, Float32Array>();
 function makeGeometry(count: number) {
+  const cached = geometryCache.get(count);
+  if (cached) return cached;
   const contour = spadeContour();
   let seed = 691017;
   const random = () => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return (seed >>> 0) / 4294967296; };
@@ -146,19 +150,23 @@ function makeGeometry(count: number) {
     const offset = i * 10;
     data.set([x,y,z,(random()-.5)*4.4,(random()-.5)*3.2,(random()-.5)*2.8,random(),random(),random(),dust ? .95+random()*.05 : rim ? .02+random()*.1 : .2+random()*.74], offset);
   }
+  geometryCache.set(count, data);
   return data;
 }
 
 // The CPU fallback is real point geometry, not a filled substitute silhouette.
 // Three batched paths keep it light even on machines without a WebGL context.
+let cachedFallbackPaths: string[] | undefined;
 function makeFallbackPaths() {
+  if (cachedFallbackPaths) return cachedFallbackPaths;
   const geometry = makeGeometry(1700), paths = ['', '', ''];
   for (let i = 0; i < geometry.length; i += 10) {
     const x = 200 + geometry[i] * 165, y = 200 - geometry[i + 1] * 165;
     const radius = .55 + geometry[i + 7] * .65;
-    const color = geometry[i + 6] >= .8 ? 2 : geometry[i + 7] > .4 ? 0 : 1;
+    const color = geometry[i + 6] >= .3 ? 2 : geometry[i + 7] > .4 ? 0 : 1;
     paths[color] += `M${(x-radius).toFixed(2)} ${y.toFixed(2)}a${radius.toFixed(2)} ${radius.toFixed(2)} 0 1 0 ${(2*radius).toFixed(2)} 0a${radius.toFixed(2)} ${radius.toFixed(2)} 0 1 0 ${(-2*radius).toFixed(2)} 0`;
   }
+  cachedFallbackPaths = paths;
   return paths;
 }
 
@@ -168,43 +176,65 @@ export default function ParticleAce({ motionEnabled, className = '', cinematicTi
   const fallbackSvg = useRef<SVGSVGElement>(null);
   const fallbackArt = useRef<SVGGElement>(null);
   const heroHasFormed = useRef(false);
-  const [fallback, setFallback] = useState(true);
+  const motion = useRef(motionEnabled);
+  motion.current = motionEnabled;
+  const synchronizeGpu = useRef<() => void>(() => {});
+  // Do not construct a second SVG particle tree while a WebGL context starts.
+  // Its geometry is generated once, only if this device actually needs it.
+  const [fallback, setFallback] = useState(false);
   const [contextVersion, setContextVersion] = useState(0);
-  const fallbackPaths = useMemo(makeFallbackPaths, []);
+  const fallbackPaths = fallback ? makeFallbackPaths() : [];
 
   useEffect(() => {
     if (!fallback || !cinematicTime || !fallbackArt.current) return;
-    let frame = 0;
+    let frame = 0, width = 1100, height = 760, previousTime = -1;
     const paint = () => {
       frame = 0;
       const node = fallbackArt.current;
       if (!node || document.hidden) return;
-      const bounds = host.current?.getBoundingClientRect();
-      const height = bounds?.height || 760, width = bounds?.width || 1100;
-      const state = cinematicFrame(cinematicTime.current, height);
-      fallbackSvg.current?.setAttribute('viewBox', `0 0 ${width} ${height}`);
-      node.setAttribute('transform', `translate(${width / 2} ${height / 2}) scale(${state.scale * height / 400}) rotate(-4) translate(-200 -200)`);
-      node.setAttribute('opacity', String(state.opacity));
-      if (motionEnabled) frame = requestAnimationFrame(paint);
+      const time = cinematicTime.current;
+      if (time !== previousTime) {
+        const state = cinematicFrame(time, height);
+        node.setAttribute('transform', `translate(${width / 2} ${height / 2}) scale(${state.scale * height / 400}) rotate(-4) translate(-200 -200)`);
+        node.setAttribute('opacity', String(state.opacity));
+        previousTime = time;
+      }
+      if (motion.current) frame = requestAnimationFrame(paint);
     };
     const visibility = () => {
       if (frame) cancelAnimationFrame(frame);
       frame = 0;
       if (!document.hidden) paint();
     };
-    paint();
+    const resize = () => {
+      const bounds = host.current?.getBoundingClientRect();
+      height = bounds?.height || 760; width = bounds?.width || 1100;
+      fallbackSvg.current?.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      previousTime = -1;
+      visibility();
+    };
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(resize) : null;
+    if (host.current) observer?.observe(host.current);
+    resize();
     document.addEventListener('visibilitychange', visibility);
-    return () => { if (frame) cancelAnimationFrame(frame); document.removeEventListener('visibilitychange', visibility); };
+    window.addEventListener('resize', resize);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      observer?.disconnect();
+      document.removeEventListener('visibilitychange', visibility);
+      window.removeEventListener('resize', resize);
+    };
   }, [fallback, cinematicTime, motionEnabled]);
 
   useEffect(() => {
     const element = canvas.current, wrapper = host.current;
-    if (!element || !wrapper || typeof window.WebGLRenderingContext === 'undefined') return;
+    if (!element || !wrapper) return;
+    if (typeof window.WebGLRenderingContext === 'undefined') { setFallback(true); return; }
     let gl: WebGLRenderingContext | null = null;
-    try { gl = element.getContext('webgl', { alpha: true, antialias: false, depth: false, powerPreference: 'low-power', premultipliedAlpha: false }); } catch { return; }
-    if (!gl) return;
+    try { gl = element.getContext('webgl', { alpha: true, antialias: false, depth: false, powerPreference: 'low-power', premultipliedAlpha: false }); } catch { setFallback(true); return; }
+    if (!gl) { setFallback(true); return; }
     const gpu = gl;
-    let frame = 0, disposed = false, visible = true, elapsed = 0, previous = 0, width = 1, height = 1, dpr = 1;
+    let frame = 0, disposed = false, visible = true, elapsed = 0, previous = 0, width = 1, height = 1, dpr = 1, hasPixels = false;
     let lastSplat = -1, lastPointer: Point | null = null;
     const gaze = [0,0], targetGaze = [0,0];
     const trails = new Float32Array(32);
@@ -236,33 +266,42 @@ export default function ParticleAce({ motionEnabled, className = '', cinematicTi
         const location = gpu.getAttribLocation(program, name);
         if (location >= 0) { gpu.enableVertexAttribArray(location); gpu.vertexAttribPointer(location, size, gpu.FLOAT, false, 40, offset); }
       }
-      const uniforms = Object.fromEntries(['uTime','uFormation','uMotion','uAspect','uDpr','uHeight','uScale','uOpacity','uCinema','uGaze','uTrails[0]'].map(name => [name,gpu.getUniformLocation(program!,name)]));
+      const uniforms = Object.fromEntries(['uTime','uFormation','uMotion','uAspect','uDpr','uHeight','uScale','uOpacity','uCinema','uTrailsActive','uGaze','uTrails[0]'].map(name => [name,gpu.getUniformLocation(program!,name)]));
       gpu.clearColor(0,0,0,0); gpu.enable(gpu.BLEND); gpu.blendFuncSeparate(gpu.SRC_ALPHA,gpu.ONE,gpu.ONE,gpu.ONE_MINUS_SRC_ALPHA);
       gpu.disable(gpu.DEPTH_TEST);
       const draw = () => {
         if (disposed || gpu.isContextLost()) return;
-        gpu.clear(gpu.COLOR_BUFFER_BIT);
         const state = cinematicTime ? cinematicFrame(cinematicTime.current, height) : null;
-        const formation = state ? state.formation : motionEnabled && !heroHasFormed.current ? Math.min(1.15,elapsed / 2.45) : 1.15;
+        // The deck occupies the first 2.09s. Drawing invisible points then only
+        // competes with its card layers; clear once on replay and wait for light.
+        if (state && state.opacity <= 0) {
+          if (hasPixels) gpu.clear(gpu.COLOR_BUFFER_BIT);
+          hasPixels = false;
+          return;
+        }
+        gpu.clear(gpu.COLOR_BUFFER_BIT);
+        const formation = state ? state.formation : motion.current && !heroHasFormed.current ? Math.min(1.15,elapsed / 2.45) : 1.15;
         if (!cinematicTime && formation >= 1.15) heroHasFormed.current = true;
         gpu.uniform1f(uniforms.uTime, cinematicTime ? cinematicTime.current / 1000 : elapsed);
         gpu.uniform1f(uniforms.uFormation, formation);
-        // The cinematic clock freezes on pause; keeping its deformation weight
-        // avoids snapping the frozen pose back to the zero-time orientation.
-        gpu.uniform1f(uniforms.uMotion, cinematicTime || motionEnabled ? 1 : 0);
+        // Active time freezes on pause. Keep deformation enabled so the frozen
+        // pose stays unchanged, rather than snapping to a zero-time orientation.
+        gpu.uniform1f(uniforms.uMotion, 1);
         gpu.uniform1f(uniforms.uScale, state?.scale ?? 1);
         gpu.uniform1f(uniforms.uOpacity, state?.opacity ?? 1);
         gpu.uniform1f(uniforms.uCinema, cinematicTime ? 1 : 0);
+        gpu.uniform1f(uniforms.uTrailsActive, !cinematicTime && lastSplat >= 0 && elapsed - lastSplat < 5 ? 1 : 0);
         gpu.uniform1f(uniforms.uAspect, width / height);
         gpu.uniform1f(uniforms.uDpr, dpr);
         gpu.uniform1f(uniforms.uHeight, height);
         gpu.uniform2f(uniforms.uGaze, gaze[0], gaze[1]);
         gpu.uniform4fv(uniforms['uTrails[0]'], trails);
         gpu.drawArrays(gpu.POINTS, 0, count);
+        hasPixels = true;
       };
       const tick = (now: number) => {
         frame = 0;
-        if (disposed || !visible || document.hidden || !motionEnabled) return;
+        if (disposed || !visible || document.hidden || !motion.current) return;
         if (!cinematicTime && previous) elapsed += Math.min((now - previous) / 1000, .05);
         previous = now;
         gaze[0] += (targetGaze[0] - gaze[0]) * .04; gaze[1] += (targetGaze[1] - gaze[1]) * .04;
@@ -272,17 +311,21 @@ export default function ParticleAce({ motionEnabled, className = '', cinematicTi
         if (frame) cancelAnimationFrame(frame);
         frame = 0; previous = 0;
         if (!disposed && visible && !document.hidden) {
-          if (motionEnabled) frame = requestAnimationFrame(tick); else draw();
+          if (motion.current) frame = requestAnimationFrame(tick); else draw();
         }
       };
       const resize = () => {
         const rect = wrapper.getBoundingClientRect(); width = Math.max(1,rect.width); height = Math.max(1,rect.height);
         dpr = Math.min(window.devicePixelRatio || 1,1.5);
-        element.width = Math.round(width*dpr); element.height = Math.round(height*dpr);
-        gpu.viewport(0,0,element.width,element.height); if (visible && !document.hidden) draw();
+        const pixelWidth = Math.round(width*dpr), pixelHeight = Math.round(height*dpr);
+        if (element.width !== pixelWidth || element.height !== pixelHeight) {
+          element.width = pixelWidth; element.height = pixelHeight;
+          gpu.viewport(0,0,pixelWidth,pixelHeight); hasPixels = false;
+        }
+        if (visible && !document.hidden) draw();
       };
       const pointer = (event: PointerEvent) => {
-        if (cinematicTime || !motionEnabled || !visible || document.hidden) return;
+        if (cinematicTime || !motion.current || !visible || document.hidden) return;
         const rect = wrapper.getBoundingClientRect();
         const nx=(event.clientX-rect.left)/rect.width*2-1, ny=1-(event.clientY-rect.top)/rect.height*2;
         if (Math.abs(nx)>1 || Math.abs(ny)>1) { targetGaze[0]=0;targetGaze[1]=0;lastPointer=null;return; }
@@ -300,12 +343,14 @@ export default function ParticleAce({ motionEnabled, className = '', cinematicTi
       const observer = typeof IntersectionObserver === 'function' ? new IntersectionObserver(entries=>{visible=entries.some(entry=>entry.isIntersecting);synchronize();},{threshold:.01}) : null;
       resizeObserver?.observe(wrapper); observer?.observe(wrapper);
       window.addEventListener('resize',resize);
-      window.addEventListener('pointermove',pointer,{passive:true});
+      if (!cinematicTime) window.addEventListener('pointermove',pointer,{passive:true});
       document.addEventListener('visibilitychange',synchronize);
       element.addEventListener('webglcontextlost',lost);element.addEventListener('webglcontextrestored',restored);
+      synchronizeGpu.current = synchronize;
       resize(); setFallback(false); synchronize();
       return () => {
         disposed=true;if(frame)cancelAnimationFrame(frame);
+        synchronizeGpu.current = () => {};
         observer?.disconnect();resizeObserver?.disconnect();
         window.removeEventListener('resize',resize);window.removeEventListener('pointermove',pointer);
         document.removeEventListener('visibilitychange',synchronize);
@@ -316,15 +361,19 @@ export default function ParticleAce({ motionEnabled, className = '', cinematicTi
       if(buffer)gpu.deleteBuffer(buffer);if(program)gpu.deleteProgram(program);shaders.forEach(shader=>gpu.deleteShader(shader));
       setFallback(true);
     }
-  }, [motionEnabled, contextVersion, cinematicTime]);
+  }, [contextVersion, cinematicTime]);
+
+  // Motion changes only suspend/resume the existing renderer. In particular,
+  // the dashboard reveal must not rebuild 32k vertices and compile shaders.
+  useEffect(() => { synchronizeGpu.current(); }, [motionEnabled]);
 
   return <div ref={host} className={`particle-ace ${className}`} aria-hidden="true" style={{width:'100%',height:'100%',pointerEvents:'none'}}>
     <canvas ref={canvas} style={{display:fallback?'none':'block',width:'100%',height:'100%'}}/>
     {fallback && <svg ref={fallbackSvg} viewBox="0 0 400 400" style={{display:'block',width:'100%',height:'100%',overflow:'visible'}}>
       <g ref={fallbackArt} opacity={cinematicTime ? 0 : .85}>
-        <path d={fallbackPaths[0]} fill="#f0f3f7"/>
-        <path d={fallbackPaths[1]} fill="#aeb8c8"/>
-        <path d={fallbackPaths[2]} fill="#dfb35f"/>
+        <path d={fallbackPaths[0]} fill="#fafbf8"/>
+        <path d={fallbackPaths[1]} fill="#c6c9ca"/>
+        <path d={fallbackPaths[2]} fill="#eac16b"/>
       </g>
     </svg>}
   </div>;

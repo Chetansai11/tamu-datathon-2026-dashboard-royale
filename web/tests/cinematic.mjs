@@ -24,7 +24,7 @@ async function until(predicate, message) {
   for (let i = 0; i < 100 && !predicate(); i++) await flush();
   assert.ok(predicate(), message);
 }
-function environment({ hash = '', reduced = false, motionOff = false, pendingData = false, rejectPlay = false } = {}) {
+function environment({ hash = '', reduced = false, motionOff = false, pendingData = false, rejectPlay = false, nativeAnimations = false } = {}) {
   const errors = [], vc = new VirtualConsole();
   vc.on('jsdomError', error => errors.push(error.message));
   const dom = new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>', { url: 'http://localhost/' + hash, runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc });
@@ -35,6 +35,25 @@ function environment({ hash = '', reduced = false, motionOff = false, pendingDat
   w.clearImmediate = handle => clearImmediate(handle);
   let clock = 0, nextFrame = 1, hidden = false, plays = 0, pauses = 0, scrolls = 0, fetches = 0, resolveData;
   const frames = new Map();
+  const tracks = [];
+  if (nativeAnimations) {
+    Object.defineProperty(w.document, 'timeline', { value: { get currentTime() { return clock; } } });
+    w.Element.prototype.animate = function (keyframes, options) {
+      let state = 'running', anchor = clock, held = 0;
+      const track = {
+        keyframes, options, cancelled: false,
+        get currentTime() { return state === 'running' ? clock - anchor : held; },
+        set currentTime(value) { held = Number(value); anchor = clock - held; },
+        get startTime() { return anchor; },
+        set startTime(value) { anchor = Number(value); },
+        get playState() { return state; },
+        play() { if (state !== 'running') { anchor = clock - held; state = 'running'; } },
+        pause() { held = this.currentTime; state = 'paused'; },
+        cancel() { this.cancelled = true; state = 'idle'; },
+      };
+      tracks.push(track); return track;
+    };
+  }
   const counts = { skip: 0, complete: [], reveal: [], replay: 0 };
   w.calls = counts;
   Object.defineProperty(w.performance, 'now', { configurable: true, value: () => clock });
@@ -73,7 +92,8 @@ function environment({ hash = '', reduced = false, motionOff = false, pendingDat
   async function click(name) { const button = label(name); assert.ok(button, `Control exists: ${name}`); button.focus(); button.click(); await settle(); }
   async function setHidden(value) { hidden = value; w.document.dispatchEvent(new w.Event('visibilitychange')); await settle(); }
   async function close() { w.unmountTest?.(); await settle(); assert.equal(errors.length, 0, errors.join('\n')); dom.window.close(); }
-  return { w, dom, counts, frames, errors, section, label, film, advance, click, setHidden, close,
+  return { w, dom, counts, frames, tracks, errors, section, label, film, advance, click, setHidden, close,
+    blockMainThread: milliseconds => { clock += milliseconds; },
     stats: () => ({ clock, plays, pauses, scrolls, fetches }),
     releaseData: async () => { assert.ok(resolveData, 'Dashboard fetch started before release'); resolveData({ ok: true, json: async () => data }); await settle(); },
   };
@@ -107,6 +127,28 @@ process.stdout.write('Checking automatic cinematic lifecycle...\n');
   assert.equal(e.counts.reveal.length, 1, 'Finished frames cannot reveal a second time');
   assert.equal(e.stats().scrolls, 0, 'Component completion does not require or request scrolling');
   await e.close();
+}
+
+// Native tracks keep time while JS is blocked; the particle clock must catch up.
+{
+  const e = await component({}, { nativeAnimations: true });
+  assert.ok(e.tracks.length >= 13, 'Cards have browser-owned animation tracks');
+  e.blockMainThread(1200); await e.advance(50);
+  assert.ok(Number(e.section().dataset.progress) > .24, 'A blocked first RAF cannot desynchronize the native and particle clocks');
+  assert.ok(e.tracks.every(t => Math.abs(t.currentTime - e.tracks[0].currentTime) < 1), 'Every native layer shares one timeline');
+  e.blockMainThread(120); await e.click('Pause cinematic introduction');
+  const pausedTime = e.tracks[0].currentTime;
+  assert.ok(pausedTime >= 1370, 'Pausing does not rewind native motion to a stale RAF');
+  assert.ok(e.tracks.every(t => t.playState === 'paused'));
+  await e.advance(3000); assert.equal(e.tracks[0].currentTime, pausedTime);
+  await e.click('Play cinematic introduction'); await e.advance(500);
+  await e.setHidden(true); const hiddenTime = e.tracks[0].currentTime;
+  await e.advance(3000); assert.equal(e.tracks[0].currentTime, hiddenTime);
+  await e.setHidden(false); await e.advance(200);
+  await e.click('Replay cinematic introduction');
+  assert.ok(e.tracks.every(t => t.currentTime === 0), 'Replay seeks every native track to zero');
+  await e.advance(4850); assert.equal(e.counts.complete.length, 1);
+  await e.close(); assert.ok(e.tracks.every(t => t.cancelled), 'Unmount cancels every native animation');
 }
 
 // Pause and hidden tabs freeze the active-time clock; replay resets it.

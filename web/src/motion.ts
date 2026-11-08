@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 
 export const MotionContext = createContext(true);
 export const useMotionEnabled = () => useContext(MotionContext);
@@ -15,9 +15,9 @@ export function useMotionSettings() {
     query.addEventListener?.('change', changed);
     return () => query.removeEventListener?.('change', changed);
   }, []);
-  const toggle = () => setPreferred(value => {
+  const toggle = useCallback(() => setPreferred(value => {
     try { localStorage.setItem('gilded-ace-motion', value ? 'off' : 'on'); } catch { /* Storage is optional. */ }
     return !value;
-  });
-  return { enabled: preferred && !systemReduced, systemReduced, toggle };
+  }), []);
+  return useMemo(() => ({ enabled: preferred && !systemReduced, systemReduced, toggle }), [preferred, systemReduced, toggle]);
 }

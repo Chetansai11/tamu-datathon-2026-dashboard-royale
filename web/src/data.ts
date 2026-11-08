@@ -18,6 +18,13 @@ const sumKeys = ['coin', 'payout', 'win', 'theo', 'available', 'scheduled', 'occ
 export function aggregate(data: any, start: string, end: string, zone: string, bank: string) {
   const cols: string[] = data.dailyColumns;
   const ix = Object.fromEntries(cols.map((key, i) => [key, i]));
+  // Preserve Array.find's first matching ID while avoiding a full location scan
+  // for every machine-day. NaN never matched the original strict comparison.
+  const locationsById = new Map<any, AnyRecord>();
+  if (ix.location != null) for (const location of data.locations || []) {
+    const id = location.location_id;
+    if (id === id && !locationsById.has(id)) locationsById.set(id, location);
+  }
   const machines = new Map<number, AnyRecord>();
   const days = new Map<string, AnyRecord>();
   const zoneGroups = new Map<string, AnyRecord>();
@@ -32,7 +39,7 @@ export function aggregate(data: any, start: string, end: string, zone: string, b
     const m = machines.get(machineIndex)!;
     if (date >= m.lastDate) {
       m.zone = row[ix.zone]; m.bank = row[ix.bank]; m.lastDate = date;
-      if (ix.location != null) { m.location = row[ix.location]; const loc = (data.locations || []).find((l: any) => l.location_id === m.location); if (loc) { m.x = loc.x_m; m.y = loc.y_m; } }
+      if (ix.location != null) { m.location = row[ix.location]; const loc = locationsById.get(m.location); if (loc) { m.x = loc.x_m; m.y = loc.y_m; } }
     }
     m.days++;
     if (!days.has(date)) days.set(date, { date, ...Object.fromEntries(sumKeys.map(k => [k, 0])) });
