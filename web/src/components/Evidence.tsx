@@ -14,7 +14,7 @@ export default function Evidence({data}:{data:any}){
   },[data]);
   useEffect(()=>{ const listener=(e:any)=>{setFocus(e.detail);setQuery('');setGroup('all');};window.addEventListener('open-evidence',listener);return()=>window.removeEventListener('open-evidence',listener);},[]);
   useEffect(()=>{if(focus){document.getElementById(`claim-${focus}`)?.scrollIntoView({behavior:'smooth',block:'center'});}},[focus]);
-  const groups:any={q1:'Machines',decomp:'Attribution',q2:'Demand',q3:'Downtime',guests:'Guests',comps:'Comps',forecast:'Model',actions:'Actions',validation:'Data quality'};
+  const groups:any={q1:'Machines',decomp:'Attribution',q2:'Demand',q3:'Downtime',guests:'Guests',comps:'Comps',forecast:'Model',placement:'Placement ML',actions:'Actions',validation:'Data quality'};
   const filtered=entries.filter(e=>(group==='all'||e.group===group)&&JSON.stringify(e).toLowerCase().includes(query.toLowerCase()));
   return <div className="evidence-space">
     <div className="scope-note"><BookOpen size={15}/> Every headline is a question you can audit.</div>

@@ -47,9 +47,9 @@ planning, and documents its independent review in
 
 **Recommendation: pause blanket replacement, inspect one payout signal, and test
 access to Back Forty.** The GM's ten earned $541,425 less than ten average machines.
-The descriptive decomposition attributes $209,724 to game math, $143,416 to
+The descriptive decomposition attributes $209,724 to game math, $143,519 to
 location, $128,590 to exposure and $63,357 to payout residuals, offset by a positive
-$3,662 machine-specific component. Nine of the ten spent time in Back Forty.
+$3,765 machine-specific component. Nine of the ten spent time in Back Forty.
 These associations challenge a ranking based only on earnings; they do not prove
 that every machine is healthy or that access caused the entire location gap.
 
@@ -86,6 +86,8 @@ audit report. From the repository root, use a separate Python environment:
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-dashboard.txt
+$env:DR_DATA = 'C:\path\to\official\data'
+.\.venv\Scripts\python.exe -m src.placement_model
 .\.venv\Scripts\python.exe web/scripts/build_data.py --reports dashboard/reports.json --source-dir data/source --output web/public/data
 cd web
 npm test
@@ -106,6 +108,7 @@ $env:DR_DATA = 'C:\path\to\official\data'
 & $drPython -m src.q2_demand
 & $drPython -m src.q3_downtime
 & $drPython -m src.forecast
+& $drPython -m src.placement_model
 & $drPython -m src.q4_q5_players
 & $drPython -m src.q6_actions
 & $drPython -m src.build_dashboard
@@ -134,3 +137,11 @@ full-period statistical investigation governs the inspection recommendation.
 Original method details: [machines](docs/Q1_METHOD.md),
 [demand and forecast](docs/demand_forecast.md),
 [operations and guests](docs/OPS_GUESTS_METHODS.md).
+
+## Placement Lab and analytical validation
+
+The desktop interface retains its card opening, particle ace and palette. Placement Lab compares staying, a vacant-slot move, or a two-machine swap using dated June 30 inventory. Both swap directions need at least three training machines and 120 machine-days for their game/zone combination. Move cost, two-day lead, three-hour disruption per machine, displacement, retained action budget and a zero-change baseline are explicit. These are predictive association scenarios, not causal relocation returns or a whole-floor optimum.
+
+`python -m src.placement_model` trains three fixed candidates using expanding chronological folds, calibrates ranges separately in April, evaluates May–June retrospectively, and refits the selected model for July 3–30 scenarios. It exports source hashes, library versions, seed, folds, per-zone errors, support counts and inventory to `outputs/placement_model.json`; the web builder copies it to `web/public/data/placement_model.json`. No paid AI service or runtime model server is needed. See [model specification](docs/PLACEMENT_MODEL.md).
+
+The selected gradient boosting model achieves $3.6907 available-hour-weighted MAE versus $4.2858 for the configuration/weekday baseline, a 13.88% reduction. Nominal 90% daily-rate ranges cover 88.55% of observations. July ranges reuse historical residuals as sensitivity bounds, not calibrated relocation-effect intervals. The separate retrospective rolling floor forecast reports its adaptive challenger losing to the weekday reference by 8.79%; the original frozen benchmark is preserved. The decomposition excludes the target throughout its nested peer benchmark, and exploratory filtered residuals are distinguished from fixed, multiplicity-corrected investigation flags.

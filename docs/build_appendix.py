@@ -4,6 +4,9 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
 reports = json.loads((root / "dashboard/reports.json").read_text(encoding="utf-8"))
+placement_path = root / "outputs/placement_model.json"
+if placement_path.exists():
+    reports["placement"] = json.loads(placement_path.read_text(encoding="utf-8"))
 
 def cell(value):
     return str(value or "").replace("|", "\\|").replace("\n", " ")
