@@ -21,7 +21,7 @@
     height: 40px;
     vertical-align: -5px;
     margin-left: 10px;
-    filter: drop-shadow(0 0 8px #f4c66b38);
+    filter: drop-shadow(0 0 8px #00000038);
   }
   .hero-mobile-ace svg { width: 100%; height: 100%; overflow: visible; }
 }

@@ -67,12 +67,12 @@ export default function FloorReplay({ data, motionEnabled }: { data: any; motion
     <div className="replay-chart month-trend-chart" role="img" aria-label={`${period[2]} 2025 daily ${label}. Total ${money(frame.totals[metric])}; daily average ${money(dailyMean)}. Same vertical scale across months.`} onPointerDown={() => setPlaying(false)} onFocusCapture={() => setPlaying(false)}>
       <ResponsiveContainer width="100%" height="100%"><AreaChart data={frame.series} margin={{top:18,right:18,left:0,bottom:4}} accessibilityLayer>
         <defs><linearGradient id={gradient} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={colors.teal} stopOpacity={.3}/><stop offset="1" stopColor={colors.teal} stopOpacity={.015}/></linearGradient></defs>
-        <CartesianGrid vertical={false} stroke="#2b3b56" strokeOpacity={.65} strokeDasharray="3 6"/>
-        <XAxis dataKey="date" ticks={ticks} tickFormatter={shortDate} axisLine={false} tickLine={false} minTickGap={20} tick={{fill:'#a8b8d7',fontSize:11}} dy={9}/>
-        <YAxis domain={[0,axisMax]} tickCount={5} tickFormatter={value => money(value,true)} axisLine={false} tickLine={false} width={72} tick={{fill:'#a8b8d7',fontSize:11}}/>
-        <Tooltip cursor={{stroke:'#8fe9ff',strokeDasharray:'4 4'}} content={({active,payload,label:day}:any) => active && payload?.length ? <div className="month-chart-tooltip"><span>{shortDate(String(day))}, 2025 · gaming day</span><strong>{money(payload[0].value)}</strong><small>Daily {label}</small></div> : null}/>
+        <CartesianGrid vertical={false} stroke="#30302d" strokeOpacity={.65} strokeDasharray="3 6"/>
+        <XAxis dataKey="date" ticks={ticks} tickFormatter={shortDate} axisLine={false} tickLine={false} minTickGap={20} tick={{fill:'#b2b0a8',fontSize:11}} dy={9}/>
+        <YAxis domain={[0,axisMax]} tickCount={5} tickFormatter={value => money(value,true)} axisLine={false} tickLine={false} width={72} tick={{fill:'#b2b0a8',fontSize:11}}/>
+        <Tooltip cursor={{stroke:'#c4a77d',strokeDasharray:'4 4'}} content={({active,payload,label:day}:any) => active && payload?.length ? <div className="month-chart-tooltip"><span>{shortDate(String(day))}, 2025 · gaming day</span><strong>{money(payload[0].value)}</strong><small>Daily {label}</small></div> : null}/>
         <ReferenceLine y={dailyMean} stroke={colors.gold} strokeDasharray="6 5" strokeOpacity={.85}/>
-        <Area key={metric} type="linear" dataKey={metric} stroke={colors.teal} strokeWidth={2.5} fill={'url(#'+gradient+')'} dot={false} activeDot={{r:5,fill:colors.teal,stroke:'#101b30',strokeWidth:3}} isAnimationActive={motionEnabled} animationDuration={650} animationEasing="ease-out"/>
+        <Area key={metric} type="linear" dataKey={metric} stroke={colors.teal} strokeWidth={2.5} fill={'url(#'+gradient+')'} dot={false} activeDot={{r:5,fill:colors.teal,stroke:'#111110',strokeWidth:3}} isAnimationActive={motionEnabled} animationDuration={650} animationEasing="ease-out"/>
       </AreaChart></ResponsiveContainer>
     </div>
     <div className="month-chart-foot"><span><TrendingUp size={14}/> Busiest {label} day: <b>{peak ? shortDate(peak.date) : '—'}</b> <strong>{peak ? money(peak[metric],true) : '—'}</strong></span><span>Daily totals · consistent scale across months</span></div>

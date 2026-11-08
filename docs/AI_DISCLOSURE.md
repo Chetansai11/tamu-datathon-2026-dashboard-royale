@@ -44,3 +44,5 @@ without a purchase or upgrade. SVG/CSS supplies the emerging gold spade. These
 decorative assets are not analytical evidence; see `CINEMATIC_OPENING.md`.
 No player-level identities or raw LVCVA/Missouri tables are included in the
 dashboard bundle. Devpost submission and a recorded walkthrough are not claimed.
+
+The AXON-inspired visual revision adapts a user-supplied motion brief into original WebGL spade geometry, analytic pointer vortices and CSS floating cards. The shader is not a reproduction of the brief’s full GPU fluid simulation. Typography and palette references are documented in `AXON_DESIGN_REFERENCES.md`; IBM Plex fonts use the bundled OFL. Metric traces come from the supplied synthetic case data. No paid generation or new services were used for this revision.

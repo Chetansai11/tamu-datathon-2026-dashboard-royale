@@ -12,7 +12,7 @@ export const percent = (n: number, digits = 1) => Number.isFinite(n) ? `${(n * 1
 export const ratio = (a: number, b: number) => b ? a / b : NaN;
 export const shortDate = (v: string) => new Date(v + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 export const monthName = (v: string) => new Date(v.slice(0, 7) + '-15T12:00:00').toLocaleDateString('en-US', { month: 'short' });
-export const colors = { teal: '#57e3ff', gold: '#f4c66b', orange: '#ff879b', dark: '#c8d8ff', blue: '#a997ff', muted: '#7d92bd' };
+export const colors = { teal: '#c4a77d', gold: '#b0aba0', orange: '#cd8a7e', dark: '#eeeae1', blue: '#91a69a', muted: '#85867f' };
 export function sum(rows: AnyRecord[], field: string) { return rows.reduce((total, row) => total + (+row[field] || 0), 0); }
 const sumKeys = ['coin', 'payout', 'win', 'theo', 'available', 'scheduled', 'occupied', 'spins', 'variance', 'cost', 'faults', 'cardedCoin', 'peerTheo', 'lostTheo'];
 export function aggregate(data: any, start: string, end: string, zone: string, bank: string) {

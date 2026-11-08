@@ -5,34 +5,34 @@
 .month-performance .replay-controls { padding-bottom: 15px; }
 .month-focus-header { padding: 14px 28px 18px; display:flex; align-items:center; justify-content:space-between; gap:24px; }
 .month-focus-title { display:flex; flex-direction:column; gap:8px; }
-.month-caption { color:#c2cee5; font-size:13px; display:flex; align-items:center; gap:10px; }
-.month-caption i { width:3px; height:3px; border-radius:50%; background:#6e83aa; }
-.month-total { color:#f4f6ff; font-size:44px; line-height:1.12; letter-spacing:-1.5px; font-variant-numeric:tabular-nums; }
-.month-total-label { color:#a9bbd8; font-size:12px; }
+.month-caption { color:#b2b0a8; font-size:13px; display:flex; align-items:center; gap:10px; }
+.month-caption i { width:3px; height:3px; border-radius:50%; background:#c4a77d; }
+.month-total { color:#eeeae1; font-size:44px; line-height:1.12; letter-spacing:-1.5px; font-variant-numeric:tabular-nums; }
+.month-total-label { color:#b2b0a8; font-size:12px; }
 .month-focus-tools { display:flex; flex-direction:column; align-items:flex-end; gap:17px; }
 .month-focus-tools .segmented button { font-size:12px; padding:9px 14px; }
-.month-change { color:#b3c3df; display:flex; align-items:center; flex-wrap:wrap; justify-content:flex-end; gap:6px; font-size:12px; }
-.month-change strong, .month-change svg { color:#8ce6dd; }
-.month-change.down strong, .month-change.down svg { color:#ffc27f; }
-.month-chart-legend { margin: 5px 28px 5px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:12px; color:#bbcbe4; }
+.month-change { color:#b2b0a8; display:flex; align-items:center; flex-wrap:wrap; justify-content:flex-end; gap:6px; font-size:12px; }
+.month-change strong, .month-change svg { color:#91a69a; }
+.month-change.down strong, .month-change.down svg { color:#cd8a7e; }
+.month-chart-legend { margin: 5px 28px 5px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:12px; color:#b2b0a8; }
 .month-chart-legend > span { display:flex; align-items:center; gap:8px; }
-.month-chart-legend i { width:18px; height:2px; background:#57e3ff; box-shadow:0 0 8px #57e3ff44; }
-.month-chart-legend i.average { background:none; height:0; border-top:2px dashed #f4c66b; box-shadow:none; }
-.month-chart-legend b { color:#f0d296; font-weight:500; }
-.month-performance .month-trend-chart { height:300px; padding:0 14px 0 5px; margin:0; background:radial-gradient(ellipse at 50% 100%,#57e3ff07,transparent 70%); }
-.month-chart-tooltip { background:#13223a; border:1px solid #496181; border-radius:12px; box-shadow:0 12px 32px #02061499; padding:14px 17px; display:flex; flex-direction:column; gap:5px; }
-.month-chart-tooltip span, .month-chart-tooltip small { font-size:12px; color:#b7c8e4; }
-.month-chart-tooltip strong { color:#79e6ff; font-size:23px; }
-.month-chart-foot { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; color:#a4b7d5; font-size:11px; padding:17px 28px 23px; }
+.month-chart-legend i { width:18px; height:2px; background:#c4a77d; box-shadow:none; }
+.month-chart-legend i.average { background:none; height:0; border-top:2px dashed #b0aba0; box-shadow:none; }
+.month-chart-legend b { color:#c4a77d; font-weight:500; }
+.month-performance .month-trend-chart { height:300px; padding:0 14px 0 5px; margin:0; background:#111110; }
+.month-chart-tooltip { background:#111110; border:1px solid #30302d; border-radius:12px; box-shadow:0 12px 32px #00000099; padding:14px 17px; display:flex; flex-direction:column; gap:5px; }
+.month-chart-tooltip span, .month-chart-tooltip small { font-size:12px; color:#b2b0a8; }
+.month-chart-tooltip strong { color:#c4a77d; font-size:23px; }
+.month-chart-foot { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; color:#b2b0a8; font-size:11px; padding:17px 28px 23px; }
 .month-chart-foot > span { display:flex; align-items:center; gap:7px; }
-.month-chart-foot b { font-weight:500; color:#d4def0; }
-.month-chart-foot strong { color:#f0d296; font-weight:500; }
-.month-performance .replay-summary { padding:20px 28px; background:#0a14255e; border-top:1px solid #283954; border-bottom:1px solid #283954; }
+.month-chart-foot b { font-weight:500; color:#eeeae1; }
+.month-chart-foot strong { color:#c4a77d; font-weight:500; }
+.month-performance .replay-summary { padding:20px 28px; background:#0808085e; border-top:1px solid #30302d; border-bottom:1px solid #30302d; }
 .month-performance .replay-summary strong { font-size:23px; }
-.month-performance .month-event { display:flex; gap:9px; justify-content:flex-start; align-items:flex-start; padding:17px 28px 0; background:transparent; border:0; color:#b4c4df; }
-.month-event svg { flex-shrink:0; margin-top:2px; color:#a997ff; }
+.month-performance .month-event { display:flex; gap:9px; justify-content:flex-start; align-items:flex-start; padding:17px 28px 0; background:transparent; border:0; color:#b2b0a8; }
+.month-event svg { flex-shrink:0; margin-top:2px; color:#c4a77d; }
 .month-event span { line-height:1.65; font-size:12px; }
-.month-performance .replay-note { border:0; background:transparent; padding-top:10px; color:#9aaecf; }
+.month-performance .replay-note { border:0; background:transparent; padding-top:10px; color:#b2b0a8; }
 #historical-floor-replay { scroll-margin-top:85px; }
 @media(max-width:700px) {
   .month-focus-header { padding:16px 18px; align-items:flex-start; flex-direction:column; gap:20px; }
