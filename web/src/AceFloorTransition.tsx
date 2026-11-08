@@ -147,7 +147,7 @@ export default function AceFloorTransition({ data, motionEnabled, onContinue, on
                 <span className="af-inspection-badge" aria-hidden={step !== 2 || !machine.inspectionSignal}>{machine.inspectionSignal && step === 2 ? 'Inspection signal' : '\u00a0'}</span>
               </article>;
             })}</div>
-            <p className="af-layout-note">Ranked evidence cards · location badges show January–June history.</p>
+            <p className="af-layout-note">M = machine ID · Location badges show January–June history.</p>
           </section>
           <aside className="af-evidence" aria-label="Evidence for the current step">
             {step === 0 && <><span className="af-rail-kicker">CONTEXT BEFORE ACTION</span><div className="af-rail-number">{story.candidates.length}<span> candidates</span></div><dl className="af-rail-facts"><div><dt>Shorter exposure</dt><dd>{story.shortCount} machines</dd></div><div><dt>Inactive by June 30</dt><dd>{story.inactiveCount} machines</dd></div></dl><p className="af-context-note">{story.arrival?.id} joined on {dateLabel(story.arrival?.firstDate || '')}, with only {story.arrival?.days} active days to earn its place.</p></>}
