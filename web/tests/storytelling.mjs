@@ -24,6 +24,7 @@ const label=s=>w.document.querySelector(`[aria-label="${s}"]`);
 const named=(s,scope=w.document)=>[...scope.querySelectorAll('button')].find(b=>b.textContent.trim()===s);
 async function click(el,message){assert.ok(el,message);el.focus();el.click();await settle();}
 await until(()=>w.document.querySelector('.ace-overview'),'Overview loaded');
+await click(label('Skip cinematic introduction'),'Skip automatic opening to inspect the analytical stories');
 const heroBefore=w.document.querySelector('.ace-overview h1').textContent;
 const waterfall=()=>w.document.querySelector('.gap-waterfall');
 assert.ok(waterfall().textContent.includes('$0.01'),'Source rounding is disclosed');

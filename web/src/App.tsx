@@ -41,36 +41,63 @@ function Empty({ label = 'No records in this selection.' }: { label?: string }) 
 
 export default function App() {
   const motion = useMotionSettings();
-  const [opening, setOpening] = useState(false);
+  const [opening, setOpening] = useState(() => motion.enabled && ['', 'verdict'].includes(location.hash.slice(1).split('/')[0]));
+  const [revealing, setRevealing] = useState(false);
   const [openingVersion, setOpeningVersion] = useState(0);
   const skipFocus = useRef(false);
-  const replayFocus = useRef(false);
-  const closeOpening = useCallback(() => setOpening(false), []);
-  const skipOpening = useCallback(() => { skipFocus.current = true; setOpening(false); }, []);
-  const replayOpening = useCallback(() => { replayFocus.current = true; location.hash = 'verdict'; setOpeningVersion(value => value + 1); setOpening(true); window.scrollTo({ top: 0, behavior: 'auto' }); }, []);
+  const openingRef = useRef(opening);
+  openingRef.current = opening;
+  const closeOpening = useCallback(() => { if (openingRef.current) skipFocus.current = true; setOpening(false); setRevealing(false); }, []);
+  const skipOpening = useCallback(() => { skipFocus.current = true; setOpening(false); setRevealing(false); }, []);
+  const beginReveal = useCallback(() => setRevealing(true), []);
+  const restartReveal = useCallback(() => setRevealing(false), []);
+  const replayOpening = useCallback(() => {
+    if (!motion.enabled) return;
+    location.hash = 'verdict';
+    setOpeningVersion(value => value + 1);
+    setRevealing(false);
+    setOpening(true);
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [motion.enabled]);
   useEffect(() => {
-    if (opening && replayFocus.current) {
-      replayFocus.current = false;
-      const frame = requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('[aria-label="Skip cinematic introduction"]')?.focus({ preventScroll: true }));
-      return () => cancelAnimationFrame(frame);
-    }
+    if (opening && !motion.enabled) skipOpening();
+  }, [opening, motion.enabled, skipOpening]);
+  useEffect(() => {
+    if (!opening) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    const frame = requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('[aria-label="Skip cinematic introduction"]')?.focus({ preventScroll: true }));
+    return () => { cancelAnimationFrame(frame); document.body.style.overflow = previousOverflow; };
+  }, [opening, openingVersion]);
+  useEffect(() => {
     if (opening || !skipFocus.current) return;
     skipFocus.current = false;
     const frame = requestAnimationFrame(() => {
       const content = document.getElementById('main-content');
       content?.focus({ preventScroll: true });
-      content?.scrollIntoView({ behavior: 'auto', block: 'start' });
+      window.scrollTo({ top: 0, behavior: 'auto' });
     });
     return () => cancelAnimationFrame(frame);
   }, [opening, openingVersion]);
   return <MotionContext.Provider value={motion.enabled}>
-    {opening && <div className="cinema-opening-shell" style={{ position: 'relative', zIndex: 40, background: '#080808', padding: '16px' }}><CinematicOpening key={openingVersion} motionEnabled={motion.enabled} src="media/ace-illusionist.mp4" poster="media/ace-illusionist-poster.png" onSkip={skipOpening}/></div>}
-    <DashboardApp motion={motion} onNavigate={closeOpening} onReplayOpening={replayOpening}/>
+    {opening && <div className="cinema-opening-shell" style={{ position: 'fixed', inset: 0, zIndex: 2000 }}><CinematicOpening key={openingVersion} motionEnabled={motion.enabled} src="media/ace-illusionist.mp4" poster="media/ace-illusionist-poster.png" onSkip={skipOpening} onComplete={skipOpening} onRevealStart={beginReveal} onReplayStart={restartReveal}/></div>}
+    <div className="dashboard-underlay" data-cinema={opening ? revealing ? 'revealing' : 'covered' : 'ready'} aria-hidden={opening ? true : undefined} {...(opening ? { inert: '' } : {})}>
+      <DashboardApp motion={motion} openingCovered={opening && !revealing} onNavigate={closeOpening} onReplayOpening={replayOpening}/>
+    </div>
   </MotionContext.Provider>;
 }
 
-function DashboardApp({ motion, onNavigate, onReplayOpening }: { motion: ReturnType<typeof useMotionSettings>; onNavigate: () => void; onReplayOpening: () => void }) {
+function DashboardApp({ motion, openingCovered, onNavigate, onReplayOpening }: { motion: ReturnType<typeof useMotionSettings>; openingCovered: boolean; onNavigate: () => void; onReplayOpening: () => void }) {
   const [data, setData] = useState<any>(null), [error, setError] = useState('');
+  const focusAfterLoading = useRef(false);
+  const focusedLoadingNode = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (!data || !focusAfterLoading.current) return;
+    focusAfterLoading.current = false;
+    if (document.activeElement === document.body || document.activeElement === focusedLoadingNode.current) document.getElementById('main-content')?.focus({ preventScroll: true });
+    focusedLoadingNode.current = null;
+  }, [data]);
   const [page, setPage] = useState(() => pages.some(p => p.id === location.hash.slice(1).split('/')[0]) ? location.hash.slice(1).split('/')[0] : 'verdict');
   const [start, setStart] = useState('2025-01-01'), [end, setEnd] = useState('2025-06-30');
   const [zone, setZone] = useState('all'), [bank, setBank] = useState('all');
@@ -91,7 +118,7 @@ function DashboardApp({ motion, onNavigate, onReplayOpening }: { motion: ReturnT
   const selectedPage = pages.find(p => p.id === page)!;
   const zoneOptions = data?.zones || [];
   const bankOptions = (data?.banks || []).filter((b: any) => zone === 'all' || (b.zone || b.zone_id) === zone);
-  if (!data) return <div className="loading-screen" id="main-content" tabIndex={-1} role="main"><div className="brand-symbol">♠</div><div className="eyebrow">THE GILDED ACE</div><h1>{error ? 'The evidence could not load.' : 'Setting the table.'}</h1><p>{error || 'Loading the casino floor, its history, and the evidence.'}</p>{error ? <button className="btn btn-primary" onClick={() => location.reload()}>Try again</button> : <span className="loading-line"/>}</div>;
+  if (!data) return <div onFocus={event => { focusAfterLoading.current = true; focusedLoadingNode.current = event.currentTarget; }} onBlur={event => { if (event.relatedTarget) focusAfterLoading.current = false; }} className="loading-screen" id="main-content" tabIndex={-1} role="main"><div className="brand-symbol">♠</div><div className="eyebrow">THE GILDED ACE</div><h1>{error ? 'The evidence could not load.' : 'Setting the table.'}</h1><p>{error || 'Loading the casino floor, its history, and the evidence.'}</p>{error ? <button className="btn btn-primary" onClick={() => location.reload()}>Try again</button> : <span className="loading-line"/>}</div>;
   const t = view!.totals;
   return <div className="app-shell midnight-shell" data-motion={motion.enabled ? 'on' : 'off'} data-overlay={overlay || undefined}>
     {mobileNav && <button className="nav-scrim" aria-label="Close navigation" onClick={() => setMobileNav(false)}/>}
@@ -103,9 +130,9 @@ function DashboardApp({ motion, onNavigate, onReplayOpening }: { motion: ReturnT
       <div className="sidebar-footer"><span className="status-dot"/> DASHBOARD ROYALE <small>Synthetic case study · 2025</small></div>
     </aside>
     <div className="workspace" aria-hidden={overlay ? true : undefined} {...(overlay ? { inert: '' } : {})}>
-      <header className="topbar"><div className="breadcrumbs"><button className="mobile-menu" aria-label="Open navigation" onClick={() => setMobileNav(true)}><Menu size={20}/></button><span>THE GILDED ACE</span><ChevronRight size={12}/><strong>{selectedPage.label}</strong></div><div className="topbar-right"><button className="presentation-launch" aria-label="Walk through the decision" title="Guided presentation" onClick={() => openOverlay('presentation')}><Presentation size={16}/><span>Present</span></button><button className="motion-toggle" aria-label="Toggle animations" aria-pressed={motion.enabled} disabled={motion.systemReduced} onClick={motion.toggle} title={motion.systemReduced ? 'Reduced motion follows your system preference' : 'Turn visual animations on or off'}><span className="motion-indicator"/>{motion.enabled ? 'Motion on' : 'Motion off'}</button><span className="data-badge"><span/> JAN–JUN 2025</span><button className="icon-btn cinema-replay-trigger" title="Replay cinematic introduction" aria-label="Show cinematic introduction" onClick={onReplayOpening}><RotateCcw size={17}/></button><button className="icon-btn" title="Definitions and methodology" aria-label="Definitions and methodology" onClick={() => navigate('evidence')}><CircleHelp size={18}/></button><div className="avatar" title="Floor analytics lead">GA</div></div></header>
+      <header className="topbar"><div className="breadcrumbs"><button className="mobile-menu" aria-label="Open navigation" onClick={() => setMobileNav(true)}><Menu size={20}/></button><span>THE GILDED ACE</span><ChevronRight size={12}/><strong>{selectedPage.label}</strong></div><div className="topbar-right"><button className="presentation-launch" aria-label="Walk through the decision" title="Guided presentation" onClick={() => openOverlay('presentation')}><Presentation size={16}/><span>Present</span></button><button className="motion-toggle" aria-label="Toggle animations" aria-pressed={motion.enabled} disabled={motion.systemReduced} onClick={motion.toggle} title={motion.systemReduced ? 'Reduced motion follows your system preference' : 'Turn visual animations on or off'}><span className="motion-indicator"/>{motion.enabled ? 'Motion on' : 'Motion off'}</button><span className="data-badge"><span/> JAN–JUN 2025</span><button className="icon-btn cinema-replay-trigger" title={motion.enabled ? "Replay cinematic introduction" : "Turn motion on to replay the introduction"} disabled={!motion.enabled} aria-label="Show cinematic introduction" onClick={onReplayOpening}><RotateCcw size={17}/></button><button className="icon-btn" title="Definitions and methodology" aria-label="Definitions and methodology" onClick={() => navigate('evidence')}><CircleHelp size={18}/></button><div className="avatar" title="Floor analytics lead">GA</div></div></header>
       <main id="main-content" tabIndex={-1}><div className="page-stage" key={page}>
-        {page === 'verdict' && <AceOverview totals={t} series={view!.series} motionEnabled={motion.enabled && !overlay} start={start} end={end} scope={bank !== 'all' ? niceName(bank, bankOptions) : zone !== 'all' ? niceName(zone, zoneOptions) : 'All zones'} onExplore={() => openOverlay('floor')} onHistory={() => document.getElementById('historical-floor-replay')?.scrollIntoView({behavior: motion.enabled ? 'smooth' : 'auto', block: 'start'})} onFilm={onReplayOpening} onDemand={() => navigate('demand')} onModel={() => navigate('model')}/>}<div className={`page-heading ${page === 'verdict' ? 'overview-heading' : ''}`}><div><div className="eyebrow">{page === 'verdict' ? 'LUCK, LOCATION, OR A LEAK? / THE SIX-MONTH REVIEW' : `THE INVESTIGATION / ${selectedPage.chapter}`}</div><h1>{page === 'verdict' ? <>Pause replacement. <em>Follow the evidence.</em></> : pageCopy[page][0]}</h1><p>{page === 'verdict' ? 'Separate game mix, location, exposure and luck from machine performance.' : pageCopy[page][1]}</p></div><button className="btn export-btn" onClick={() => csvDownload(view!.machines.map(({ metrics, ...m }) => m), `gilded-ace-machines-${start}-${end}.csv`)}><Download size={15}/> Export data</button></div>
+        {page === 'verdict' && <AceOverview totals={t} series={view!.series} motionEnabled={motion.enabled && !overlay && !openingCovered} start={start} end={end} scope={bank !== 'all' ? niceName(bank, bankOptions) : zone !== 'all' ? niceName(zone, zoneOptions) : 'All zones'} onExplore={() => openOverlay('floor')} onHistory={() => document.getElementById('historical-floor-replay')?.scrollIntoView({behavior: motion.enabled ? 'smooth' : 'auto', block: 'start'})} onFilm={onReplayOpening} onDemand={() => navigate('demand')} onModel={() => navigate('model')}/>}<div className={`page-heading ${page === 'verdict' ? 'overview-heading' : ''}`}><div><div className="eyebrow">{page === 'verdict' ? 'LUCK, LOCATION, OR A LEAK? / THE SIX-MONTH REVIEW' : `THE INVESTIGATION / ${selectedPage.chapter}`}</div><h1>{page === 'verdict' ? <>Pause replacement. <em>Follow the evidence.</em></> : pageCopy[page][0]}</h1><p>{page === 'verdict' ? 'Separate game mix, location, exposure and luck from machine performance.' : pageCopy[page][1]}</p></div><button className="btn export-btn" onClick={() => csvDownload(view!.machines.map(({ metrics, ...m }) => m), `gilded-ace-machines-${start}-${end}.csv`)}><Download size={15}/> Export data</button></div>
         {!fixedScope && page !== 'guests' && <div className="filterbar"><div className="filter-label"><SlidersHorizontal size={15}/><span>Analysis scope</span></div><div className="select-wrap"><select aria-label="Analysis period preset" value={periodPreset} onChange={e => { const v = e.target.value; if (v !== 'custom') { setStart(v === 'full' ? '2025-01-01' : v === 'q2' ? '2025-04-01' : '2025-06-01'); setEnd('2025-06-30'); } }}><option value="full">Full six months</option><option value="q2">April – June</option><option value="june">June only</option><option value="custom">Custom period</option></select><ChevronDown size={13}/></div><div className="date-range"><CalendarDays size={14}/><input aria-label="Analysis start date" type="date" min="2025-01-01" max={end} value={start} onChange={e => { if (e.target.value) setStart(e.target.value); }}/><span>—</span><input aria-label="Analysis end date" type="date" min={start} max="2025-06-30" value={end} onChange={e => { if (e.target.value) setEnd(e.target.value); }}/></div><div className="select-wrap"><select aria-label="Zone filter" value={zone} onChange={e => { setZone(e.target.value); setBank('all'); }}><option value="all">All zones</option>{zoneOptions.map((z: any) => <option key={z.id || z.zone_id} value={z.id || z.zone_id}>{niceName(z.id || z.zone_id, zoneOptions)}</option>)}</select><ChevronDown size={13}/></div><div className="select-wrap bank-select"><select aria-label="Bank filter" value={bank} onChange={e => setBank(e.target.value)}><option value="all">All banks</option>{bankOptions.map((b: any) => <option key={b.id || b.bank_id} value={b.id || b.bank_id}>{b.name || b.id || b.bank_id}</option>)}</select><ChevronDown size={13}/></div><button className="reset-btn" onClick={reset} title="Reset all filters" aria-label="Reset all filters"><RotateCcw size={14}/></button></div>}
         {!fixedScope && page !== 'guests' && <div className="active-analysis-scope" role="status" aria-live="polite"><span>CURRENT SELECTION</span><strong>{shortDate(start)} – {shortDate(end)}, 2025</strong><i/>{zone === 'all' ? 'All zones' : niceName(zone, zoneOptions)}<i/>{bank === 'all' ? 'All banks' : niceName(bank, bankOptions)}<i/>{number(t.machines)} machines active in period</div>}
         {page === 'verdict' && <>

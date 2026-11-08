@@ -32,10 +32,14 @@ const select=async(label,value)=>{const el=w.document.querySelector(`select[aria
 const readyDeadline=Date.now()+5000;
 while(!w.document.querySelector('.metric-value')&&Date.now()<readyDeadline) await settle();
 const introductionButton=(label)=>w.document.querySelector(`[aria-label="${label}"]`);
-assert.equal(w.document.querySelector('.cinema-opening'),null,'Particle overview opens first');
+assert.ok(w.document.querySelector('.cinema-opening'),'Homepage opens with the automatic cinematic introduction');
+assert.equal(w.document.querySelector('.dashboard-underlay').hasAttribute('inert'),true,'The dashboard loads behind an isolated introduction');
 assert.ok(w.document.querySelector('.particle-ace'),'Particle ace backdrop is present');
 assert.equal(w.document.querySelectorAll('.ace-stat-card').length,4,'Four floating metric cards are present');
 assert.ok(w.document.querySelector('.ace-stat-card').textContent.includes('$248.91m'),'Floating wagers reconcile with full-period data');
+introductionButton('Skip cinematic introduction').click();await settle();
+assert.equal(w.document.querySelector('.cinema-opening'),null,'Skip immediately reveals the loaded overview');
+assert.equal(w.document.querySelector('.dashboard-underlay').hasAttribute('inert'),false,'Dashboard is interactive after the introduction');
 introductionButton('Show cinematic introduction').click();await settle();
 assert.ok(w.document.querySelector('.cinema-opening'),'Topbar reopens introduction');
 introductionButton('Skip cinematic introduction').click();await settle();

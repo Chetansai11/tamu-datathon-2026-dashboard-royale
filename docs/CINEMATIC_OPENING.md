@@ -4,9 +4,9 @@ Status: generated through Higgsfield's signed-in browser interface and integrate
 
 ## Creative direction
 
-A 5.37-second generated shot shows a fictional adult card illusionist handling and releasing an ace toward the viewer. Scrolling turns an original native 3D card and lifts a gold spade from its face, ending in the dashboard's visual identity. The footage belongs in the opening; the analytical views retain their readable navy surfaces. The native overlay supplies a controlled, sharp reveal; it is not part of the generated footage.
+A 5.37-second generated shot shows a fictional adult card illusionist handling and releasing an ace toward the viewer. Opening the homepage starts a timed full-screen sequence: the film blends into an original native 3D card, the spade emerges and zooms toward the viewer, and the opening dissolves into the existing “Read the floor. Find the signal.” overview. No scrolling is required. The native overlay supplies the sharp card, zoom and reveal; these are not part of the generated footage.
 
-The palette is midnight navy `#070b18`, soft gold `#f4c66b`, and restrained cyan rim light. Keep the performer, hands and card center-safe for mobile. A dark background and gradient masking provide visual blending; this is not a promise of an alpha-channel video.
+The current interface preserves the approved graphite, ivory and brass palette with locally bundled IBM Plex type. The original film retains its generated lighting. CSS masking blends its frame into the opening; the MP4 itself does not have an alpha channel.
 
 ## Prepared generation prompt
 
@@ -15,16 +15,17 @@ One continuous premium cinematic shot for a dark navy and gold casino analytics 
 ## Integration contract
 
 - The person and throw come from the generated film. Native SVG/CSS supplies a sharp final card and spade transition.
-- Use a sticky opening section, without scroll locking or mandatory viewing. Keep skip, pause and replay controls available.
-- Feed the existing motion preference into the opening. System reduced motion uses a static composition and removes the extended scroll distance.
-- Pause video when hidden or outside the viewport. Dispose event listeners, animation frames and observers on unmount.
+- Use a fixed viewport overlay with no document-height runway. It advances automatically, while Skip, Pause and Replay remain available. Temporarily lock background scrolling and focus until the introduction finishes or is skipped.
+- Honor the existing motion preference. System reduced motion or saved motion-off bypasses the opening and goes directly to the dashboard.
+- Pause both the timeline and film while hidden or manually paused. Dispose listeners, animation frames and pending media work on unmount.
 - Keep the seven investigation views and all analytical calculations intact.
 - Use relative `media/...` paths for assets so the downloadable `site/offline.html` can use companion media files. Missing media must have a visible fallback.
-- Start the film independently while dashboard data loads. Route changes dismiss the introduction, and the topbar replay control reopens it on desktop and mobile. Skip transfers keyboard focus to the dashboard.
+- Start the film independently while dashboard data loads behind the overlay. Start the hero particle formation and floating-card entrance during the final blend. Media errors or blocked playback use native artwork and cannot trap the viewer.
+- Automatically open on the homepage and `#verdict`; analytical deep links open directly. Route changes dismiss the introduction. The existing replay controls reopen it on desktop and mobile, while completion and Skip transfer focus to the dashboard.
 
 ## Asset provenance
 
-Both assets were generated for this project on November 7, 2026, with the user's Higgsfield Free Plan. The original files are retained without raster editing. Navy CSS masking blends the frame into the opening and covers incidental generated lettering in its left margin.
+Both assets were generated for this project on November 7, 2026, with the user's Higgsfield Free Plan. The original files are retained without raster editing. Dark CSS masking blends the frame into the opening and covers incidental generated lettering in its left margin.
 
 | Asset | Model | File | Size |
 | --- | --- | --- | --- |
@@ -37,4 +38,4 @@ The film prompt was shortened to a single card flourish and throw. The gold embl
 
 ## Delivery checks
 
-Completed checks: TypeScript and production build; seven-route interaction regression including introduction skip/reopen and keyboard focus; focused cinematic tests for pause/play/replay, inert chapters, failed media, hidden-tab pause and cleanup; production offline startup with embedded official totals. Browser inspection at 1440×1000 and 390×844 verified real MP4 decoding, the performer/card motion, scroll-driven gold spade emergence, readable text, no horizontal overflow, skip/replay, and motion-off with no video element. The existing hosted audience is preserved.
+The automatic-entry revision is checked for timed completion without scrolling, pause/resume, hidden-tab suspension, replay, media fallback, reduced motion, keyboard isolation and cleanup. Full-app checks cover homepage entry, analytical deep links, concurrent data loading and dashboard focus. Production and offline checks remain part of the delivery workflow. The existing hosted audience is preserved.
