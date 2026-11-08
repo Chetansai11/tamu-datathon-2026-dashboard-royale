@@ -1,6 +1,9 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const core = require(process.argv[2]);
+// The browser script has a CommonJS test export; isolate it from the root ESM package.
+const sandbox = {module:{exports:{}},exports:{}};
+require('node:vm').runInNewContext(fs.readFileSync(process.argv[2],'utf8'),sandbox,{filename:process.argv[2]});
+const core = sandbox.module.exports;
 const {bundle,expectations} = JSON.parse(fs.readFileSync(0,'utf8'));
 const rows=core.decode(bundle);
 for(const {filters,expected} of expectations){
@@ -36,8 +39,7 @@ global.location={hash:'#overview'};
 global.addEventListener=()=>{};
 global.scrollTo=()=>{};
 global.document={getElementById:element,querySelectorAll:()=>nav,querySelector:()=>nav[0],addEventListener(){}};
-delete require.cache[require.resolve(process.argv[2])];
-require(process.argv[2]);
+require('node:vm').runInThisContext(fs.readFileSync(process.argv[2],'utf8'),{filename:process.argv[2]});
 const evidenceIds=new Set(['floor-math','luck-method','guest-scope','validation-data']);
 for(const [reportKey,report] of Object.entries(bundle.reports||{})){
   const items=report?.evidence||report?.claims||[];

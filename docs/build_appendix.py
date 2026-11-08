@@ -4,6 +4,9 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
 reports = json.loads((root / "dashboard/reports.json").read_text(encoding="utf-8"))
+placement_path = root / "outputs/placement_model.json"
+if placement_path.exists():
+    reports["placement"] = json.loads(placement_path.read_text(encoding="utf-8"))
 
 def cell(value):
     return str(value or "").replace("|", "\\|").replace("\n", " ")
@@ -26,8 +29,8 @@ for key, report in reports.items():
         values = [f"{label} ({row['id']})", source, row.get("result"), row.get("alternative"), row.get("limitation")]
         lines.append("| " + " | ".join(cell(v) for v in values) + " |")
 lines += ["", "## Why each GM machine earned less", "",
-          "Gap to an average machine (on the floor all 181 days at the floor's daily availability, earning the floor's daily theo rate) = time on floor + game math + location + the machine itself + luck/payout. The identity is exact. Rates leave the machine out; location uses the dated zone and a monthly zone factor (zone theo / its game-mix expectation). Source: src/q1_decomposition.py.", "",
-          "| Machine | Zone | Gap | Time on floor | Game math | Location | The machine | Luck / payout | Machine factor [95%] |",
+          "Gap to the common average-machine comparator = time on floor + game math + location + descriptive machine component + payout residual. The accounting identity is exact, but the ordered components are not causal effects. Peer floor/game rates and monthly zone factors exclude every observation of the target, including the game rates applied to its zone peers. Dated placements handle moves. The common average-machine comparator includes the full floor and is not leave-one-out. The 95% target-week bootstrap holds estimated peer benchmarks fixed, omits their estimation uncertainty, and is neither simultaneous nor causal. Zone lists show locations occupied during the investigation, not necessarily the June 30 position. Source: src/q1_decomposition.py.", "",
+          "| Machine | Historical zones | Gap | Time on floor | Game math | Location | Machine component | Payout residual | Machine factor [conditional 95%] |",
           "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |"]
 for x in reports["decomp"]["gm_bottom10"]:
     values = [x["machine_id"], ", ".join(x["zones"]), f"${x['gap']:,.0f}", f"${x['exposure']:,.0f}", f"${x['game']:,.0f}",
@@ -37,7 +40,7 @@ for x in reports["decomp"]["gm_bottom10"]:
 t = reports["decomp"]["gm_bottom10_totals"]
 lines.append(f"| **All ten** | | **${t['gap']:,.0f}** | ${t['exposure']:,.0f} | ${t['game']:,.0f} | ${t['location']:,.0f} | ${t['machine']:,.0f} | ${t['luck']:,.0f} | |")
 lines += ["", "## Every machine in the GM list (earlier screening index)", "",
-          "Baseline: rank total actual house win ascending. Local demand index = SUM(theo) / SUM(available_hours × same-date peer theo per available hour). Peers are leave-one-out, same-config, same-zone, same-date (minimum three peers; floor same-config fallback). Intervals are descriptive 95% weekly block bootstrap intervals, not simultaneous causal tests. Location index compares that local expectation to same-game floor peers. Payout p-values use a two-sided normal approximation and Bonferroni correction over all 310 machines.", "",
+          "Baseline: rank total actual house win ascending. Local demand index = SUM(theo) / SUM(available_hours × same-date peer theo per available hour). Peers are leave-one-out, same-config, same-zone, same-date (minimum three peers; floor same-config fallback). Intervals are descriptive 95% target-week bootstrap intervals conditional on fixed estimated peer benchmarks, not simultaneous or causal tests; benchmark-estimation uncertainty is omitted. Location index compares that local expectation to same-game floor peers. Payout p-values use a two-sided normal approximation and Bonferroni correction over all 310 machines.", "",
           "| Machine | On-floor days | Actual win | Theo per available hour | Local demand index and 95% interval | Location index | Availability | Payout z and adjusted p | Decision |",
           "| --- | ---: | ---: | ---: | --- | ---: | ---: | --- | --- |"]
 for x in reports["q1"]["bottom10"]:

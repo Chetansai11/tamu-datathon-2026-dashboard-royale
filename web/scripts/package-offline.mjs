@@ -19,7 +19,8 @@ html=html.replace(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/g,(_,src)=>{
 });
 html=html.replace(/<link\b[^>]*href="([^"]+\.css)"[^>]*>/g,(_,src)=>`<style>${inlineCss(fs.readFileSync(path.join(dist,src.replace(/^\.?\//,'')),'utf8'))}</style>`);
 const data=fs.readFileSync(path.join(dist,'data','dashboard.json'),'utf8').replace(/</g,'\\u003c');
-html=html.replace('</head>',`<script id="dashboard-payload" type="application/json">${data}</script></head>`);
+const placement=fs.readFileSync(path.join(dist,'data','placement_model.json'),'utf8').replace(/</g,'\\u003c');
+html=html.replace('</head>',`<script id="dashboard-payload" type="application/json">${data}</script><script id="placement-payload" type="application/json">${placement}</script></head>`);
 fs.writeFileSync(path.join(dist,'offline.html'),html);
 if(/(?:src|href)="\/?assets\//.test(html))throw Error('Offline document still references build assets');
 console.log(`Offline dashboard packaged: ${(Buffer.byteLength(html)/1e6).toFixed(1)} MB. Open dist/offline.html directly.`);

@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from src import metrics as m
-from src.forecast import build_report as forecast_report
+from src.forecast import build_report as forecast_report, retrospective_validation, _rolling_predict, ROLLING_MODELS
 from src.q2_demand import monthly_floor, event_associations, closure_comparison
 
 
@@ -44,6 +44,79 @@ def test_forecast_rejects_missing_or_duplicate_dates():
         forecast_report(frame.iloc[1:])
     with pytest.raises(ValueError):
         forecast_report(pd.concat([frame,frame.iloc[[0]]]))
+
+
+def test_rolling_origins_freeze_all_models_and_bands_before_their_test_block():
+    frame = synthetic_calendar()
+    original = retrospective_validation(frame)
+    cutoff = "2025-05-06"
+    changed = frame.copy()
+    changed.loc[changed.gaming_date >= cutoff, "coin_in_usd"] *= 50
+    mutated = retrospective_validation(changed)
+    before = [row for row in original['daily'] if row['origin'] <= cutoff]
+    after = [row for row in mutated['daily'] if row['origin'] <= cutoff]
+    for left, right in zip(before, after):
+        for key in left:
+            if key != 'actual':
+                assert left[key] == right[key], (left['origin'], left['date'], key)
+    for left, right in zip(original['folds'], mutated['folds']):
+        if left['origin'] <= cutoff:
+            for key in ('selected_model', 'tuning_mae_usd', 'interval_radius_usd', 'candidate_interval_radius_usd'):
+                assert left[key] == right[key]
+    assert mutated['summary']['mae_usd'] != original['summary']['mae_usd']
+
+
+def test_rolling_calibration_outcomes_cannot_select_the_model():
+    frame = synthetic_calendar()
+    original = retrospective_validation(frame)['folds'][0]
+    changed = frame.copy()
+    in_calibration = changed.gaming_date.between(original['calibration_start'], original['calibration_end'])
+    changed.loc[in_calibration, 'coin_in_usd'] += np.arange(in_calibration.sum()) * 1000
+    mutated = retrospective_validation(changed)['folds'][0]
+    assert original['selected_model'] == mutated['selected_model']
+    assert original['tuning_mae_usd'] == mutated['tuning_mae_usd']
+    assert original['interval_radius_usd'] != mutated['interval_radius_usd']
+
+
+def test_rolling_protocol_has_disjoint_windows_and_comparable_horizons():
+    result = retrospective_validation(synthetic_calendar())
+    assert result['status'] == 'retrospective'
+    assert len(result['folds']) == 13
+    assert result['summary']['days'] == 91
+    assert len({row['date'] for row in result['daily']}) == 91
+    assert [row['days'] for row in result['monthly']] == [30, 31, 30]
+    assert all(row['days'] == 91 for row in result['models'])
+    assert result['daily'][0]['date'] == '2025-04-01'
+    assert result['daily'][-1]['date'] == '2025-06-30'
+    for fold in result['folds']:
+        assert fold['tuning_fit_end'] < fold['tuning_start'] <= fold['tuning_end'] < fold['calibration_start'] <= fold['calibration_end'] < fold['origin']
+        assert len(fold['tuning_origins']) == 2
+        assert len(fold['calibration_origins']) == 3
+        assert fold['calibration_days'] == 21
+        assert fold['days'] == 7
+        assert (pd.Timestamp(fold['forecast_end']) - pd.Timestamp(fold['origin'])).days == 6
+        assert set(fold['candidate_mae_usd']) == set(ROLLING_MODELS)
+    weighted_coverage = sum(row['days'] * row['coverage_90'] for row in result['monthly']) / 91
+    assert result['summary']['coverage_90'] == pytest.approx(weighted_coverage)
+
+
+def test_seasonal_naive_repeats_last_observed_week_over_a_fixed_horizon():
+    frame = synthetic_calendar()
+    frame['coin_in_usd'] += np.arange(len(frame)) * 13
+    train = frame[frame.gaming_date < '2025-04-01']
+    dates = pd.Series(pd.date_range('2025-04-01', periods=14))
+    prediction = _rolling_predict(train, dates, 'seasonal_naive')
+    latest = train.groupby(train.gaming_date.dt.day_of_week).coin_in_usd.last()
+    assert prediction.tolist() == dates.dt.day_of_week.map(latest).tolist()
+    assert prediction[:7].tolist() == prediction[7:].tolist()
+
+
+def test_frozen_monthly_diagnostics_reconcile_to_original_benchmark():
+    result = forecast_report(synthetic_calendar())
+    assert [row['days'] for row in result['frozen_monthly']] == [31, 30]
+    assert sum(row['days'] * row['mae_usd'] for row in result['frozen_monthly']) / 61 == pytest.approx(result['summary']['model_mae'])
+    assert sum(row['days'] * row['bias_usd'] for row in result['frozen_monthly']) / 61 == pytest.approx(result['summary']['model_bias_usd'])
+    assert sum(row['days'] * row['coverage_90'] for row in result['frozen_monthly']) / 61 == pytest.approx(result['summary']['coverage_90'])
 
 
 def test_monthly_demand_reconciles_raw_machine_meter_and_coverage():

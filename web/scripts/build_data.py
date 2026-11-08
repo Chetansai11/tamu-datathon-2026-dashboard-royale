@@ -12,6 +12,7 @@ import datetime as dt
 import hashlib
 import json
 import math
+import sys
 from pathlib import Path
 import urllib.request
 
@@ -19,6 +20,8 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT.parent))
+from src.q1_decomposition import _zone_factor_loo
 SOURCE = ROOT / "data" / "source"
 OUT = ROOT / "public" / "data"
 REPO = "tamu-datathon-org/dashboard-royale"
@@ -132,18 +135,15 @@ def machine_data(frames):
     assert daily.loc[daily.gaming_date == pd.Timestamp("2025-03-08"), "scheduled"].max() == 23
 
     # Retain the team's richer five-part attribution (q1_decomposition.py).
-    # Daily floor/game rates exclude the target. The monthly zone ratio excludes
-    # its direct rows, but the shared game-mix reference is descriptive, not a
-    # completely cross-fitted causal model.
+    # Exclude the target from floor/game rates and from every peer game rate
+    # inside the monthly zone denominator. This remains a descriptive benchmark.
     def loo(keys, num, den):
         group = daily.groupby(keys)[[num, den]].transform("sum")
         own = daily.groupby(keys + ["machine_id"])[[num, den]].transform("sum")
         return (group[num] - own[num]) / (group[den] - own[den]).replace(0, np.nan)
     daily["floor_rate"] = loo(["gaming_date"], "theo_usd", "available_hours")
     daily["game_rate"] = loo(["gaming_date", "config_id"], "theo_usd", "available_hours").fillna(daily.floor_rate)
-    whole = daily.groupby(["gaming_date", "config_id"])[["theo_usd", "available_hours"]].transform("sum")
-    daily["mix"] = daily.available_hours * whole.theo_usd / whole.available_hours
-    daily["zone_factor"] = loo(["zone_id", "month"], "theo_usd", "mix").fillna(1)
+    daily["zone_factor"] = _zone_factor_loo(daily.rename(columns={"theo_usd": "theo", "available_hours": "h"}))
     daily["peer_rate"] = daily.game_rate * daily.zone_factor
     daily["peerTheo"] = daily.available_hours * daily.peer_rate
     daily["floorTheo"] = daily.available_hours * daily.floor_rate
@@ -310,6 +310,10 @@ def main():
     if report_path is None:
         raise FileNotFoundError("Missing original team reports; pass --reports /path/to/reports.json")
     reports = json.loads(report_path.read_text(encoding="utf-8"))
+    placement_path = ROOT.parent / "outputs" / "placement_model.json"
+    placement = json.loads(placement_path.read_text(encoding="utf-8"))
+    # Full predictions load only in Placement Lab; share evidence and validation.
+    reports["placement"] = {k: placement[k] for k in ["meta", "validation", "evidence"]}
     forecast = reports["forecast"]
     summary = forecast["summary"]
     assert abs(model["baselineMAE"] - summary["baseline_mae"]) < .001
@@ -344,16 +348,18 @@ def main():
     result["reports"] = reports
     facts["coarseDailyLostTheo"] = facts["lostTheo"]
     facts["lostTheo"] = reports["q3"]["summary"]["lost_theo"]
-    result["meta"]["definitions"]["peerTheo"] = "Team five-part decomposition: available hours × daily same-game theo rate excluding the target × monthly game-mix-adjusted zone factor. The zone factor excludes target rows but uses shared floor game rates; retrospective and descriptive, not causal or fully cross-fitted. Explorer uses full-release reference rates when dates change."
+    result["meta"]["definitions"]["peerTheo"] = "Five-part decomposition: available hours × daily same-game theo rate × monthly game-mix-adjusted zone factor. The target is excluded from peer rows and from the game rates used to value those peers. Retrospective and descriptive, not a causal effect. Explorer uses full-release reference rates when dates change."
     result["meta"]["definitions"]["demandIndex"] = "Theo / peerTheo. Descriptive game-and-location-adjusted machine factor; below 1 is weaker than benchmark, not sufficient evidence to replace."
     result["meta"]["definitions"]["lostTheo"] = "Coarse explorer sensitivity: unavailable hours × matched game/location theo rate. For the primary calibrated hourly counterfactual and filters use reports.q3.daily_bank; do not mix these estimates."
     result["meta"]["tests"][5] = "Peer rates are finite; full-period machine-factor results reproduce team decomposition"
     result["meta"]["teamReportSHA256"] = hashlib.sha256(report_path.read_bytes()).hexdigest()
     OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "placement_model.json").write_bytes(placement_path.read_bytes())
+    (OUT / "reports.json").write_text(json.dumps(reports, indent=2, allow_nan=False), encoding="utf-8")
     target = OUT / "dashboard.json"
     target.write_text(json.dumps(clean(result), separators=(",", ":"), ensure_ascii=False, allow_nan=False), encoding="utf-8")
     (OUT / "audit.json").write_text(json.dumps(clean({"meta": result["meta"], "facts": facts, "model": {k: v for k, v in model.items() if k != "predictions"}, "operations": {k: v for k, v in ops.items() if k not in {"tickets", "byMonthManufacturerShift", "staffing"}}, "renovation": context["renovation"]}), indent=2, allow_nan=False), encoding="utf-8")
-    print(json.dumps(clean({"output": str(target), "bytes": target.stat().st_size, "facts": facts, "modelMAE": model["modelMAE"], "baselineMAE": model["baselineMAE"], "renovation": context["renovation"]}), indent=2), flush=True)
+    print(json.dumps(clean({"output": str(target), "bytes": target.stat().st_size, "activeMachineDays": len(daily), "placementMachines": len(placement["machines"]), "modelMAE": model["modelMAE"], "baselineMAE": model["baselineMAE"]}), indent=2), flush=True)
 
 
 if __name__ == "__main__":

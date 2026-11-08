@@ -59,10 +59,13 @@ def build(output=ROOT / "dashboard", reports_dir=ROOT / "outputs"):
         path = reports_dir / filename
         if path.exists():
             reports[key] = json.loads(path.read_text(encoding="utf-8-sig"))
-    try:
-        commit = subprocess.check_output(["git", "-C", str(m.data_dir().parent), "rev-parse", "HEAD"], text=True).strip()
-    except (OSError, subprocess.CalledProcessError):
-        commit = "unavailable"
+    # Release verification pins source provenance even for an extracted archive.
+    commit = reports.get("validation", {}).get("data_commit")
+    if not commit:
+        try:
+            commit = subprocess.check_output(["git", "-C", str(m.data_dir().parent), "rev-parse", "HEAD"], text=True, stderr=subprocess.DEVNULL).strip()
+        except (OSError, subprocess.CalledProcessError):
+            commit = "unavailable"
     data = {
         "meta": {"built_utc": datetime.now(timezone.utc).isoformat(), "release": "0.9.0-draft", "data_commit": commit,
                  "start": str(frame.date.min()), "end": str(frame.date.max()), "machine_days": len(frame),

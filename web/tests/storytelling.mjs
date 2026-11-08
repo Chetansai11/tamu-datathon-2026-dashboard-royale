@@ -27,8 +27,8 @@ await until(()=>w.document.querySelector('.ace-overview'),'Overview loaded');
 await click(label('Skip cinematic introduction'),'Skip automatic opening to inspect the analytical stories');
 const heroBefore=w.document.querySelector('.ace-overview h1').textContent;
 const waterfall=()=>w.document.querySelector('.gap-waterfall');
-assert.ok(waterfall().textContent.includes('$0.01'),'Source rounding is disclosed');
-assert.ok(waterfall().textContent.includes('3,662.14'),'Positive machine offset keeps exact dollars');
+assert.ok(waterfall().textContent.includes('$0.02'),'Source rounding is disclosed');
+assert.ok(waterfall().textContent.includes('3,764.90'),'Positive machine offset keeps exact dollars');
 await click(label('Next earnings-gap step'),'Waterfall manual next works');
 assert.equal(waterfall().dataset.step,'1','Manual selection advances the waterfall');
 assert.equal(waterfall().dataset.playing,'false','Manual inspection pauses waterfall playback');
@@ -88,7 +88,7 @@ assert.equal(tour().dataset.step,'0','Tour begins with manager question');
 for(let i=1;i<=5;i++){
   await click(label('Next chapter'),`Next chapter ${i+1}`);
   assert.equal(tour().dataset.step,String(i),'Manual chapter advance matches step');
-  if(i===1) assert.ok(tour().textContent.includes('541,425')&&tour().textContent.includes('3,662'),'Waterfall summary keeps gap and positive offset');
+  if(i===1) assert.ok(tour().textContent.includes('541,425')&&tour().textContent.includes('3,764.90'),'Waterfall summary keeps gap and positive offset');
   if(i===3){
     const period=label('Presentation period');assert.ok(period,'Tour has a real period filter');
     period.value='last-month';period.dispatchEvent(new w.Event('change',{bubbles:true}));await settle();
