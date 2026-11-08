@@ -1,17 +1,17 @@
 # The Gilded Ace: pause replacement, test the explanation
 
-The general manager wants to replace the ten lowest-earning machines. Our recommendation is to pause that blanket order, inspect one payout signal, and test access to Back Forty.
+The general manager wants to replace the ten lowest-earning machines. We recommend pausing blanket replacement, inspecting one payout signal and testing access to Back Forty.
 
-The dashboard separates five components of each machine's gap to an average machine: exposure, game math, location, machine-specific performance and payout residual. The ten machines' combined $541,425 shortfall comprises $209,724 from game mix, $143,416 from location, $128,590 from exposure and $63,357 from payouts, offset by a positive $3,662 machine-specific component. This descriptive decomposition does not prove every machine is healthy; it shows why total earnings alone are a poor replacement rule.
+The ten machines' $541,425 shortfall separates into game math (−$209,724), location (−$143,519), exposure (−$128,590), payout residual (−$63,357) and a positive $3,765 machine component. Peer benchmarks exclude the target throughout. This ordered, retrospective attribution does not establish that every machine is healthy.
 
-Nine candidates spent time in Back Forty. Its game-adjusted productivity was already weak before the walkway closure, which coincided with a further 30.77% decline relative to other zones. The reopening pattern and near-stable preclosure comparison support an access hypothesis, while guest mix and displaced play remain alternatives.
+Nine candidates spent time in Back Forty. Lower footfall and the closure-period decline support an access hypothesis, while guest preferences and displaced play remain alternatives. M-1158 alone survives the floor-wide Bonferroni payout screen: inspect rather than presume a defect.
 
-M-1158 is the only payout signal surviving a Bonferroni screen across 310 machines. Inspection is justified; a defect or misconduct is not established.
+June wagers fell 1.49% per day and 4.15% per available hour versus January. A weekday forecast selected before May–June achieved $68,699 daily MAE against $218,258 for a constant baseline; its nominal 90% band covered 85.25% of test days. Routine maintenance therefore favors quieter Tuesdays using existing staff.
 
-Demand fell 1.49% per day from January to June and 4.15% per available machine-hour. A weekday model, selected within January–April and frozen before May–June, achieved $68,699 daily MAE versus $218,258 for the constant baseline. Its nominal 90% band covered 85.25% of test days. Routine maintenance therefore favors quieter Tuesdays, using existing staff.
+Placement Lab adds histogram gradient boosting selected on earlier time folds. In retrospective May–June evaluation, weighted MAE was $3.6907 per available machine-hour against $4.2858 for a configuration/weekday baseline: 13.884% lower, with 88.55% nominal-90% coverage. It prices supported moves and both legs of occupied-slot swaps, including lead time, downtime and displacement. Only four historical moves exist, so forecast accuracy does not validate relocation gains; unsupported combinations receive no estimate.
 
-We distinguish 5,021 unavailable hours from the estimated $1.115 million of gross missing wagers; property-level recovery can be zero. Tracked players wagered $163.8 million, 16.06% finished ahead, and the top 1% placed 20.41% of tracked wagers. Comps cost $190,669; matched benefit/tier redemption point prices fell approximately 53% in May. These findings do not justify targeting heavy losers.
+We separate 5,021 unavailable hours from an estimated $1.115 million in gross missing wagers; property-level recovery can be zero. Among tracked guests, 16.06% finished ahead and the top 1% placed 20.41% of wagers. Comps cost $190,669; matched redemption point prices fell approximately 53% in May. These findings do not justify targeting heavy losers.
 
-Our July plan spends $8,700: inspect M-1158 for $1,200 and test Back Forty wayfinding for $7,500. Preserve $91,300. Signage breaks even at a 0.72-point occupancy increase only with no displacement; 50% displacement raises that to 1.44 points. Compare coverage-adjusted traffic, occupancy and whole-floor performance against prespecified controls.
+Our July plan spends $8,700: inspect M-1158 ($1,200) and test wayfinding ($7,500), preserving $91,300. At June rates and no extra operating costs, signage breaks even at +0.72 occupancy points only with no displacement; 50% displacement requires +1.44 points. Predeclare controls, uncertainty and whole-floor outcomes before expanding either pilot or relocation scenarios.
 
-Date, bank and guest-group exploration connects each claim to evidence, alternatives and limitations. All casino data is synthetic. Reproducible code and an AI-use disclosure accompany the dashboard.
+Date, bank and guest-group exploration connects claims to evidence. All casino observations are synthetic; reproducible code and AI disclosure accompany the dashboard.
