@@ -61,11 +61,14 @@ constant-training-mean baseline. Its nominal 90% band covers **85.25%** of test 
 
 ## Submission artifacts and credits
 
+**Judges: use the four `web/public/docs/` links below.** The `docs/` files are the original-release archive.
+
 - [Enhanced main write-up](web/public/docs/WRITEUP.md), under 400 words
 - [Claims & Evidence appendix](web/public/docs/CLAIMS_EVIDENCE.md)
 - [Methods, assumptions and enhancement AI disclosure](web/public/docs/METHODOLOGY.md)
 - [Walkthrough script](web/public/docs/VIDEO_SCRIPT.md), designed for under two minutes
-- [Original team AI-use disclosure and credits](docs/AI_DISCLOSURE.md)
+- [Devpost submission text: links, AI disclosure, checklist](docs/DEVPOST_SUBMISSION.md)
+- [Full AI-use disclosure and credits (Codex and Claude)](docs/AI_DISCLOSURE.md)
 - [Original write-up](docs/WRITEUP.md), [appendix](docs/CLAIMS_EVIDENCE.md),
   [video script](docs/VIDEO_SCRIPT.md) and [human handoff](docs/HANDOFF.md)
 

@@ -48,6 +48,36 @@ Gap to the common average-machine comparator = time on floor + game math + locat
 | M-1265 | Back Forty | $-45,311 | $299 | $-23,360 | $-18,850 | $-3,261 | $-138 | 0.908 [0.871, 0.947] |
 | **All ten** | | **$-541,425** | $-128,590 | $-209,724 | $-143,519 | $3,765 | $-63,357 | |
 
+## Which machines underperform after location adjustment
+
+Same decomposition, ranked by the descriptive machine factor for all 310 machines (1.00 = in line with target-excluded peers after exposure, game math and location). No GM candidate is among the ten lowest; the best-ranked GM candidate is #22. 87 machines have a conditional 95% interval entirely below 1.00, including 4 GM candidates; these intervals are not simultaneous or selection-adjusted, so the list is a screening aid, not a replacement order. Source: src/q1_decomposition.py (`machine_weak_after_location`, `all_machines`).
+
+| Rank | Machine | Theme | Historical zones | Machine factor [conditional 95%] | Location factor | Main gap component | In GM list |
+| ---: | --- | --- | --- | --- | ---: | --- | --- |
+| 1 | M-1184 | Jackpot Summit | Back Forty | 0.780 [0.731, 0.823] | 0.654 | location | no |
+| 2 | M-1532 | Classic Sevens | High-Limit Room | 0.837 [0.801, 0.871] | 1.000 | exposure | no |
+| 3 | M-1154 | Jackpot Summit | Back Forty | 0.854 [0.809, 0.903] | 0.653 | location | no |
+| 4 | M-2799 | Aurora Link | Center Pit | 0.858 [0.835, 0.883] | 1.125 | exposure | no |
+| 5 | M-7487 | Aurora Link | Center Pit | 0.866 [0.825, 0.908] | 1.125 | exposure | no |
+| 6 | M-1008 | Desert Gold | Back Forty | 0.868 [0.834, 0.910] | 0.653 | location | no |
+| 7 | M-7756 | Aurora Link | Center Pit | 0.868 [0.839, 0.895] | 1.125 | exposure | no |
+| 8 | M-1230 | Classic Sevens | Back Forty | 0.871 [0.824, 0.915] | 0.653 | location | no |
+| 9 | M-1244 | Jackpot Summit | Hotel Corridor | 0.872 [0.831, 0.912] | 1.013 | machine | no |
+| 10 | M-3101 | Aurora Link | Center Pit | 0.879 [0.844, 0.918] | 1.125 | exposure | no |
+
+## When downtime costs the most play
+
+Primary hourly estimate from `reports.q3` (comparable full-hour demand pools, dated locations). Gross missing coin-in is a pre-recapture figure: guests may move to another machine, so property-level recovery can be zero. Technician waiting hours come from the exact waiting-time overlap by clock shift. Source: src/q3_downtime.py.
+
+| Shift | Unavailable machine-hours | Gross missing coin-in | Share of missing coin-in | Technician waiting hours |
+| --- | ---: | ---: | ---: | ---: |
+| day | 1,212 | $198,279 | 17.8% | 338 |
+| grave | 1,927 | $327,485 | 29.4% | 671 |
+| swing | 1,883 | $588,988 | 52.8% | 368 |
+| **All** | **5,021** | **$1,114,752** | 100% | 1,378 |
+
+By month, gross missing coin-in is highest in 2025-03 ($230,723; 979 hours), 2025-05 ($218,659; 1,017 hours).
+
 ## Every machine in the GM list (earlier screening index)
 
 Baseline: rank total actual house win ascending. Local demand index = SUM(theo) / SUM(available_hours × same-date peer theo per available hour). Peers are leave-one-out, same-config, same-zone, same-date (minimum three peers; floor same-config fallback). Intervals are descriptive 95% target-week bootstrap intervals conditional on fixed estimated peer benchmarks, not simultaneous or causal tests; benchmark-estimation uncertainty is omitted. Location index compares that local expectation to same-game floor peers. Payout p-values use a two-sided normal approximation and Bonferroni correction over all 310 machines.

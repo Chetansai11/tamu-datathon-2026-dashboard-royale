@@ -8,11 +8,11 @@ This is a recording script, not a recorded video. Rehearse once and keep the exp
 
 **0:15–0:35 — Floor explorer.**
 
-“Change the dates and drill into Back Forty. Compare theoretical earnings per available hour, not total cash alone. The full investigation separates exposure, game mix, location, machine performance and payout variation. Nine of the manager's ten spent time here. One machine, M-1158, warrants inspection after screening all 310.”
+“Change the dates and drill into Back Forty. Compare theoretical earnings per available hour, not total cash alone. The full investigation separates exposure, game mix, location, machine performance and payout variation. Nine of the manager's ten spent time here. One machine, M-1158, warrants inspection after screening all 310. After adjusting for location, the weakest machines are M-1184, M-1532 and M-1154, none from the manager's list.”
 
 **0:35–0:55 — Demand and downtime.**
 
-“Back Forty weakened during a documented walkway closure and improved after reopening. That supports an access hypothesis, not a proven signage effect. Downtime opportunity is modeled missing play; guests might simply have moved to another machine.”
+“Back Forty weakened during a documented walkway closure and improved after reopening. That supports an access hypothesis, not a proven signage effect. Downtime opportunity is modeled missing play, over half of it on the swing shift; guests might simply have moved to another machine.”
 
 **0:55–1:10 — Guests and comps.**
 

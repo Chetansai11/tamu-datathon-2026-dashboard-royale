@@ -5,6 +5,9 @@ from pathlib import Path
 root = Path(__file__).resolve().parents[1]
 reports = json.loads((root / "dashboard/reports.json").read_text(encoding="utf-8"))
 placement_path = root / "outputs/placement_model.json"
+if not placement_path.exists():
+    # outputs/ is not versioned; the committed web export holds the same report.
+    placement_path = root / "web/public/data/placement_model.json"
 if placement_path.exists():
     reports["placement"] = json.loads(placement_path.read_text(encoding="utf-8"))
 
@@ -39,6 +42,33 @@ for x in reports["decomp"]["gm_bottom10"]:
     lines.append("| " + " | ".join(cell(v) for v in values) + " |")
 t = reports["decomp"]["gm_bottom10_totals"]
 lines.append(f"| **All ten** | | **${t['gap']:,.0f}** | ${t['exposure']:,.0f} | ${t['game']:,.0f} | ${t['location']:,.0f} | ${t['machine']:,.0f} | ${t['luck']:,.0f} | |")
+gm_ids = {x["machine_id"] for x in reports["decomp"]["gm_bottom10"]}
+ranked = sorted(reports["decomp"]["all_machines"], key=lambda x: x["machine_factor"])
+gm_ranks = sorted(i + 1 for i, x in enumerate(ranked) if x["machine_id"] in gm_ids)
+flagged = reports["decomp"]["machine_weak_after_location"]
+lines += ["", "## Which machines underperform after location adjustment", "",
+          f"Same decomposition, ranked by the descriptive machine factor for all {len(ranked)} machines (1.00 = in line with target-excluded peers after exposure, game math and location). "
+          f"No GM candidate is among the ten lowest; the best-ranked GM candidate is #{gm_ranks[0]}. "
+          f"{len(flagged)} machines have a conditional 95% interval entirely below 1.00, including {len(gm_ids & {x['machine_id'] for x in flagged})} GM candidates; these intervals are not simultaneous or selection-adjusted, so the list is a screening aid, not a replacement order. Source: src/q1_decomposition.py (`machine_weak_after_location`, `all_machines`).", "",
+          "| Rank | Machine | Theme | Historical zones | Machine factor [conditional 95%] | Location factor | Main gap component | In GM list |",
+          "| ---: | --- | --- | --- | --- | ---: | --- | --- |"]
+for i, x in enumerate(ranked[:10], 1):
+    values = [str(i), x["machine_id"], x["theme"], ", ".join(x["zones"]),
+              f"{x['machine_factor']:.3f} [{x['machine_ci'][0]:.3f}, {x['machine_ci'][1]:.3f}]",
+              f"{x['location_factor']:.3f}", x["main_cause"], "yes" if x["machine_id"] in gm_ids else "no"]
+    lines.append("| " + " | ".join(cell(v) for v in values) + " |")
+q3 = reports["q3"]
+total_lost = sum(s["lost_coin_in"] for s in q3["by_shift"])
+waits = {w["shift"]: w["wait_hours"] for w in q3["summary"]["technician_comparison"]["waiting_theo_by_shift"]}
+lines += ["", "## When downtime costs the most play", "",
+          "Primary hourly estimate from `reports.q3` (comparable full-hour demand pools, dated locations). Gross missing coin-in is a pre-recapture figure: guests may move to another machine, so property-level recovery can be zero. Technician waiting hours come from the exact waiting-time overlap by clock shift. Source: src/q3_downtime.py.", "",
+          "| Shift | Unavailable machine-hours | Gross missing coin-in | Share of missing coin-in | Technician waiting hours |",
+          "| --- | ---: | ---: | ---: | ---: |"]
+for s in q3["by_shift"]:
+    lines.append(f"| {s['shift']} | {s['down_hours']:,.0f} | ${s['lost_coin_in']:,.0f} | {s['lost_coin_in'] / total_lost:.1%} | {waits.get(s['shift'], 0):,.0f} |")
+lines.append(f"| **All** | **{sum(s['down_hours'] for s in q3['by_shift']):,.0f}** | **${total_lost:,.0f}** | 100% | {sum(waits.values()):,.0f} |")
+months = sorted(q3["by_month"], key=lambda m: -m["lost_coin_in"])
+lines += ["", "By month, gross missing coin-in is highest in " + ", ".join(f"{m['period_month']} (${m['lost_coin_in']:,.0f}; {m['down_hours']:,.0f} hours)" for m in months[:2]) + "."]
 lines += ["", "## Every machine in the GM list (earlier screening index)", "",
           "Baseline: rank total actual house win ascending. Local demand index = SUM(theo) / SUM(available_hours × same-date peer theo per available hour). Peers are leave-one-out, same-config, same-zone, same-date (minimum three peers; floor same-config fallback). Intervals are descriptive 95% target-week bootstrap intervals conditional on fixed estimated peer benchmarks, not simultaneous or causal tests; benchmark-estimation uncertainty is omitted. Location index compares that local expectation to same-game floor peers. Payout p-values use a two-sided normal approximation and Bonferroni correction over all 310 machines.", "",
           "| Machine | On-floor days | Actual win | Theo per available hour | Local demand index and 95% interval | Location index | Availability | Payout z and adjusted p | Decision |",
