@@ -1,0 +1,53 @@
+# Vercel deployment
+
+Published November 7, 2026 at 7:51 PM America/Chicago after the user explicitly requested Vercel hosting and stopping existing hosted apps.
+
+- Production: https://gilded-ace-dashboard.vercel.app/
+- Project: `gilded-ace-dashboard`
+- Account scope: `chetansai2003-7922s-projects`
+- Project ID: `prj_Y3crsPJTkqCXuiisx9Syi6SbMeLs`
+- Deployment: `dpl_BdWPfvsDbCDAxBT3sBDJDYi4zaD1`
+- Inspector: https://vercel.com/chetansai2003-7922s-projects/gilded-ace-dashboard/BdWPfvsDbCDAxBT3sBDJDYi4zaD1
+- Source checkout at release: `3428970`; dashboard source pulled from `origin/main` at `313186a`.
+
+## Existing apps
+
+Both previous projects were paused with Vercel's project pause API and independently checked through the project listing:
+
+| Project | Confirmed state |
+| --- | --- |
+| `together-for-reed` | `paused: true` |
+| `ai-podcast-clipper-frontend` | `paused: true` |
+
+Pausing preserves these projects. They can be resumed from their Vercel project settings. See [Vercel project management](https://vercel.com/docs/projects/managing-projects).
+
+## Release method
+
+The enhanced React/Vite app lives in `web/`. Its production build contains 27 static files, totaling 38,985,692 bytes, including the offline HTML, JSON exports, evidence documents, fonts, and video. It requires no server or environment variables.
+
+The initial source deployment was blocked by Vercel's Hobby Git-author check (`TEAM_ACCESS_REQUIRED`): the current commit author was not verified for the signed-in owner. The final release used the authenticated owner's supported prebuilt artifact workflow. Git history, commit attribution, and account permissions were unchanged.
+
+The release directory is outside the Git checkout:
+
+`C:\Users\asus\Desktop\MS\Datathon\outputs\gilded-ace-vercel-release-20261107`
+
+Its `.vercel/output/config.json` contains `{"version":3}`. Its `.vercel/output/static/` contains only the compiled `web/dist/` files. Local `.vercel/project.json` links this artifact directory to the existing project. Do not commit local Vercel metadata or credentials.
+
+For a future release, rebuild with Node 24 and the committed lockfile, copy the new `web/dist/` into a fresh artifact directory using the same structure, link it to the existing project, and deploy:
+
+```powershell
+vercel.cmd link --cwd <artifact-directory> --yes --project gilded-ace-dashboard --scope chetansai2003-7922s-projects
+vercel.cmd deploy --cwd <artifact-directory> --prebuilt --prod --yes --project gilded-ace-dashboard --scope chetansai2003-7922s-projects
+```
+
+See [Build Output API](https://vercel.com/docs/build-output-api) and [prebuilt deployments](https://vercel.com/docs/cli/deploy#prebuilt).
+
+The repository's `vercel.json` also defines source-build settings: install `npm ci --prefix web --no-audit --no-fund`, build `npm run build`, output `dist`. `.vercelignore` excludes raw challenge data, coordination records, other applications, dependency trees, and credentials. Source deployments still require resolving the Git-author verification described above. Git auto-deployment was not configured during this release.
+
+## Verification
+
+- Vercel reports production deployment `READY` and assigns `gilded-ace-dashboard.vercel.app` to it.
+- Vercel's uploaded-file API lists all 27 static files. Every returned SHA-1 equals the corresponding local `web/dist/` file hash.
+- Both older projects remain paused in the final account listing.
+- The same build passed local TypeScript/Vite compilation and rendered successfully on the local preview in the preceding task.
+- Public browser verification was attempted but blocked by `ERR_CERT_AUTHORITY_INVALID`; Windows HTTPS requests also reported an untrusted certificate root. No certificate validation was disabled. Rendered public-page and anonymous HTTP checks therefore remain unverified from this environment.
