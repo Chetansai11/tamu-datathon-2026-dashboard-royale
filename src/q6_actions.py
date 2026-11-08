@@ -1,4 +1,4 @@
-"""Catalog-constrained July decision: one funded action per proven cause, the rest preserved."""
+"""Catalog-constrained July tests of leading explanations, with unspent capital preserved."""
 from __future__ import annotations
 
 import json
@@ -80,7 +80,7 @@ def build_report(q1=None, q3=None, q5=None, q1d=None):
     q1d = q1d or read("q1_decomposition")
     cat = catalog()
 
-    # Leak: inspect the one machine whose payout signal survives a floor-wide screen.
+    # Inspect the payout signal; the screen does not establish a defect or its cause.
     target = next(x for x in q1["ranking"] if x["machine_id"] == "M-1158")
     row = cat["A-INSPECT"]
     days = max(0, 30-row["lead_days"])
@@ -91,7 +91,7 @@ def build_report(q1=None, q3=None, q5=None, q1d=None):
                       "net_after_inspection_and_modeled_downtime": f*conditional_gap-spend-disruption}
                      for f in [0., .25, .5, 1.]]
     action = {"action_type_id": "A-INSPECT", "name": "Inspect M-1158 and verify its payout configuration", "quantity": 1,
-              "cause": "Leak",
+              "cause": "Payout signal",
               "targets": ["M-1158"], "cost": spend, "unit_cost": row["unit_cost_cents"]/100,
               "recurring_daily_cost": row["recurring_cost_cents_per_day"]/100, "lead_days": row["lead_days"],
               "operating_days": days, "start_date": "2025-07-02", "end_date": "2025-07-30", "downtime_minutes": row["downtime_minutes"],
@@ -117,23 +117,23 @@ def build_report(q1=None, q3=None, q5=None, q1d=None):
                 for pts in [0., .5, 1., 2.] for disp in [0., .5] if pts or not disp]
     march = bf["location_factor_by_month"].get("2025-03")
     wayfinding = {
-        "action_type_id": "A-WAYFINDING", "name": "Wayfinding and sightlines for Back Forty", "quantity": 1, "cause": "Location",
+        "action_type_id": "A-WAYFINDING", "name": "Wayfinding and sightlines for Back Forty", "quantity": 1, "cause": "Location hypothesis",
         "targets": ["Z-B40"], "cost": way_cost, "unit_cost": way["unit_cost_cents"]/100,
         "recurring_daily_cost": 0, "lead_days": way["lead_days"], "operating_days": way_days,
         "start_date": "2025-07-11", "end_date": "2025-07-30", "downtime_minutes": 0,
         "cost_formula": "1 × (750000 + 0 × max(0, 30 − 10)) / 100 = $7,500",
-        "expected_effect": (f"More guests reach Back Forty. In June its seats were occupied {bf['june_occupancy']:.1%} of available hours versus "
+        "expected_effect": (f"Test whether more guests reach Back Forty; no occupancy gain is assumed. In June its seats were occupied {bf['june_occupancy']:.1%} of available hours versus "
                             f"{bf['other_zones_occupancy']:.1%} elsewhere, with {bf['june_entries_per_covered_hour']:.0f} sensor entries per covered hour versus "
                             f"{bf['other_entries_per_covered_hour']:.0f}, while seated play earns nearly the same (${bf['june_theo_per_occupied_hour']:.2f} vs "
-                            f"${bf['other_theo_per_occupied_hour']:.2f} theo per occupied hour). Each occupancy point is worth ${value_per_point:,.0f} theo per day, "
-                            f"so the signage pays back within July at +{break_even_points:.2f} points."),
+                            f"${bf['other_theo_per_occupied_hour']:.2f} theo per occupied hour). At June capacity and play rates, each additional occupancy point implies ${value_per_point:,.0f} gross theo per day. "
+                            f"The conditional July break-even is +{break_even_points:.2f} occupancy points with zero displacement and no additional operating costs."),
         "uncertainty": ("Signage may not change footfall, and guests drawn to Back Forty may come from other zones (see the 50% displacement rows). "
-                        f"The March walkway closure showed that access moves this zone's demand (its location factor fell to {march:.2f}, then recovered), "
-                        "but that is not a measured signage effect."),
+                        f"During the March walkway closure the zone's location factor fell to {march:.2f}, then recovered. This association is consistent with access pressure, "
+                        "but does not identify a causal access or signage effect; game mix, guest mix and concurrent changes remain alternatives."),
         "measurement": ("Pre-register June baselines for Back Forty: occupancy, entries per covered sensor-hour and location factor. From July 11 to 30, compare "
                         "with June by difference-in-differences against Garage Entrance and Hotel Corridor on matched weekdays. Check floor-total coin-in "
-                        "against the frozen weekday forecast to detect displacement. Success: Back Forty occupancy up at least 1 point with more entries, "
-                        "and no floor-wide shortfall against the forecast. If it succeeds, fund the second unit for Garage Entrance (location factor 0.95) in August."),
+                        "against the frozen weekday forecast as a check for possible displacement, allowing for forecast error. The initial signal to review is Back Forty occupancy up at least 1 point with more entries, "
+                        "but that alone is not evidence of incremental revenue or cost recovery. Assess uncertainty, displaced play and statistical power before any expansion; a second zone requires a new decision."),
         "evidence_ids": ["q1-decomposition", "back-forty-footfall", "demand-location"],
         "opportunity_cost_theo": 0.,
         "benefit_scenarios": way_rows}
@@ -147,11 +147,11 @@ def build_report(q1=None, q3=None, q5=None, q1d=None):
     alternatives = [
         {"name": "Keep all $100,000", "cost": 0, "status": "Valid comparator", "reason": "No disruption or spend, but leaves both the payout signal and Back Forty's footfall gap untested.", "evidence_ids": ["q1-inspection", "q1-decomposition"]},
         {"name": "Lease ten replacement machines", "action_type_id": "A-REPLACE-LEASE", "cost": price(cat["A-REPLACE-LEASE"], 10), "lead_days": 14, "operating_days": 16,
-         "status": "Reject", "reason": f"Wrong cause. Across the GM's ten, the machines themselves earned ${gm_machine:,.0f} more than the same games in the same zones; game math, Back Forty and short exposure explain the rest. Nine of the ten would still stand in Back Forty, and two are already retired.", "evidence_ids": ["q1-decomposition", "q1-exposure"]},
+         "status": "Defer blanket replacement", "reason": f"The combined descriptive machine component is ${gm_machine:,.0f}; the larger negative components relate to game math, location and exposure. This does not establish that each machine is healthy or estimate a replacement effect. Nine candidates spent time in Back Forty during the investigation, and two are already retired. Inspect individual evidence before purchasing replacements.", "evidence_ids": ["q1-decomposition", "q1-exposure"]},
         {"name": "Buy ten replacement machines", "action_type_id": "A-REPLACE-BUY", "cost": price(cat["A-REPLACE-BUY"], 10), "lead_days": 21, "operating_days": 9,
-         "status": "Over budget", "reason": "$220,000 capital cost exceeds the $100,000 budget, and targets the same wrong cause.", "evidence_ids": ["actions-budget", "q1-decomposition"]},
+         "status": "Over budget", "reason": "$220,000 capital cost exceeds the $100,000 budget; the descriptive decomposition does not establish that replacing all ten would recover their earnings gap.", "evidence_ids": ["actions-budget", "q1-decomposition"]},
         {"name": "Move machines out of Back Forty", "action_type_id": "A-MOVE-MACHINE", "cost": price(cat["A-MOVE-MACHINE"]), "status": "Defer",
-         "reason": "Seated play in Back Forty earns within 5% of elsewhere, so swapping slots moves demand rather than creating it. Test how guests get there first.", "evidence_ids": ["back-forty-footfall"]},
+         "reason": "Seated play in Back Forty earns within 5% of elsewhere, but that comparison does not estimate relocation uplift. A move could redistribute existing play or change total demand. Check destination feasibility, comparable-machine support, disruption and displacement before funding a move.", "evidence_ids": ["back-forty-footfall"]},
         {"name": "Add a swing-shift technician", "action_type_id": "A-TECH-SHIFT", "cost": price(cat["A-TECH-SHIFT"]), "lead_days": 7, "operating_days": tech_days,
          "modeled_opportunity": tech_ceiling, "status": "Defer", "reason": f"Even eliminating all historical {best['shift']} waiting with 100% property recapture models only ${tech_ceiling:,.0f} July theo versus the $11,520 fixed package.", "evidence_ids": ["Q3-opportunity", "actions-tradeoffs"]},
         {"name": "Comp policy pilot", "action_type_id": "A-COMP-PILOT", "cost": price(cat["A-COMP-PILOT"]), "lead_days": 5, "operating_days": pilot_days,
@@ -159,7 +159,7 @@ def build_report(q1=None, q3=None, q5=None, q1d=None):
     ]
     actions = [action, wayfinding]
     actual_cost = validate_plan(actions)
-    summary = {"headline": f"Fix the leak, test the location, keep ${100000-actual_cost:,.0f}.", "budget": 100000, "spend": actual_cost,
+    summary = {"headline": f"Inspect the signal, test the location, keep ${100000-actual_cost:,.0f}.", "budget": 100000, "spend": actual_cost,
                "reserve": 100000-actual_cost, "action_types": len(actions), "horizon": "2025-07-01 to 2025-07-30",
                "baseline": "Keep the full $100,000; no assumed uplift and no disruption.",
                "expected_direct_revenue_uplift": 0, "modeled_inspection_downtime_theo": disruption,
@@ -167,18 +167,18 @@ def build_report(q1=None, q3=None, q5=None, q1d=None):
                "wayfinding_break_even_occupancy_points": break_even_points, "occupancy_point_value_theo_per_day": value_per_point,
                "back_forty": bf, "gm_machine_component": gm_machine,
                "sensitivity_note": "Scenarios are conditional, not forecasts. Inspection rows assume a confirmed, correctable payout gap fixed at no extra cost. Wayfinding rows assume an occupancy gain and show half of it displaced from other zones.",
-               "decision": "Fund one action per proven cause: inspect the one machine with a payout signal, and test whether wayfinding brings guests to Back Forty. Replace no machines, because the machines are not the cause. Schedule routine maintenance on lower-demand Tuesdays using existing staff. Keep the rest; do not target heavy losers with promotions."}
+               "decision": "Fund tests of the leading explanations: inspect the corrected payout signal and test Back Forty wayfinding. Defer blanket replacement because the current evidence does not establish a replacement benefit; a positive combined machine component does not clear every machine. Schedule routine maintenance on lower-demand Tuesdays using existing staff. Keep the rest; do not target heavy losers with promotions."}
     evidence = [
-        {"id": "back-forty-footfall", "title": "Back Forty lacks footfall, not players who play differently",
+        {"id": "back-forty-footfall", "title": "Back Forty has lower footfall and similar seated-play economics",
          "source": "prepared_daily_view (June) + zone_traffic_hourly (covered hours, gaming dates); src/q6_actions.py::back_forty_case",
          "result": f"June occupancy {bf['june_occupancy']:.1%} vs {bf['other_zones_occupancy']:.1%} elsewhere; {bf['june_entries_per_covered_hour']:.1f} vs {bf['other_entries_per_covered_hour']:.1f} entries per covered sensor-hour (other-zone mean); theo per occupied hour ${bf['june_theo_per_occupied_hour']:.2f} vs ${bf['other_theo_per_occupied_hour']:.2f}; average bet ${bf['june_avg_bet']:.2f} vs ${bf['other_avg_bet']:.2f}.",
-         "alternative": "A different guest mix or less appealing games could also leave seats empty; near-identical seated play (within 5%) argues against weaker games.",
-         "limitation": "Sensors count crossings, not people. Footfall is descriptive; the wayfinding effect is untested until July."},
-        {"id": "actions-budget", "title": "Fund one priced action per proven cause",
+         "alternative": "Guest preferences, game appeal and location selection could also leave seats empty. Similar average seated-play economics do not rule out these differences.",
+         "limitation": "Sensors count crossings, not people. Footfall and seated-play comparisons are descriptive; signage and relocation effects remain unmeasured."},
+        {"id": "actions-budget", "title": "Price tests against the leading explanations",
          "source": "action_catalog + q1_machines + q1_decomposition; src/q6_actions.py::price/build_report",
-         "result": f"1 × A-INSPECT ($1,200, 1 lead day) + 1 × A-WAYFINDING for Back Forty ($7,500, 10 lead days) = ${actual_cost:,.0f}; ${100000-actual_cost:,.0f} unspent. Wayfinding breaks even at +{break_even_points:.2f} occupancy points over {way_days} days.",
+         "result": f"1 × A-INSPECT ($1,200, 1 lead day) + 1 × A-WAYFINDING for Back Forty ($7,500, 10 lead days) = ${actual_cost:,.0f}; ${100000-actual_cost:,.0f} unspent. At June rates with zero displacement and no extra operating costs, wayfinding breaks even at +{break_even_points:.2f} occupancy points over {way_days} days; at 50% displacement the requirement doubles.",
          "alternative": "Keeping all funds avoids cost but leaves both the payout signal and the footfall gap untested.",
-         "limitation": "Information value is not monetized; inspection is not a repair guarantee, and the wayfinding uplift is a tested hypothesis, not a promise."},
+         "limitation": "Information value is not monetized; inspection is not a repair guarantee, and wayfinding uplift remains an untested hypothesis. The break-even calculation is conditional, not an estimated effect."},
         {"id": "actions-tradeoffs", "title": "Do not force July spending without a defensible return",
          "source": "action_catalog + q3 waiting overlap + q5 pre/post reinvestment; src/q6_actions.py::build_report",
          "result": f"23-day perfect waiting recovery scenario ${tech_ceiling:,.2f} versus $11,520 technician; 25-day comp benchmark ${comp_benchmark:,.2f} versus $4,000 pilot, before extra comps.",

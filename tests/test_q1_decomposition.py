@@ -1,5 +1,6 @@
 """Checks for the exposure / game / location / machine / luck decomposition."""
 import numpy as np
+import pandas as pd
 import pytest
 
 from src import metrics as m
@@ -58,3 +59,60 @@ def test_report_headline_for_gm_ten():
     assert rep["meta"]["identity_max_error"] < 1e-6
     # Back Forty is the weakest zone against its own game mix.
     assert rep["zones"][0]["zone_name"] == "Back Forty"
+
+
+@pytest.fixture
+def peer_example():
+    """Mixed games and dated moves make target contamination observable."""
+    rows = []
+    for date in pd.to_datetime(["2025-01-01", "2025-01-08", "2025-02-01", "2025-02-08"]):
+        for mid, config, zone, theo in [
+            ("target", "A", "west" if date.month == 1 else "east", 100.),
+            ("peer-a", "A", "west", 50.),
+            ("peer-b", "B", "west", 200.),
+            ("peer-c", "A", "east", 300.),
+            ("peer-d", "B", "east", 50.),
+        ]:
+            rows.append(dict(machine_id=mid, gaming_date=date, month=date.strftime("%Y-%m"),
+                             zone_id=zone, zone_name=zone, bank_id=zone, config_id=config,
+                             theme=config, h=10., occ=5., theo=theo, win=theo + 1., var=25.,
+                             week=(date - pd.Timestamp("2024-12-30")).days // 7))
+    return pd.DataFrame(rows, index=range(100, 100 + len(rows)))
+
+
+def test_zone_factor_matches_direct_peer_only_recomputation(peer_example):
+    """Independent small-data oracle drops each target before every aggregation."""
+    actual = q._zone_factor_loo(peer_example)
+    for mid in peer_example.machine_id.unique():
+        peers = peer_example[peer_example.machine_id != mid].copy()
+        game = peers.groupby(["gaming_date", "config_id"])[["theo", "h"]].transform("sum")
+        peers["mix"] = peers.h * game.theo / game.h
+        zones = peers.groupby(["zone_id", "month"])[["theo", "mix"]].sum()
+        for index, row in peer_example[peer_example.machine_id == mid].iterrows():
+            z = zones.loc[(row.zone_id, row.month)]
+            assert actual.loc[index] == pytest.approx(z.theo / z["mix"], abs=1e-12)
+
+
+@pytest.mark.parametrize("target", ["target", "peer-a"])
+def test_target_outcomes_cannot_change_own_peer_benchmarks(peer_example, monkeypatch, target):
+    monkeypatch.setattr(q, "_rows", lambda *_: peer_example.copy())
+    before = q.decompose(draws=100).set_index("machine_id").loc[target]
+    changed = peer_example.copy()
+    changed.loc[changed.machine_id == target, "theo"] *= 9
+    monkeypatch.setattr(q, "_rows", lambda *_: changed.copy())
+    after = q.decompose(draws=100).set_index("machine_id").loc[target]
+    # Mutation changes the target outcome, but none of its peer references.
+    assert after.theo == pytest.approx(before.theo * 9)
+    for field in ["e_floor", "e_game", "e_loc", "location_factor"]:
+        assert after[field] == pytest.approx(before[field], rel=1e-12, abs=1e-10), field
+    # The common whole-floor comparator deliberately includes the target.
+    assert after.benchmark > before.benchmark
+    for result in [before, after]:
+        assert result[COMPONENTS].sum() == pytest.approx(result.gap, abs=1e-9)
+
+
+def test_missing_zone_peers_use_neutral_location_factor(peer_example):
+    example = peer_example.copy()
+    example.loc[example.machine_id == "target", "zone_id"] = "only-target"
+    factors = q._zone_factor_loo(example)
+    assert (factors[example.machine_id == "target"] == 1).all()
