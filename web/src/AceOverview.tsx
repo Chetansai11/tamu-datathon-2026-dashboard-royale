@@ -38,7 +38,7 @@ export default function AceOverview({ totals: t, series, motionEnabled, start, e
       <div className="ace-overline"><span/> THE GILDED ACE / FLOOR INTELLIGENCE</div>
       <h1>Read the floor.<br/><span>Find the signal.</span></h1>
       <p>Low earnings don’t tell the whole story.<br/>Separate chance from performance.<br/>Let the evidence make the next move.</p>
-      <div className="ace-primary-actions"><button className="ace-enter" onClick={onExplore}>Explore the floor <ArrowUpRight size={17}/></button><button className="ace-film-link" onClick={onFilm}><Play size={12}/> The ace in motion</button></div>
+      <div className="ace-primary-actions"><button className="ace-enter" onClick={onExplore}>Explore the floor <ArrowUpRight size={17}/></button><button className="ace-film-link" onClick={onFilm} disabled={!motionEnabled} title={motionEnabled ? "Replay cinematic introduction" : "Turn motion on to replay the introduction"}><Play size={12}/> The ace in motion</button></div>
       <div className="ace-verdict-note"><span>THE CALL / JAN–JUN</span><strong>Pause blanket replacement.</strong><p>Inspect one signal. Test one zone.<br/>Keep $91,300 in reserve.</p></div>
     </div>
     <div className="ace-stat-field" role="group" aria-label="Floating floor performance metrics">

@@ -1,134 +1,382 @@
-import { useEffect, useId, useRef, useState } from 'react';
-import { ArrowDown, ArrowUpRight, Pause, Play, RotateCcw, Sparkles } from 'lucide-react';
+import { memo, useEffect, useId, useRef, useState } from 'react';
+import { Pause, Play, RotateCcw, X } from 'lucide-react';
+import ParticleAce from './ParticleAce';
 
-type Props = { motionEnabled: boolean; src: string; poster?: string; onSkip: () => void };
-const clamp = (n: number) => Math.max(0, Math.min(1, n));
-const ease = (a: number, b: number, n: number) => { const t = clamp((n - a) / (b - a)); return t * t * (3 - 2 * t); };
+type Props = {
+  motionEnabled: boolean; onSkip: () => void; onComplete: () => void;
+  onRevealStart?: () => void; onReplayStart?: () => void;
+};
+type Phase = 'deal' | 'ace' | 'zoom' | 'reveal';
+const DURATION = 4800;
+const REVEAL_START = 3550;
+const clamp = (value: number) => Math.max(0, Math.min(1, value));
+const ease = (start: number, end: number, time: number) => { const v = clamp((time - start) / (end - start)); return v * v * (3 - 2 * v); };
 const spade = 'M100 12C84 35 35 63 35 99C35 134 74 146 94 118C93 142 85 158 71 174H129C115 158 107 142 106 118C126 146 165 134 165 99C165 63 116 35 100 12Z';
 
-/** A decorative film and native card rig; the analytics remain outside this section. */
-export default function CinematicOpening({ motionEnabled, src, poster, onSkip }: Props) {
+/** Original geometric court-card illustrations; no image or video downloads. */
+function CourtPortrait({ joker = false }: { joker?: boolean }) {
+  return <g strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="100" cy="134" r="57" fill="none" stroke="#b49a63" strokeWidth=".7" />
+    <circle cx="100" cy="134" r="52" fill="none" stroke="#b49a63" strokeWidth=".3" strokeDasharray="1 3" />
+    {joker ? <>
+      <path d="M51 124Q43 89 43 77Q66 81 82 107Q80 80 99 64Q116 87 117 108Q133 86 158 84L148 124Q128 117 118 133H76Q66 117 51 124Z" fill="#242527" stroke="#b49a63" strokeWidth="1.5" />
+      <path d="M82 107Q86 82 99 64L106 113M117 108Q134 87 158 84L133 125M51 124L43 77L72 119" fill="#b49a63" stroke="#353535" strokeWidth=".7" />
+      <g fill="#bd9c58" stroke="#55504a" strokeWidth="1"><circle cx="43" cy="76" r="5"/><circle cx="99" cy="63" r="5"/><circle cx="158" cy="83" r="5"/></g>
+      <path d="M75 120Q101 111 126 122L123 153Q117 175 101 178Q82 175 77 153Z" fill="#ecece7" stroke="#333538" strokeWidth="1.8" />
+      <path d="M79 130Q88 123 95 132M107 131Q116 124 122 131M100 134L97 148L104 148M87 155Q100 170 115 153Q101 159 87 155Z" fill="none" stroke="#353535" strokeWidth="1.6" />
+      <path d="M78 138L88 143L84 150ZM121 137L112 143L117 150Z" fill="#b49a63" />
+      <path d="M75 166L64 178L80 191L94 180L106 192L120 178L136 184L126 165L117 175L102 183L86 176Z" fill="#b49a63" stroke="#353535" strokeWidth="1.2" />
+      <path d="M64 179Q50 195 51 225H149Q150 201 135 183L120 191L103 205L82 193Z" fill="#242527" stroke="#b49a63" strokeWidth="1.5" />
+      <path d="M75 195L89 209L76 223L63 209ZM118 195L132 209L119 223L105 209Z" fill="#b49a63"/>
+      <path d="M96 202L105 209L97 219L89 211Z" fill="#e0e2df" />
+    </> : <>
+      <path d="M69 120Q55 98 68 85Q62 75 79 68Q99 54 121 69Q139 77 132 96L135 125L123 140H78Z" fill="#252729" stroke="#b49a63" strokeWidth="1.2" />
+      <path d="M70 88L63 60L85 72L100 48L115 72L138 59L131 88Z" fill="#b49a63" stroke="#363532" strokeWidth="1.3" />
+      <path d="M73 80H128M76 87H125" stroke="#eeeadc" strokeWidth="1.3" />
+      <g fill="#303235"><path d="M97 65L101 58L105 65L101 73Z"/><circle cx="79" cy="76" r="2.4"/><circle cx="121" cy="76" r="2.4"/></g>
+      <path d="M78 100Q101 90 123 103L120 139L111 159L99 166L85 155L76 134Z" fill="#e4e5e1" stroke="#323436" strokeWidth="1.6" />
+      <path d="M79 111L93 109M108 109L121 113M87 116H91M111 117H116M100 113L96 132L103 133" fill="none" stroke="#333538" strokeWidth="1.7" />
+      <path d="M78 128Q83 146 94 140Q99 134 104 141Q115 145 123 130L121 158L100 181L79 158Z" fill="#303235" stroke="#b49a63" strokeWidth=".8" />
+      <path d="M88 149Q101 154 113 148M90 159L100 169L110 158" fill="none" stroke="#b9b8ac" strokeWidth="1" />
+      <path d="M78 156L61 174L43 225H157L139 175L122 156L100 185Z" fill="#27292b" stroke="#b49a63" strokeWidth="1.6" />
+      <path d="M62 175L87 193L74 225H59L76 199L57 190M138 175L113 193L127 225H143L125 199L144 191" fill="#b49a63" stroke="#343434" strokeWidth=".7" />
+      <path d="M79 163L100 186L121 163M86 188L100 200L114 188M95 204L100 210L106 204L101 198Z" fill="none" stroke="#e4e5df" strokeWidth="1.2" />
+      <path d="M147 111L139 220" stroke="#b49a63" strokeWidth="4"/><path d="M143 104L148 91L153 105L147 114Z" fill="#b49a63" stroke="#343434" strokeWidth="1" />
+    </>}
+    <path d="M53 231H147M70 236H130" stroke="#b49a63" strokeWidth=".7" />
+  </g>;
+}
+
+type Suit = '♠' | '♥' | '♣' | '♦';
+const pipPositions: Record<number, [number, number][]> = {
+  2: [[100, 87], [100, 203]],
+  4: [[65, 87], [135, 87], [65, 203], [135, 203]],
+  6: [[65, 80], [135, 80], [65, 145], [135, 145], [65, 210], [135, 210]],
+  8: [[65, 80], [135, 80], [100, 112], [65, 145], [135, 145], [100, 178], [65, 210], [135, 210]],
+  9: [[65, 70], [135, 70], [65, 120], [135, 120], [100, 145], [65, 170], [135, 170], [65, 220], [135, 220]],
+  10: [[65, 70], [135, 70], [100, 95], [65, 120], [135, 120], [65, 170], [135, 170], [100, 195], [65, 220], [135, 220]],
+};
+const CardArtwork = memo(function CardArtwork({ kind, rank = 8, suit = '♠', symbolId }: { kind: 'king' | 'joker' | 'ace' | 'back' | 'pip'; rank?: number; suit?: Suit; symbolId?: string }) {
+  const front = kind !== 'back';
+  const ArtworkElement = symbolId ? 'symbol' : 'svg';
+  const label = kind === 'king' ? 'K' : kind === 'joker' ? 'J' : kind === 'pip' ? String(rank) : 'A';
+  const symbol = kind === 'joker' ? '✧' : kind === 'pip' ? suit : '♠';
+  const ink = kind === 'pip' && (suit === '♥' || suit === '♦') ? '#a18146' : '#292d2e';
+  return <ArtworkElement id={symbolId} viewBox="0 0 200 290" fill="none" aria-hidden="true">
+    <rect x="1" y="1" width="198" height="288" rx="11" fill={front ? '#e5e7e3' : '#181c20'} stroke={front ? '#f3f3ea' : '#92794e'} strokeWidth="1.4" />
+    <rect x="9" y="9" width="182" height="272" rx="6" stroke={front ? '#ad9568' : '#8a754f'} strokeWidth=".65" />
+    <rect x="13" y="13" width="174" height="264" rx="4" stroke={front ? '#b6b7ac' : '#42484b'} strokeWidth=".4" />
+    {front ? <>
+      <g fill={ink} fontFamily="Georgia,serif" textAnchor="middle">
+        <text x="29" y="43" fontSize={kind === 'joker' || label === '10' ? '24' : '30'}>{label}</text>
+        <text x="29" y="64" fontSize="18">{symbol}</text>
+        <g transform="rotate(180 100 145)"><text x="29" y="43" fontSize={kind === 'joker' || label === '10' ? '24' : '30'}>{label}</text><text x="29" y="64" fontSize="18">{symbol}</text></g>
+      </g>
+      {kind === 'ace' ? <>
+        <g className="cinema-card-mark" transform="translate(37 78) scale(.63)"><path d={spade} fill="#252a2d"/><path d={spade} fill="none" stroke="#ba9b5c" strokeWidth="1.6"/><path d="M100 29C84 51 52 70 50 94" stroke="#d0b477" strokeWidth=".8" /></g>
+        <text x="100" y="221" fill="#8c734b" fontSize="6" letterSpacing="2.3" textAnchor="middle" fontFamily="monospace">THE GILDED ACE</text>
+      </> : kind === 'pip' ? <g fill={ink} fontFamily="Georgia,serif" fontSize="36" textAnchor="middle">
+        {pipPositions[rank].map(([cx, cy], index) => <text key={index} x={cx} y={cy + 12} transform={cy > 145 ? `rotate(180 ${cx} ${cy})` : undefined}>{suit}</text>)}
+      </g> : <CourtPortrait joker={kind === 'joker'} />}
+      {kind !== 'pip' && <text x="100" y="256" fill="#6c6658" fontSize="8" letterSpacing="3" textAnchor="middle" fontFamily="monospace">{kind === 'ace' ? 'A C E' : kind.toUpperCase()}</text>}
+      <path d="M61 33H85M115 33H139M61 260H78M122 260H139" stroke="#ad9568" strokeWidth=".6" />
+    </> : <>
+      {Array.from({ length: 9 }, (_, i) => <path key={i} d={`M${18 + i * 20} 18L182 ${182 - i * 20}M18 ${108 + i * 20}L${182 - i * 20} 272M${18 + i * 20} 272L182 ${108 + i * 20}M18 ${182 - i * 20}L${182 - i * 20} 18`} stroke="#7b6a4c" strokeWidth=".4" opacity=".35" />)}
+      <path d="M100 60L161 145L100 230L39 145Z" fill="#181c20" stroke="#ad925a" strokeWidth="1" />
+      <path d="M100 70L153 145L100 220L47 145Z" fill="none" stroke="#ad925a" strokeWidth=".4" />
+      <g transform="translate(54 101) scale(.46)"><path d={spade} fill="#b99c63" /></g>
+      <path d="M86 85H114M86 205H114" stroke="#b99c63" strokeWidth=".6"/>
+    </>}
+  </ArtworkElement>;
+});
+
+// Fixed seeds make each fall irregular but repeatable on replay. The first 16
+// cards form the mobile composition; the rest fill the wider desktop wings.
+const deckPositions = [
+  [-37, -49], [33, -35], [-22, -15], [43, 5], [-42, 15], [23, 12], [-29, -67], [19, -57],
+  [-48, -27], [46, -64], [-19, -43], [31, -82], [-34, 33], [40, 31], [-24, -92], [23, -103],
+  [-51, -67], [52, -21], [-43, -101], [39, -114], [-54, 17], [53, -85], [-37, -134], [46, -143],
+] as const;
+const noise = (seed: number) => { const n = Math.sin(seed * 127.1 + 311.7) * 43758.5453; return n - Math.floor(n); };
+const deck = deckPositions.map(([x, y], index) => ({
+  x, y, depth: -280 + noise(index + 1) * 350, scale: .47 + noise(index + 2) * .34,
+  speed: 40 + noise(index + 3) * 24, sway: 2 + noise(index + 4) * 4,
+  pitch: -65 + noise(index + 5) * 130,
+  yaw: (index % 3 === 0 ? 155 : 25) + noise(index + 6) * 50,
+  roll: -75 + noise(index + 7) * 150,
+  spinX: (index % 2 ? -1 : 1) * (38 + noise(index + 8) * 58),
+  spinY: (index % 3 ? 1 : -1) * (58 + noise(index + 9) * 94),
+  spinZ: (index % 2 ? 1 : -1) * (20 + noise(index + 10) * 35),
+  rank: [2, 8, 4, 10, 6, 9][index % 6], suit: (['♠', '♦', '♣', '♥'] as const)[index % 4],
+}));
+
+function fallingCardTransform(index: number, time: number) {
+  const card = deck[index], t = time / 1000;
+  // Cards enter already in flight, without delayed starts or velocity jumps.
+  // Slight acceleration, independent spin axes and depth avoid a flat cascade.
+  const x = card.x + Math.sin(t * .9 + index * 2.4) * card.sway;
+  const y = card.y + t * card.speed + t * t * 3;
+  const z = card.depth + Math.sin(t * .8 + index) * 45;
+  return `translate3d(calc(-50% + ${x}vw),calc(-50% + ${y}vh),${z}px) rotateX(${card.pitch + t * card.spinX}deg) rotateY(${card.yaw + t * card.spinY}deg) rotateZ(${card.roll + t * card.spinZ}deg) scale(${card.scale})`;
+}
+
+type Layer = HTMLElement | SVGElement;
+type SceneLayers = {
+  backdrop: HTMLElement | null; orbit: HTMLElement | null; topline: HTMLElement | null;
+  bottomline: HTMLElement | null; copy: HTMLElement | null; king: HTMLElement | null;
+  joker: HTMLElement | null; ace: HTMLElement | null; mark: SVGElement | null;
+  rain: HTMLElement | null; particles: HTMLElement | null; progress: HTMLElement | null;
+  progressTrack: HTMLElement | null; cards: HTMLElement[]; cardBacks: HTMLElement[];
+};
+
+type LayerStyle = { transform?: string; opacity?: number };
+function sceneFrame(time: number, compact: boolean): Record<string, LayerStyle> {
+  const arrival = ease(0, 1150, time), part = ease(1100, 2450, time), emergence = ease(1450, 2250, time);
+  const court = 1 - ease(2100, 2700, time), rain = 1 - ease(1650, 2650, time);
+  const ui = 1 - ease(3850, 4700, time), x = compact ? .62 : 1, y = compact ? .75 : 1;
+  const frame: Record<string, LayerStyle> = {
+    root: { opacity: 1 - ease(REVEAL_START, 4750, time) },
+    backdrop: { opacity: 1 - ease(3650, 4700, time) }, copy: { opacity: 1 - ease(1300, 2050, time) },
+    topline: { opacity: ui }, bottomline: { opacity: ui }, progressTrack: { opacity: ui },
+    progress: { transform: `scaleX(${clamp(time / DURATION)})` },
+    rain: { opacity: rain }, orbit: { opacity: rain * .5 },
+    king: { opacity: court, transform: `translate3d(calc(-50% + ${(-110 - part * 320) * x}px),calc(-50% + ${(-135 * (1 - arrival) + time * .025 + part * 380) * y}px),-12px) rotateX(${18 - arrival * 7 + part * 35}deg) rotateY(${-43 + arrival * 11 - part * 34}deg) rotateZ(${-24 + arrival * 8 - part * 42}deg)` },
+    joker: { opacity: court, transform: `translate3d(calc(-50% + ${(114 + part * 330) * x}px),calc(-50% + ${(-205 * (1 - arrival) + 15 + time * .021 + part * 310) * y}px),18px) rotateX(${-23 + arrival * 9 - part * 28}deg) rotateY(${49 - arrival * 10 + part * 30}deg) rotateZ(${27 - arrival * 7 + part * 48}deg)` },
+    ace: { opacity: ease(450, 1100, time) * (1 - ease(2400, 2860, time)), transform: `translate3d(-50%,calc(-50% + ${58 * (1 - emergence)}px),0) rotateY(${-28 * (1 - emergence)}deg) rotateZ(${-8 * (1 - emergence)}deg) scale(${.76 + emergence * .24})` },
+    mark: { opacity: 1 - ease(2100, 2500, time) }, particles: { opacity: ease(2080, 2490, time) },
+  };
+  deck.forEach((_, index) => {
+    const transform = fallingCardTransform(index, time);
+    // Independent flat faces avoid expensive animated preserve-3d subtrees.
+    // Their shared path and opposite normals form one two-sided card.
+    frame[`rain-card-${index}`] = { transform };
+    frame[`rain-back-${index}`] = { transform: transform + ' rotateY(180deg)' };
+  });
+  return frame;
+}
+
+/** A 4.8-second native deck-to-particle opening. Only active, visible time counts. */
+export default function CinematicOpening({ motionEnabled, onSkip, onComplete, onRevealStart, onReplayStart }: Props) {
   const root = useRef<HTMLElement>(null);
-  const stage = useRef<HTMLDivElement>(null);
-  const video = useRef<HTMLVideoElement>(null);
+  const layers = useRef<SceneLayers | null>(null);
+  const styleCache = useRef(new WeakMap<Layer, Record<string, string>>());
+  const compact = useRef(typeof window !== 'undefined' && window.innerWidth <= 720);
+  const nativeTracks = useRef<Animation[]>([]);
+  const nativeAttempted = useRef(false);
+  const elapsed = useRef(0);
   const pausedRef = useRef(false);
-  const visibleRef = useRef(true);
+  const completed = useRef(false);
+  const revealed = useRef(false);
+  const phaseRef = useRef<Phase>('deal');
+  const callbacks = useRef({ onSkip, onComplete, onRevealStart, onReplayStart });
+  callbacks.current = { onSkip, onComplete, onRevealStart, onReplayStart };
+  const paint = useRef<(time: number) => void>(() => {});
   const [paused, setPaused] = useState(false);
-  const [ready, setReady] = useState(false);
-  const [failed, setFailed] = useState(!src);
-  const [finished, setFinished] = useState(false);
+  const [phase, setPhase] = useState<Phase>('deal');
+  const [replayVersion, setReplayVersion] = useState(0);
+  const [systemReduced, setSystemReduced] = useState(() => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+  const animate = motionEnabled && !systemReduced;
   const id = 'cinema-' + useId().replace(/:/g, '');
 
-  useEffect(() => { setReady(false); setFailed(!src); setFinished(false); }, [src]);
-  useEffect(() => { pausedRef.current = paused; }, [paused]);
-
-  useEffect(() => {
+  const getLayers = () => {
     const section = root.current;
-    const surface = stage.current;
-    if (!section || !surface) return;
-    let raf = 0;
-    let lastBeat = '';
-    const paint = (progress: number) => {
-      const travel = ease(.12, .64, progress);
-      const emergence = ease(.5, .88, progress);
-      const finish = ease(.78, 1, progress);
-      section.style.setProperty('--cinema-progress', String(progress));
-      section.style.setProperty('--cinema-travel', String(travel));
-      section.style.setProperty('--cinema-emergence', String(emergence));
-      section.style.setProperty('--cinema-finish', String(finish));
-      section.style.setProperty('--cinema-card-x', `${70 - travel * 90}px`);
-      section.style.setProperty('--cinema-card-y', `${70 - travel * 110 + emergence * 65}px`);
-      section.style.setProperty('--cinema-card-turn', `${-32 + travel * 395}deg`);
-      section.style.setProperty('--cinema-card-tilt', `${-16 + travel * 21}deg`);
-      section.style.setProperty('--cinema-card-scale', String(.72 + travel * .45 - emergence * .22));
-      section.style.setProperty('--cinema-spade-rise', `${30 - emergence * 145}px`);
-      section.style.setProperty('--cinema-spade-scale', String(.5 + emergence * .7));
-      const beat = progress < .32 ? '0' : progress < .72 ? '1' : '2';
-      if (beat !== lastBeat) {
-        lastBeat = beat; section.dataset.beat = beat;
-        section.querySelectorAll<HTMLElement>('.cinema-chapter').forEach((chapter, index) => {
-          const hidden = String(index) !== beat;
-          chapter.setAttribute('aria-hidden', String(hidden));
-          chapter.inert = hidden;
-        });
+    if (!section) return null;
+    if (!layers.current) {
+      const find = (selector: string) => section.querySelector<HTMLElement>(selector);
+      layers.current = {
+        backdrop: find('.cinema-backdrop'), orbit: find('.cinema-orbit'), topline: find('.cinema-topline'),
+        bottomline: find('.cinema-bottomline'), copy: find('.cinema-copy'), king: find('.cinema-king'),
+        joker: find('.cinema-joker'), ace: find('.cinema-flying-card'), mark: section.querySelector<SVGElement>('.cinema-card-mark'),
+        rain: find('.cinema-deck-rain'), particles: find('.cinema-particle-field'), progress: find('.cinema-progress>span'),
+        progressTrack: find('.cinema-progress'), cards: Array.from(section.querySelectorAll<HTMLElement>('.cinema-rain-card:not(.cinema-rain-card-back)')),
+        cardBacks: Array.from(section.querySelectorAll<HTMLElement>('.cinema-rain-card-back')),
+      };
+    }
+    return layers.current;
+  };
+  const layerNode = (key: string, scene: SceneLayers): Layer | null => key === 'root' ? root.current
+    : key.startsWith('rain-card-') ? scene.cards[Number(key.slice(10))]
+    : key.startsWith('rain-back-') ? scene.cardBacks[Number(key.slice(10))]
+    : scene[key as Exclude<keyof SceneLayers, 'cards' | 'cardBacks'>];
+  const writeFrame = (time: number) => {
+    const scene = getLayers();
+    if (!scene) return;
+    for (const [key, style] of Object.entries(sceneFrame(time, compact.current))) {
+      const node = layerNode(key, scene);
+      if (!node) continue;
+      let previous = styleCache.current.get(node);
+      if (!previous) { previous = {}; styleCache.current.set(node, previous); }
+      for (const [property, value] of Object.entries(style)) {
+        const next = String(value);
+        if (previous[property] === next) continue;
+        previous[property] = next;
+        node.style[property as 'transform' | 'opacity'] = next;
       }
-    };
-    if (!motionEnabled) { paint(1); return; }
-    const update = () => {
-      raf = 0;
-      if (pausedRef.current) return;
-      const rect = section.getBoundingClientRect();
-      const span = Math.max(1, section.offsetHeight - surface.offsetHeight);
-      paint(clamp((16 - rect.top) / span));
-    };
-    const schedule = () => { if (!raf) raf = requestAnimationFrame(update); };
-    update();
-    window.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', schedule);
-    return () => {
-      window.removeEventListener('scroll', schedule);
-      window.removeEventListener('resize', schedule);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, [motionEnabled, paused]);
-
-  useEffect(() => {
-    const film = video.current;
-    if (!film) return;
-    let disposed = false;
-    const synchronize = () => {
-      if (disposed) return;
-      if (!motionEnabled || paused || finished || !ready || !visibleRef.current || document.hidden) { film.pause(); return; }
-      const attempt = film.play();
-      attempt?.catch(error => { if (!disposed && error?.name !== 'AbortError') setPaused(true); });
-    };
-    const observer = typeof IntersectionObserver === 'function' ? new IntersectionObserver(entries => {
-      visibleRef.current = entries.some(entry => entry.isIntersecting);
-      synchronize();
-    }, { threshold: .15 }) : null;
-    if (stage.current) observer?.observe(stage.current);
-    document.addEventListener('visibilitychange', synchronize);
-    synchronize();
-    return () => { disposed = true; observer?.disconnect(); document.removeEventListener('visibilitychange', synchronize); film.pause(); };
-  }, [motionEnabled, paused, finished, ready, src, failed]);
-
-  const replay = () => {
-    if (!motionEnabled) return;
-    setPaused(false); setFinished(false);
-    if (video.current) { try { video.current.currentTime = 0; } catch { /* Wait for metadata if the film is still loading. */ } }
-    root.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+  const prepareNative = () => {
+    const scene = getLayers(), section = root.current;
+    if (nativeAttempted.current || !scene || !section || typeof section.animate !== 'function') return;
+    nativeAttempted.current = true;
+    const frames = new Map<Layer, Keyframe[]>();
+    // Browser-owned transform/opacity tracks keep moving through main-thread
+    // data work. Sampling only builds the curves once; playback is interpolated.
+    for (let sample = 0; sample <= 80; sample++) {
+      const time = sample * DURATION / 80;
+      for (const [key, style] of Object.entries(sceneFrame(time, compact.current))) {
+        const node = layerNode(key, scene);
+        if (!node) continue;
+        const track = frames.get(node) || [];
+        track.push({ offset: sample / 80, ...style }); frames.set(node, track);
+      }
+    }
+    try {
+      frames.forEach((keyframes, node) => {
+        const animation = node.animate(keyframes, { duration: DURATION, fill: 'both', easing: 'linear' });
+        animation.pause(); animation.currentTime = elapsed.current;
+        nativeTracks.current.push(animation);
+      });
+    } catch {
+      nativeTracks.current.forEach(animation => animation.cancel()); nativeTracks.current = [];
+      writeFrame(elapsed.current);
+    }
+  };
+  const captureNativeTime = () => {
+    const time = nativeTracks.current[0]?.currentTime;
+    if (typeof time === 'number' && Number.isFinite(time)) elapsed.current = Math.max(0, Math.min(DURATION, time));
+  };
+  const synchronizeTracks = (playing: boolean) => {
+    const clock = document.timeline?.currentTime;
+    nativeTracks.current.forEach(animation => {
+      animation.pause(); animation.currentTime = elapsed.current;
+      if (playing) {
+        animation.play();
+        if (typeof clock === 'number') animation.startTime = clock - elapsed.current;
+      }
+    });
+  };
+  paint.current = (time: number) => {
+    const section = root.current;
+    if (!section) return;
+    // The fallback also writes to local layers, never inherited root variables.
+    if (!nativeTracks.current.length) writeFrame(time);
+    section.dataset.animationDriver = nativeTracks.current.length ? 'compositor' : 'frames';
+    section.dataset.progress = clamp(time / DURATION).toFixed(4);
+    const aceFront = time >= 1840 ? 'true' : 'false';
+    if (section.dataset.aceFront !== aceFront) section.dataset.aceFront = aceFront;
+    const nextPhase: Phase = time < 1450 ? 'deal' : time < 2750 ? 'ace' : time < REVEAL_START ? 'zoom' : 'reveal';
+    if (section.dataset.phase !== nextPhase) section.dataset.phase = nextPhase;
+    if (phaseRef.current !== nextPhase) { phaseRef.current = nextPhase; setPhase(nextPhase); }
+    if (time >= REVEAL_START && !revealed.current) { revealed.current = true; callbacks.current.onRevealStart?.(); }
   };
 
-  return <section ref={root} className="cinema-opening" data-beat="0" data-motion={motionEnabled ? 'on' : 'off'} data-paused={paused ? 'true' : 'false'} data-media={ready && !failed ? 'ready' : 'fallback'} aria-label="The Gilded Ace cinematic introduction">
-    <div className="cinema-stage" ref={stage}>
-      <div className="cinema-film-bed" aria-hidden="true">
-        {poster && <img className="cinema-poster" src={poster} alt="" onError={event => { event.currentTarget.style.display = 'none'; }}/>} 
-        {!!src && !failed && motionEnabled && <video ref={video} className="cinema-film" src={src} poster={poster} muted playsInline preload="metadata" onCanPlay={() => setReady(true)} onEnded={() => setFinished(true)} onError={() => { setFailed(true); setReady(false); }}/>} 
-      </div>
-      <div className="cinema-wash" aria-hidden="true"/>
-      <div className="cinema-grid" aria-hidden="true"/>
-      <div className="cinema-topline"><span><i/> THE GILDED ACE</span><button type="button" className="cinema-skip" aria-label="Skip cinematic introduction" onClick={onSkip}>Skip to dashboard <ArrowUpRight size={14}/></button></div>
-      <div className="cinema-copy">
-        <span className="cinema-kicker"><Sparkles size={13}/> A NEW PERSPECTIVE ON THE FLOOR</span>
-        <div className="cinema-chapters">
-          <div className="cinema-chapter cinema-chapter-one"><span className="cinema-chapter-number">01 / THE DEAL</span><h2>Every card<br/>has a <em>story.</em></h2><p>A moment of chance. Six months of evidence.<br/>{' '}Look closer at what the floor is telling you.</p></div>
-          <div className="cinema-chapter cinema-chapter-two"><span className="cinema-chapter-number">02 / THE TURN</span><h2>Change your<br/><em>perspective.</em></h2><p>Behind the lowest earnings: luck, location,<br/>{' '}and the questions worth asking.</p></div>
-          <div className="cinema-chapter cinema-chapter-three"><span className="cinema-chapter-number">03 / THE REVEAL</span><h2>The edge is<br/>in the <em>evidence.</em></h2><p>Read the floor. Make the right move.</p><button type="button" className="cinema-enter" aria-label="Open the dashboard" onClick={onSkip}>Enter floor intelligence <ArrowUpRight size={17}/></button></div>
-        </div>
-      </div>
+  useEffect(() => {
+    const resize = () => {
+      const nextCompact = window.innerWidth <= 720;
+      if (nextCompact !== compact.current) {
+        captureNativeTime();
+        compact.current = nextCompact;
+        nativeTracks.current.forEach(animation => animation.cancel()); nativeTracks.current = []; nativeAttempted.current = false;
+        if (animate && !completed.current) { prepareNative(); synchronizeTracks(!pausedRef.current && !document.hidden); }
+      }
+      paint.current(elapsed.current);
+    };
+    window.addEventListener('resize', resize);
+    return () => {
+      window.removeEventListener('resize', resize);
+      nativeTracks.current.forEach(animation => animation.cancel()); nativeTracks.current = []; nativeAttempted.current = false;
+    };
+  }, [animate]);
+
+  useEffect(() => {
+    const query = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    const changed = () => setSystemReduced(!!query?.matches);
+    query?.addEventListener?.('change', changed);
+    return () => query?.removeEventListener?.('change', changed);
+  }, []);
+
+  useEffect(() => {
+    let disposed = false, frame = 0, lastTime: number | null = null;
+    const finish = () => {
+      if (disposed || completed.current) return;
+      elapsed.current = DURATION; synchronizeTracks(false); paint.current(DURATION); completed.current = true;
+      callbacks.current.onComplete();
+    };
+    const tick = (timestamp: number) => {
+      frame = 0;
+      if (disposed || completed.current) return;
+      if (pausedRef.current || document.hidden) { lastTime = null; return; }
+      const delta = lastTime === null ? 0 : Math.max(0, timestamp - lastTime);
+      lastTime = timestamp;
+      // Native tracks are the canonical clock. A blocked first RAF must not
+      // leave the particle/ref and phase clock behind the moving card layers.
+      if (nativeTracks.current.length) captureNativeTime();
+      else elapsed.current = Math.min(DURATION, elapsed.current + delta);
+      paint.current(elapsed.current);
+      if (elapsed.current >= DURATION) { finish(); return; }
+      frame = requestAnimationFrame(tick);
+    };
+    const start = () => { if (!disposed && !frame && !completed.current && !pausedRef.current && !document.hidden) frame = requestAnimationFrame(tick); };
+    const visibilityChanged = () => {
+      lastTime = null;
+      if (document.hidden) { if (frame) cancelAnimationFrame(frame); frame = 0; captureNativeTime(); synchronizeTracks(false); paint.current(elapsed.current); }
+      else { synchronizeTracks(!pausedRef.current); start(); }
+    };
+    if (!animate) { finish(); return () => { disposed = true; }; }
+    paint.current(elapsed.current); prepareNative(); synchronizeTracks(!pausedRef.current && !document.hidden); start();
+    document.addEventListener('visibilitychange', visibilityChanged);
+    return () => { disposed = true; if (frame) cancelAnimationFrame(frame); nativeTracks.current.forEach(animation => animation.pause()); document.removeEventListener('visibilitychange', visibilityChanged); };
+  }, [animate, paused, replayVersion]);
+
+  const skip = () => { if (completed.current) return; completed.current = true; callbacks.current.onSkip(); };
+  const skipRef = useRef(skip); skipRef.current = skip;
+  useEffect(() => {
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); skipRef.current(); return; }
+      if (event.key !== 'Tab') return;
+      const buttons = Array.from(root.current?.querySelectorAll<HTMLButtonElement>('button:not([disabled])') || []);
+      const first = buttons[0], last = buttons[buttons.length - 1];
+      if (!first) return;
+      if (event.shiftKey && (document.activeElement === first || !buttons.includes(document.activeElement as HTMLButtonElement))) { event.preventDefault(); last.focus({ preventScroll: true }); }
+      else if (!event.shiftKey && (document.activeElement === last || !root.current?.contains(document.activeElement))) { event.preventDefault(); first.focus({ preventScroll: true }); }
+    };
+    document.addEventListener('keydown', handleKey, true);
+    return () => document.removeEventListener('keydown', handleKey, true);
+  }, []);
+  const togglePaused = () => {
+    if (!pausedRef.current) { captureNativeTime(); synchronizeTracks(false); paint.current(elapsed.current); }
+    pausedRef.current = !pausedRef.current; setPaused(pausedRef.current);
+  };
+  const replay = () => {
+    if (!animate) return;
+    callbacks.current.onReplayStart?.(); elapsed.current = 0; completed.current = false; revealed.current = false;
+    pausedRef.current = false; phaseRef.current = 'deal'; setPaused(false); setPhase('deal');
+    synchronizeTracks(false); paint.current(0); setReplayVersion(value => value + 1);
+  };
+  const phaseLabel = phase === 'deal' ? '01 / THE DEAL' : phase === 'ace' ? '02 / THE ACE' : '03 / THE SIGNAL';
+
+  return <section ref={root} className="cinema-opening" data-phase={phase} data-progress="0" data-motion={animate ? 'on' : 'off'} data-paused={paused ? 'true' : 'false'} role="dialog" aria-modal="true" aria-labelledby={id + '-title'} aria-describedby={id + '-description'}>
+    <div className="cinema-stage">
+      <div className="cinema-backdrop" aria-hidden="true" />
+      <div className="cinema-orbit" aria-hidden="true" />
+      <div className="cinema-topline"><span><i />THE GILDED ACE</span><button type="button" className="cinema-close" aria-label="Skip cinematic introduction" title="Enter dashboard · Esc" onClick={skip}><X size={17} /></button></div>
+      <svg className="cinema-card-library" aria-hidden="true"><defs>
+        <CardArtwork kind="back" symbolId={id + '-deck-back'} />
+        {deck.slice(0, 12).map((card, index) => <CardArtwork key={index} kind="pip" rank={card.rank} suit={card.suit} symbolId={`${id}-deck-${index}`} />)}
+      </defs></svg>
       <div className="cinema-card-scene" aria-hidden="true">
-        <div className="cinema-orbit-halo"/>
-        <div className="cinema-card-shadow"/>
-        <div className="cinema-flying-card">
-          <div className="cinema-card-face"><div className="cinema-card-line"/><span className="cinema-card-index">A<span>♠</span></span><svg className="cinema-card-mark" viewBox="0 0 200 190"><path d={spade}/></svg><span className="cinema-card-name">THE GILDED ACE</span><span className="cinema-card-index cinema-card-index-bottom">A<span>♠</span></span></div>
-          <div className="cinema-card-back"><div/><span>♠</span></div>
-        </div>
-        <div className="cinema-emerging-ace"><svg viewBox="0 0 200 190" fill="none"><defs><linearGradient id={id} x1="35" y1="15" x2="164" y2="175" gradientUnits="userSpaceOnUse"><stop stopColor="#fff1c4"/><stop offset=".35" stopColor="#f7d78e"/><stop offset=".65" stopColor="#d5973e"/><stop offset="1" stopColor="#ffdb8e"/></linearGradient></defs><path d={spade} fill="#69451e" transform="translate(7 8)"/><path d={spade} fill={`url(#${id})`} stroke="#ffe4a7" strokeWidth=".7"/><path d="M100 22C85 42 49 64 48 91" stroke="#fff4d5" strokeWidth="1.6" strokeOpacity=".75" strokeLinecap="round"/></svg></div>
-        <span className="cinema-glint cinema-glint-one"/><span className="cinema-glint cinema-glint-two"/><span className="cinema-glint cinema-glint-three"/>
-        <div className="cinema-scene-label"><span/> LUCK. LOCATION. OR A LEAK?</div>
+        <div className="cinema-deck-rain">{deck.flatMap((_, index) => [
+          <div key={`${index}-front`} className={`cinema-rain-card cinema-rain-card-${index}`} style={{ transform: fallingCardTransform(index, 0) }}><svg viewBox="0 0 200 290"><use href={`#${id}-deck-${index % 12}`} /></svg></div>,
+          <div key={`${index}-back`} className={`cinema-rain-card cinema-rain-card-back cinema-rain-card-${index}`} style={{ transform: fallingCardTransform(index, 0) + ' rotateY(180deg)' }}><svg viewBox="0 0 200 290"><use href={`#${id}-deck-back`} /></svg></div>,
+        ])}</div>
+        <div className="cinema-flying-card"><CardArtwork kind="ace" /></div>
+        <div className="cinema-court-card cinema-king"><CardArtwork kind="king" /></div>
+        <div className="cinema-court-card cinema-joker"><CardArtwork kind="joker" /></div>
       </div>
-      <div className="cinema-bottomline"><div className="cinema-scroll-cue"><ArrowDown size={15}/><span>{motionEnabled ? 'SCROLL TO REVEAL' : 'EXPLORE THE EVIDENCE'}</span></div><div className="cinema-controls"><button type="button" aria-label={paused || !motionEnabled ? 'Play cinematic introduction' : 'Pause cinematic introduction'} aria-pressed={!paused && motionEnabled} disabled={!motionEnabled} onClick={() => setPaused(value => !value)}>{paused || !motionEnabled ? <Play size={14}/> : <Pause size={14}/>}<span>{!motionEnabled ? 'Motion off' : paused ? 'Play' : 'Pause'}</span></button><button type="button" aria-label="Replay cinematic introduction" disabled={!motionEnabled} onClick={replay}><RotateCcw size={14}/><span>Replay</span></button></div></div>
-      <div className="cinema-progress" aria-hidden="true"><span/></div>
+      <div className="cinema-particle-field" aria-hidden="true">{animate && <ParticleAce motionEnabled={animate && !paused} cinematicTime={elapsed} />}</div>
+      <div className="cinema-copy"><span className="cinema-kicker">CHANCE IS ONLY THE BEGINNING</span><h2 id={id + '-title'}>Find your <em>ace.</em></h2><p id={id + '-description'} className="cinema-sr-only">A falling deck parts around the king and joker. An ace emerges in silver and gold particles, revealing the dashboard automatically.</p></div>
+      <div className="cinema-bottomline"><span className="cinema-phase-label">{phaseLabel}</span><div className="cinema-controls"><button type="button" aria-label={paused ? 'Play cinematic introduction' : 'Pause cinematic introduction'} aria-pressed={!paused} disabled={!animate} onClick={togglePaused}>{paused ? <Play size={14} /> : <Pause size={14} />}<span>{paused ? 'Play' : 'Pause'}</span></button><button type="button" aria-label="Replay cinematic introduction" disabled={!animate} onClick={replay}><RotateCcw size={14} /><span>Replay</span></button></div></div>
+      <div className="cinema-progress" aria-hidden="true"><span /></div>
     </div>
   </section>;
 }

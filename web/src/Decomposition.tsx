@@ -13,6 +13,7 @@ const definitions = [
   { key: 'gap', label: 'Net gap', color: '#e9e5dc', title: 'The gap is real. Its causes need different decisions.', detail: 'The signed contributions reconcile to the gap against ten average machines. Inspect the payout signal and test the location hypothesis before blanket replacement.' },
 ];
 const LAST = definitions.length - 1;
+const STEP_DURATION_MS = 4000;
 const exactMoney = (value: number) => `${value < 0 ? '−' : value > 0 ? '+' : ''}${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(value))}`;
 const axisMoney = (value: number) => value === 0 ? '$0' : `${value < 0 ? '−' : ''}$${Math.abs(value / 1000).toFixed(0)}k`;
 
@@ -44,7 +45,7 @@ export default function Decomposition({ data }: any) {
   useEffect(() => {
     if (!motion || !playing || !visible || !pageVisible) return;
     if (step >= LAST) { setPlaying(false); return; }
-    const timer = window.setTimeout(() => setStep(value => Math.min(LAST, value + 1)), 2600);
+    const timer = window.setTimeout(() => setStep(value => Math.min(LAST, value + 1)), STEP_DURATION_MS);
     return () => window.clearTimeout(timer);
   }, [motion, playing, visible, pageVisible, step]);
 
