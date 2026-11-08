@@ -113,7 +113,7 @@ await click(label('Next chapter'),'Open evidence chapter again');
 await click(named('Trace the finding',tour()),'Waterfall finding links to its source');
 assert.equal(tour(),null,'Evidence navigation closes the presentation');
 assert.equal(w.location.hash,'#evidence/q1-decomposition','Tour opens the precise evidence claim');
-assert.ok(w.document.querySelector('#claim-q1-decomposition'),'Linked evidence is rendered');
+await until(()=>w.document.querySelector('#claim-q1-decomposition'),'Linked evidence loads from its deferred section');
 assert.equal(errors.length,0,errors.join('\n'));
 console.log('PASS: ten historical candidate identities/earnings/exposure, nine actual location histories, overlapping corrected inspection signal, manual story navigation/continue/reduced motion, modal isolation/focus/Escape, six presentation chapters and analytical totals.');
 dom.window.close();

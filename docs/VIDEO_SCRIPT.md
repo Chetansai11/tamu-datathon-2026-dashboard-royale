@@ -1,3 +1,5 @@
+> Historical development copy. Use the [canonical submission video script](../web/public/docs/VIDEO_SCRIPT.md).
+
 # Two minute dashboard walkthrough
 
 Target: about 110 seconds, allowing a few seconds for each click. Record only

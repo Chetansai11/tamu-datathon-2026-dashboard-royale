@@ -78,14 +78,34 @@ Placement Lab prices each moved machine at $1,800, with two lead days and three 
 
 The recommended $8,700 plan remains an information-gathering inspection and a wayfinding test. At June rates and no additional operating costs, signage's 0.72-point occupancy break-even requires zero displacement; 50% displacement raises it to 1.44 points. A prospective comparison must track uncertainty and whole-floor outcomes, not just a gain at the destination. No model prediction guarantees payback.
 
-## AI-use disclosure
+## Submission disclosure and visual interpretation
 
-The current 4.8-second opening uses native two-sided SVG cards, including king and joker, and gold/silver-white WebGL particles. It contains no performer film or external video. Earlier Higgsfield Soul Cinema/Wan 2.2 Fast assets, generated with included Free Plan credits, remain documented only as historical provenance in `docs/CINEMATIC_OPENING.md`. Decorative artwork is not analytical evidence or a recording of a real casino.
+See the [combined Codex + Claude AI-use disclosure](AI_DISCLOSURE.md), the canonical disclosure for this entry. Historical asset provenance is included there.
 
-The enhanced dashboard retains the team's earlier analytical code, report bundle and source provenance. The original repository's `docs/AI_DISCLOSURE.md` credits both OpenAI Codex and Anthropic Claude for that prior work; those contributions remain preserved.
+The native 4.8-second card opening and particle ace are decorative; animations do not change analytical values. The earnings waterfall discloses its two-cent source-rounding difference. Filtered explorer views are distinct from fixed January–June investigations.
 
-For this enhancement, OpenAI Codex assisted with source review, analytical corrections, retrospective validation, reproducible ML training, scenario calculations, interface implementation, automated numerical checks and document drafting. The reported model scores are computed from the supplied data; generative AI does not invent observations or intervention returns. AI assistance is not independent human verification. Team members must review the conclusions, final application and submission materials before presenting them. The dashboard does not infer private characteristics of real guests; its guest data is fictional challenge data.
+## Explicit Q1 and Q3 answers
 
-The first screen adapts an AXON motion reference into original WebGL spade geometry and CSS floating cards. Particle motion uses analytic cursor vortices rather than a full fluid simulation. The four metric cards and daily traces use the current analysis scope; availability uses a fixed 0–100% scale. IBM Plex Sans and Mono are locally embedded under the OFL. No paid assets or generation services were added for this revision. “The ace in motion” replays the native card opening.
+The adjusted-factor list orders candidates by theoretical win divided by the exposure-, game- and location-adjusted benchmark, among rows whose conditional upper interval is below one. M-1184, M-1532 and M-1154 are first, second and third. M-1244 is ninth, not fourth. All four are outside the GM’s raw bottom ten, but four other GM candidates also have below-one conditional intervals. A positive combined machine component does not clear every machine. Sparse cells (including sole Classic Sevens machine M-1532 in High-Limit) and new Aurora Link titles confined to Center Pit limit separation of game and location effects.
 
-The earnings waterfall uses the corrected fixed January–June decomposition, including its positive machine contribution and two-cent rounding difference. Explore the floor presents the ten historical candidates in a three-step narrative layout, including the two absent by June 30; it is not a physical floor map. The detailed explorer uses dated locations. The guided presentation is manually navigated and its filter demonstration is independent of the main analysis scope. Placement Lab and the retrospective validation panels add labeled model estimates; the decorative transitions do not alter them.
+The shift table uses `reports.q3.by_shift`, aggregating actual unavailable local clock hours, not the shift when a fault ticket opened. Day is 06:00–14:00, swing 14:00–22:00, graveyard 22:00–06:00. Unavailable fraction is down hours / (available + down hours), preserving DST exposure. Swing has the largest estimated missed theo; graveyard has the most down hours. The panel remains fixed to the full January–June floor when filters change.
+
+The LVCVA comparison is the organizer-bundled revised series’ January-to-June change in visitors per calendar day. It is compared with clearly labeled casino rates, not treated as a causal explanation, year-over-year decline, or forecast feature.
+
+## Forecast and funded execution
+
+The existing $1,200 inspection remains on Wednesday, July 2, following its one-day catalog lead. The frozen weekday model predicts about $1.150m of floor wagers for Wednesday versus $1.821m Saturday. Wednesday is its second-lowest weekday; waiting until the lowest weekday, Tuesday July 8, would delay diagnosis and shorten the horizon. This is a scheduling rationale, not measured intervention savings. Wayfinding still begins July 11, and all costs, benefit days and sensitivity calculations are unchanged.
+
+### July reference and alert rules
+
+`reports.forecast.july_monitoring` exports every date from July 1–30, with predicted whole-floor wagers, lower/upper thresholds and null actuals. It extends the original model frozen on April 30 without fitting on May–June or July. The original March–April absolute-error radius is $110,036.98125; dated dollar thresholds are rounded to cents. The original historical evaluation is preserved. This plan was prepared retrospectively against the synthetic calendar; it is not a claim of historical preregistration, a new holdout, or observed July accuracy.
+
+A completed gaming-day total strictly below its lower threshold or above its upper threshold triggers a **watch**. Two consecutive completed gaming dates breaching the same side trigger **review**. Equality is within the band. A within-band, missing or invalid observation resets the streak; the opposite direction restarts it at one. Missing is never interpreted as zero. Gaming dates run 06:00–06:00 in America/Los_Angeles. Reconcile meter completeness and availability first, then examine events, outages, guest mix and displaced play before altering the plan.
+
+The two-day rule is an operational choice, without a validated false-alarm rate. Correlated residuals, repeated checks, drift, July 4 and other unmodeled events limit its interpretation. Forecast deviations do not prove a defect or signage effect; the matched-zone pilot and whole-floor outcomes remain necessary. The Model lab contains a 30-day export and an illustrative input checker. Checker entries are local to that view, do not alter source data and are not submitted observations. The Python `evaluate_july_alerts` helper accepts supplied complete-day totals for reproducible evaluation.
+
+### Loading and opening behavior
+
+The 4.8-second native opening retains its animation and manual replay. Completion, skipping or leaving an active opening is remembered in the current tab's session storage; returning within that session enters the dashboard directly. Reduced-motion preferences remain authoritative. Storage-denied environments fall back to in-memory state for that document.
+
+Secondary analytical sections load as separate JavaScript chunks. React and chart libraries have reusable vendor chunks; the hero and native opening remain immediately available. The offline edition separately bundles the same sources into one script with embedded data and fonts, so secondary routes still work without a network. This packaging difference does not change analytical values or visual design.

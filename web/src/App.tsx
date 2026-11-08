@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { AdjustedCandidates, DowntimeTiming, TourismContext } from './AnalyticalFindings';
+import React, { lazy, Suspense, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { ArrowUpRight, ArrowDownRight, ArrowRight, Download, SlidersHorizontal, LayoutDashboard, Map as MapIcon, TrendingUp, Users, FlaskConical, Wallet, BookOpen, ChevronDown, ChevronRight, X, Search, RotateCcw, Info, Check, CalendarDays, CircleHelp, Menu, Wrench, Dices, MapPin, ShieldCheck, ExternalLink, ChevronLeft, Presentation } from 'lucide-react';
 import { aggregate, AnyRecord, money, number, percent, ratio, shortDate, monthName, colors, csvDownload, niceName, sum } from './data';
 import { TrendChart, FloorMap, LuckChart, ModelChart, SimpleBar } from './Charts';
-import ActionStudio from './components/ActionStudio';
-import Evidence from './components/Evidence';
-import GuestView from './GuestView';
-import PlacementLab from './PlacementLab';
-import ForecastValidation from './ForecastValidation';
+// Keep the established CSS cascade even though these sections' JS loads later.
+import './components/decision.css';
+import './placement.css';
+import './july-monitoring.css';
 import Decomposition from './Decomposition';
 import AceOverview from './AceOverview';
 import CinematicOpening from './CinematicOpening';
@@ -15,6 +15,21 @@ import ZoneComparison from './ZoneComparison';
 import AceFloorTransition from './AceFloorTransition';
 import GuidedPresentation from './GuidedPresentation';
 import { MotionContext, useMotionSettings } from './motion';
+import { hasSeenIntro, rememberIntro } from './introSession';
+
+const ActionStudio = lazy(() => import('./components/ActionStudio'));
+const Evidence = lazy(() => import('./components/Evidence'));
+const GuestView = lazy(() => import('./GuestView'));
+const PlacementLab = lazy(() => import('./PlacementLab'));
+const ForecastValidation = lazy(() => import('./ForecastValidation'));
+
+class SectionBoundary extends React.Component<React.PropsWithChildren, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() {
+    return this.state.failed ? <section className="panel empty-state" role="alert"><h3>This section couldn’t load.</h3><p>Your other sections are still available. Reload to fetch the current version.</p><button className="btn" onClick={() => window.location.reload()}>Reload dashboard</button></section> : this.props.children;
+  }
+}
 
 const pages = [
   { id: 'verdict', label: 'The verdict', icon: LayoutDashboard, chapter: '01' },
@@ -47,14 +62,14 @@ const OpeningCoveredContext = React.createContext(false);
 
 export default function App() {
   const motion = useMotionSettings();
-  const [opening, setOpening] = useState(() => motion.enabled && ['', 'verdict'].includes(location.hash.slice(1).split('/')[0]));
+  const [opening, setOpening] = useState(() => motion.enabled && !hasSeenIntro() && ['', 'verdict'].includes(location.hash.slice(1).split('/')[0]));
   const [revealing, setRevealing] = useState(false);
   const [openingVersion, setOpeningVersion] = useState(0);
   const skipFocus = useRef(false);
   const openingRef = useRef(opening);
   openingRef.current = opening;
-  const closeOpening = useCallback(() => { if (openingRef.current) skipFocus.current = true; setOpening(false); setRevealing(false); }, []);
-  const skipOpening = useCallback(() => { skipFocus.current = true; setOpening(false); setRevealing(false); }, []);
+  const closeOpening = useCallback(() => { if (openingRef.current) { skipFocus.current = true; rememberIntro(); } setOpening(false); setRevealing(false); }, []);
+  const skipOpening = useCallback(() => { rememberIntro(); skipFocus.current = true; setOpening(false); setRevealing(false); }, []);
   const beginReveal = useCallback(() => setRevealing(true), []);
   const restartReveal = useCallback(() => setRevealing(false), []);
   const replayOpening = useCallback(() => {
@@ -143,18 +158,20 @@ const DashboardApp = React.memo(function DashboardApp({ motion, onNavigate, onRe
         {!fixedScope && page !== 'guests' && <div className="active-analysis-scope" role="status" aria-live="polite"><span>CURRENT SELECTION</span><strong>{shortDate(start)} – {shortDate(end)}, 2025</strong><i/>{zone === 'all' ? 'All zones' : niceName(zone, zoneOptions)}<i/>{bank === 'all' ? 'All banks' : niceName(bank, bankOptions)}<i/>{number(t.machines)} machines active in period</div>}
         {page === 'verdict' && <>
 
-          <div id="historical-floor-replay"><FloorReplay data={data} motionEnabled={motion.enabled}/></div><Decomposition data={data}/><div className="overview-grid"><section className="panel trend-panel"><PanelTitle kicker="THE BIG PICTURE" title="How the floor performed"><div className="segmented">{[['coin', 'Wagers'], ['win', 'House win'], ['theo', 'Expected']].map(([v, label]) => <button key={v} onClick={() => setMetric(v)} className={metric === v ? 'active' : ''}>{label}</button>)}</div></PanelTitle><div className="chart-summary"><strong>{money(t[metric], true)}</strong><span>across {number(t.days)} gaming days <i/> {number(t.machines)} machines</span></div>{t.count ? <TrendChart series={view!.series} metric={metric}/> : <Empty/>}<div className="panel-foot"><span className="chart-key"><i style={{ background: colors.teal }}/> {metric === 'coin' ? 'All play · coin-in' : metric === 'win' ? 'Actual house win' : 'Expected house win'}</span>{metric === 'win' ? <span className="chart-key"><i style={{ background: colors.gold }}/> Expected house win</span> : <span>Daily totals · gaming day starts at 6 a.m.</span>}</div></section>
+          <div id="historical-floor-replay"><FloorReplay data={data} motionEnabled={motion.enabled}/></div><Decomposition data={data}/><AdjustedCandidates data={data}/><div className="overview-grid"><section className="panel trend-panel"><PanelTitle kicker="THE BIG PICTURE" title="How the floor performed"><div className="segmented">{[['coin', 'Wagers'], ['win', 'House win'], ['theo', 'Expected']].map(([v, label]) => <button key={v} onClick={() => setMetric(v)} className={metric === v ? 'active' : ''}>{label}</button>)}</div></PanelTitle><div className="chart-summary"><strong>{money(t[metric], true)}</strong><span>across {number(t.days)} gaming days <i/> {number(t.machines)} machines</span></div>{t.count ? <TrendChart series={view!.series} metric={metric}/> : <Empty/>}<div className="panel-foot"><span className="chart-key"><i style={{ background: colors.teal }}/> {metric === 'coin' ? 'All play · coin-in' : metric === 'win' ? 'Actual house win' : 'Expected house win'}</span>{metric === 'win' ? <span className="chart-key"><i style={{ background: colors.gold }}/> Expected house win</span> : <span>Daily totals · gaming day starts at 6 a.m.</span>}</div></section>
           <section className="decision-card"><div className="eyebrow">FULL-PERIOD RECOMMENDATION</div><div className="decision-symbol">♠</div><h2>Spend $8,700.<br/><em>Keep $91,300.</em></h2><p>Inspect one payout signal. Test wayfinding in Back Forty. Reserve the rest until the evidence earns it.</p><div className="decision-rule"/><div className="decision-stat"><span>Action types funded</span><strong>2 of 3</strong></div><button onClick={() => navigate('actions')}>Review the measured plan <ArrowUpRight size={17}/></button></section></div>
           <div className="overview-bottom"><section className="panel"><PanelTitle kicker="LOCATION MATTERS" title="Which zones earn their space?"><button className="text-btn" onClick={() => navigate('floor')}>Explore floor <ArrowUpRight size={14}/></button></PanelTitle>{t.count ? <ZoneComparison zones={view!.zones} data={data} onSelectZone={id => { setZone(id); setBank('all'); navigate('floor'); }}/> : <Empty/>}<div className="panel-foot"><span>Select a zone to inspect its machines.</span><span>{number(view!.banks.length)} banks in scope</span></div></section><section className="panel investigation-panel"><PanelTitle kicker="THREE EXPLANATIONS. ONE DECISION." title="Follow the evidence"/><button className="investigation-row" onClick={() => navigate('floor')}><span className="investigation-icon"><Dices size={19}/></span><span><strong>Is it just luck?</strong><small>M-1158 is the only corrected full-period signal</small></span><ChevronRight size={16}/></button><button className="investigation-row" onClick={() => navigate('demand')}><span className="investigation-icon orange"><MapPin size={19}/></span><span><strong>Did the floor change?</strong><small>Back Forty's footfall gap predates the closure</small></span><ChevronRight size={16}/></button><button className="investigation-row" onClick={() => navigate('demand')}><span className="investigation-icon gold"><Wrench size={19}/></span><span><strong>What did downtime cost?</strong><small>{money(t.lostTheo, true)} estimated missed expected win</small></span><ChevronRight size={16}/></button><div className="investigation-note"><ShieldCheck size={15}/><span>Screening finds questions, not proof. Inspect alternatives before acting.</span></div></section></div>
           <div className="next-step"><div><span className="eyebrow">FROM EVIDENCE TO ACTION</span><strong>A $100,000 budget. Three action types. Every dollar explained.</strong></div><button className="btn btn-primary" onClick={() => navigate('actions')}>Open action studio <ArrowRight size={15}/></button></div>
         </>}
         {page === 'floor' && <FloorExplorer data={data} view={view!} bank={bank} onBank={drillBank} onMachine={setSelectedMachine}/>}
         {page === 'demand' && <DemandView data={data} view={view!} start={start} end={end} zone={zone} bank={bank} onBank={drillBank}/>}
-        {page === 'guests' && <GuestView data={data}/>}
-        {page === 'model' && <><ModelView data={data}/><ForecastValidation report={data.reports.forecast} onPlacement={() => navigate('placement')}/></>}
-        {page === 'placement' && <PlacementLab data={data}/>}
-        {page === 'actions' && <ActionStudio data={data}/>}
-        {page === 'evidence' && <Evidence data={data}/>}
+        <SectionBoundary key={page}><Suspense fallback={<section className="panel empty-state" role="status" aria-live="polite"><span>Loading this section…</span></section>}>
+          {page === 'guests' && <GuestView data={data}/>}
+          {page === 'model' && <><ModelView data={data}/><ForecastValidation report={data.reports.forecast} onPlacement={() => navigate('placement')}/></>}
+          {page === 'placement' && <PlacementLab data={data}/>}
+          {page === 'actions' && <ActionStudio data={data}/>}
+          {page === 'evidence' && <Evidence data={data}/>}
+        </Suspense></SectionBoundary>
         <footer className="main-footer"><span>THE GILDED ACE <i/> Dashboard Royale</span><span>Synthetic casino data · Release {data.meta?.release || '0.9.0-draft'} <i/> Designed for decisions</span></footer>
       </div></main>
     </div>
@@ -188,7 +205,7 @@ function DemandView({ data, view, start, end, zone, bank, onBank }: any) {
   return <><div className="metrics-grid"><Metric label="UNAVAILABLE MACHINE-HOURS" value={number(view.totals.downtime)} detail={`${percent(1 - view.totals.availability)} of scheduled capacity`}/><Metric label="ESTIMATED MISSED THEO" value={money(view.totals.lostTheo, true)} detail="Opportunity estimate, not realized loss" icon={Info}/><Metric label="FAULTS OPENED" value={number(view.totals.faults)} detail="Tickets recorded during the selected period"/><Metric label="WAGERS / AVAILABLE HOUR" value={money(ratio(view.totals.coin, view.totals.available))} detail="Comparable exposure, all tracked machines" accent/></div>
     <section className="panel"><PanelTitle kicker="DEMAND OVER TIME" title="Separate demand from lost capacity"><div className="segmented">{[['coin', 'Wagers'], ['theo', 'Expected win'], ['win', 'Actual win']].map(([v, label]) => <button key={v} className={metric === v ? 'active' : ''} onClick={() => setMetric(v)}>{label}</button>)}</div></PanelTitle><TrendChart series={view.series} metric={metric} height={265}/><ScopeNote>The selected period and floor filters apply. Lower totals can reflect fewer operating hours; inspect per-hour rates alongside raw dollars.</ScopeNote></section>
     <div className="two-col section-gap"><section className="panel"><PanelTitle kicker="WHEN CAPACITY DISAPPEARED" title="Unavailable hours by month"/><SimpleBar data={monthly} dataKey="downtime" color={colors.orange}/><ScopeNote>Scheduled time uses the calendar, including the 23-hour March 8 gaming day.</ScopeNote></section><section className="panel"><PanelTitle kicker="WHERE TO LOOK FIRST" title="Banks with the most missed opportunity"/><SimpleBar data={rankedBanks} dataKey="lostTheo" dollars onClick={(row: any) => onBank(row.id)}/><ScopeNote>Calibrated hourly counterfactual: unavailable hours × matched machine/location/month/weekday/hour play. Gross opportunity before displaced play.</ScopeNote></section></div>
-    <section className="panel location-story section-gap"><div className="location-story-intro"><div className="eyebrow">FIXED JAN–JUN LOCATION INVESTIGATION</div><h2>What if the machine<br/><em>wasn’t the problem?</em></h2><p>Back Forty already had a footfall gap before its entrance walkway closed from March 3 to April 7. The temporary closure deepened an existing location problem.</p><span className="tag"><MapPin size={12}/> W-ENT-B40 · effective-dated floor record</span></div><div className="location-story-evidence"><div className="closure-timeline"><div><strong>BEFORE</strong><span>Jan 1 – Mar 2</span><i/></div><div className="closure"><strong>WALKWAY CLOSED</strong><span>Mar 3 – Apr 6</span><i/></div><div><strong>REOPENED</strong><span>Apr 7 – Jun 30</span><i/></div></div>{closure ? <ClosureDetails closure={closure}/> : <><h3>Compare the zone with the rest of the floor.</h3><p>Check coin-in per available hour before, during and after the closure. Use other zones as a comparison, then inspect recovery after reopening.</p></>}<div className="insight-callout"><Info size={16}/><span>Renovation timing supports a location explanation; it does not prove causation. Seasonality, game mix, promotions and sensor outages remain alternatives.</span></div></div></section>
+    <DowntimeTiming data={data}/><TourismContext data={data}/><section className="panel location-story section-gap"><div className="location-story-intro"><div className="eyebrow">FIXED JAN–JUN LOCATION INVESTIGATION</div><h2>What if the machine<br/><em>wasn’t the problem?</em></h2><p>Back Forty already had a footfall gap before its entrance walkway closed from March 3 to April 7. Relative demand fell during the closure and improved after reopening; this is an observational comparison.</p><span className="tag"><MapPin size={12}/> W-ENT-B40 · effective-dated floor record</span></div><div className="location-story-evidence"><div className="closure-timeline"><div><strong>BEFORE</strong><span>Jan 1 – Mar 2</span><i/></div><div className="closure"><strong>WALKWAY CLOSED</strong><span>Mar 3 – Apr 6</span><i/></div><div><strong>REOPENED</strong><span>Apr 7 – Jun 30</span><i/></div></div>{closure ? <ClosureDetails closure={closure}/> : <><h3>Compare the zone with the rest of the floor.</h3><p>Check coin-in per available hour before, during and after the closure. Use other zones as a comparison, then inspect recovery after reopening.</p></>}<div className="insight-callout"><Info size={16}/><span>Renovation timing supports a location explanation; it does not prove causation. Seasonality, game mix, promotions and sensor outages remain alternatives.</span></div></div></section>
     <div className="scope-note section-gap"><Info size={14}/><span>Floor-wide context for {shortDate(start)}–{shortDate(end)}: {number(sum(props, 'traffic'))} observed counter crossings. Counters record entries, not unique guests. {zone !== 'all' || bank !== 'all' ? 'Context remains property-wide when a floor filter is selected.' : ''} Missing traffic is not zero.</span></div>
   </>;
 }

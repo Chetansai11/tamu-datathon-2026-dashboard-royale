@@ -22,6 +22,7 @@ w.fetch=()=>{throw Error('Offline route must not fetch data');};
 w.addEventListener('error',e=>errors.push(e.error?.stack||e.message));
 w.eval(compiled.outputFiles[0].text);
 const settle=()=>new Promise(r=>setTimeout(r,70)),body=()=>w.document.body.textContent;
+async function until(predicate,message){const deadline=Date.now()+5000;while(!predicate()&&Date.now()<deadline)await settle();assert.ok(predicate(),message);}
 for(let i=0;i<60&&!w.document.querySelector('#placement-machine');i++)await settle();
 assert.ok(w.document.querySelector('#placement-machine'),'Placement deep link loads from embedded data');
 assert.equal(w.document.querySelector('.cinema-opening'),null,'Deep link bypasses introduction');
@@ -63,8 +64,9 @@ assert.ok(body().includes('$3.69')&&body().includes('$4.29')&&body().includes('8
 assert.ok(body().includes('49 rows')&&body().includes('77 rows'),'Origin exclusions disclosed');
 assert.ok(body().includes(report.limitations[0]),'Exported limitations are visible');
 await click('Model lab');
+await until(()=>w.document.querySelector('.forecast-validation'),'Deferred forecast validation loads');
 assert.ok(body().includes('8.8%')&&body().includes('higher'),'Losing forecast challenger disclosed');
-await click('Evidence');assert.ok(w.document.getElementById('claim-placement-model'),'Placement evidence is traceable');
+await click('Evidence');await until(()=>w.document.getElementById('claim-placement-model'),'Deferred placement evidence is traceable');
 assert.deepEqual(errors,[]);
 dom.window.close();
 console.log('PASS: offline Placement Lab deep link, vacant move, two-sided swap, retained budget, displacement, unsupported abstention, validation metrics, limitations and evidence.');

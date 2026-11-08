@@ -1,3 +1,5 @@
+> Historical development copy. Use the [canonical submission writeup](../web/public/docs/WRITEUP.md).
+
 # The Gilded Ace: pause replacement, test the explanation
 
 The general manager wants to replace the ten lowest-earning machines. We recommend pausing blanket replacement, inspecting one payout signal and testing access to Back Forty.

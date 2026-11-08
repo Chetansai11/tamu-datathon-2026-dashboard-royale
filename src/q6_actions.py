@@ -132,7 +132,9 @@ def build_report(q1=None, q3=None, q5=None, q1d=None):
                         "but does not identify a causal access or signage effect; game mix, guest mix and concurrent changes remain alternatives."),
         "measurement": ("Pre-register June baselines for Back Forty: occupancy, entries per covered sensor-hour and location factor. From July 11 to 30, compare "
                         "with June by difference-in-differences against Garage Entrance and Hotel Corridor on matched weekdays. Check floor-total coin-in "
-                        "against the frozen weekday forecast as a check for possible displacement, allowing for forecast error. The initial signal to review is Back Forty occupancy up at least 1 point with more entries, "
+                        "against the exported July 1-30 frozen reference. Watch a completed gaming day outside its dated lower/upper thresholds; review two consecutive same-direction breaches. "
+                        "Missing days reset that streak. Reconcile meters and availability first; these operational alerts do not identify displacement or a causal pilot effect. "
+                        "The initial zone signal to review is Back Forty occupancy up at least 1 point with more entries, "
                         "but that alone is not evidence of incremental revenue or cost recovery. Assess uncertainty, displaced play and statistical power before any expansion; a second zone requires a new decision."),
         "evidence_ids": ["q1-decomposition", "back-forty-footfall", "demand-location"],
         "opportunity_cost_theo": 0.,

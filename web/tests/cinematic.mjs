@@ -24,7 +24,7 @@ async function until(predicate, message) {
   for (let i = 0; i < 100 && !predicate(); i++) await flush();
   assert.ok(predicate(), message);
 }
-function environment({ hash = '', reduced = false, motionOff = false, pendingData = false, rejectPlay = false, nativeAnimations = false } = {}) {
+function environment({ hash = '', reduced = false, motionOff = false, introSeen = false, blockedSessionStorage = false, pendingData = false, rejectPlay = false, nativeAnimations = false } = {}) {
   const errors = [], vc = new VirtualConsole();
   vc.on('jsdomError', error => errors.push(error.message));
   const dom = new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>', { url: 'http://localhost/' + hash, runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc });
@@ -74,6 +74,8 @@ function environment({ hash = '', reduced = false, motionOff = false, pendingDat
   w.HTMLMediaElement.prototype.pause = function () { pauses++; this.testPaused = true; };
   w.fetch = () => { fetches++; return pendingData ? new Promise(resolve => { resolveData = resolve; }) : Promise.resolve({ ok: true, json: async () => data }); };
   if (motionOff) w.localStorage.setItem('gilded-ace-motion', 'off');
+  if (introSeen) w.sessionStorage.setItem('gilded-ace-intro-seen-v1', 'seen');
+  if (blockedSessionStorage) Object.defineProperty(w, 'sessionStorage', { get() { throw new w.DOMException('Storage blocked', 'SecurityError'); } });
   w.addEventListener('error', event => errors.push(event.error?.stack || event.message));
   const section = () => w.document.querySelector('.cinema-opening');
   const label = name => w.document.querySelector(`[aria-label="${name}"]`);
@@ -234,6 +236,7 @@ process.stdout.write('Checking dashboard handoff and deep-link behavior...\n');
   assert.ok(underlay.hasAttribute('inert'), 'Covered analytics are not keyboard targets');
   assert.equal(e.w.document.body.style.overflow, 'hidden', 'Opening locks the page without a scroll runway');
   await e.click('Skip cinematic introduction'); await e.advance(100);
+  assert.equal(e.w.sessionStorage.getItem('gilded-ace-intro-seen-v1'), 'seen', 'Skip remembers the opening for this tab session');
   assert.ok(e.section() === null, 'Skip releases the opening even while data is pending');
   assert.ok(e.w.document.activeElement === loadingMain, 'Skip focuses the mounted loading main');
   assert.equal(e.w.document.body.style.overflow, '', 'Skip restores body scrolling');
@@ -276,6 +279,7 @@ process.stdout.write('Checking dashboard handoff and deep-link behavior...\n');
   await until(() => e.section(), 'The opening mounts before slow dashboard data');
   await e.advance(5000);
   assert.ok(e.section() === null, 'Automatic completion is independent of a slow data request');
+  assert.equal(e.w.sessionStorage.getItem('gilded-ace-intro-seen-v1'), 'seen', 'Completion persists even if data is still loading');
   assert.ok(e.w.document.activeElement === e.w.document.getElementById('main-content'), 'Automatic exit focuses the loading main');
   await e.releaseData();
   await until(() => e.w.document.querySelector('.ace-overview'), 'Slow data eventually renders the hero');
@@ -292,4 +296,31 @@ process.stdout.write('Checking dashboard handoff and deep-link behavior...\n');
   assert.equal(e.w.location.hash, '#evidence/q1-decomposition', 'The evidence anchor is preserved');
   await e.close();
 }
-process.stdout.write('PASS: 4.8s native deck phases/completion, pause/replay, zero video dependency, keyboard/cleanup, reduced motion, pending-data handoff and direct-route bypass. Particle rendering and pixel composition also require browser QA.\n');
+// A returning session bypasses autoplay, while the explicit replay remains intact.
+{
+  const e = environment({ introSeen: true }); e.w.eval(appCode);
+  await until(() => e.w.document.querySelector('.ace-overview'), 'Returning session loads the hero');
+  assert.equal(e.section(), null, 'Previously seen opening does not autoplay on reload');
+  assert.equal(e.w.document.querySelector('.dashboard-underlay').dataset.cinema, 'ready');
+  await e.click('Show cinematic introduction');
+  assert.ok(e.section(), 'Manual replay ignores the seen flag');
+  await e.advance(5000);
+  assert.equal(e.section(), null, 'Manual replay still completes at the original duration');
+  await e.close();
+}
+{
+  const e = environment({ blockedSessionStorage: true }); e.w.eval(appCode);
+  await until(() => e.section(), 'Storage restrictions do not prevent the first opening');
+  await e.click('Skip cinematic introduction');
+  await until(() => e.w.document.querySelector('.ace-overview'), 'Storage restrictions do not block dashboard access');
+  assert.equal(e.section(), null);
+  await e.close();
+}
+{
+  const e = environment({ reduced: true, introSeen: true }); e.w.eval(appCode);
+  await until(() => e.w.document.querySelector('.ace-overview'), 'Returning reduced-motion session loads');
+  assert.equal(e.section(), null);
+  assert.ok(e.label('Show cinematic introduction').disabled, 'Replay respects system reduced motion');
+  await e.close();
+}
+process.stdout.write('PASS: 4.8s deck lifecycle, session skip/completion memory, explicit replay, storage-denied fallback, reduced motion, pending-data handoff and deep links. Particle pixels still require browser QA.\n');

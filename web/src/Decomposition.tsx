@@ -10,7 +10,7 @@ const definitions = [
   { key: 'location', label: 'Location', color: '#91a69a', title: 'Where a machine sits matters.', detail: 'Nine of these ten machines spent time in Back Forty. Retrospective location rates describe the gap; they do not prove what a move or new sign would earn.' },
   { key: 'luck', label: 'Payout residual', color: '#cd8a7e', title: 'Realized payouts add another layer.', detail: 'Actual house win differs from theoretical win on the observed wagers. This residual can reflect chance, configuration or recording; it does not establish a defect.' },
   { key: 'machine', label: 'Machine term', color: '#a8c1ae', title: 'The machine term goes the other way.', detail: 'The adjusted machine contribution offsets part of the deficit. It is descriptive, and an aggregate positive contribution does not clear every individual machine.' },
-  { key: 'gap', label: 'Net gap', color: '#e9e5dc', title: 'The gap is real. Its causes need different decisions.', detail: 'The signed contributions reconcile to the gap against ten average machines. Inspect the payout signal and test the location hypothesis before blanket replacement.' },
+  { key: 'gap', label: 'Net gap', color: '#e9e5dc', title: 'The gap is real. Its components guide different tests.', detail: 'The signed contributions reconcile to the gap against ten average machines. Inspect the payout signal and test the location hypothesis before blanket replacement.' },
 ];
 const LAST = definitions.length - 1;
 const STEP_DURATION_MS = 4000;

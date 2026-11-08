@@ -9,6 +9,7 @@ outcomes inside a forecast block never enter that block's predictions.
 from __future__ import annotations
 
 import argparse
+from collections.abc import Mapping
 import json
 import math
 from pathlib import Path
@@ -167,6 +168,113 @@ def retrospective_validation(frame: pd.DataFrame) -> dict:
                             "Six months from one synthetic property do not establish external validity or a causal staffing or relocation benefit."]}
 
 
+def build_july_monitoring(train: pd.DataFrame, model: str, radius: float) -> dict:
+    """Extend the original frozen reference without using May-July outcomes.
+
+    This is an unobserved operational plan, prepared retrospectively with respect
+    to the synthetic calendar. It is not another validation sample. Retaining
+    the Apr-30 model and earlier error radius also preserves the action plan's
+    original weekday timing rationale rather than silently refitting it.
+    """
+    if model not in ("constant_mean", "weekday_mean"):
+        raise ValueError("July monitoring requires the original selected model")
+    if not math.isfinite(radius) or radius < 0:
+        raise ValueError("July monitoring radius must be finite and nonnegative")
+    fit = train.copy()
+    fit["gaming_date"] = pd.to_datetime(fit.gaming_date)
+    fit = fit[fit.gaming_date.between("2025-01-01", "2025-04-30")].sort_values("gaming_date")
+    expected_dates = pd.date_range("2025-01-01", "2025-04-30")
+    values = fit.coin_in_usd.to_numpy(float)
+    if (fit.gaming_date.tolist() != expected_dates.tolist() or
+            not np.isfinite(values).all() or np.any(values < 0)):
+        raise ValueError("July monitoring requires complete finite nonnegative Jan-Apr daily wagers")
+    dates = pd.Series(pd.date_range("2025-07-01", "2025-07-30"))
+    predictions = _predict(fit, dates, model)
+    daily = []
+    for date, prediction in zip(dates, predictions):
+        lower, upper = round(max(0., float(prediction) - radius), 2), round(float(prediction) + radius, 2)
+        daily.append({"date": date.strftime("%Y-%m-%d"), "weekday": date.day_name(),
+                      "weekday_index": int(date.day_of_week), "prediction": round(float(prediction), 2),
+                      "lower": lower, "upper": upper, "watch_below": lower, "watch_above": upper,
+                      "actual": None})
+    return {
+        "label": "July 1-30 frozen reference and monitoring plan", "status": "prospective_plan",
+        "prepared_retrospectively": True, "model": model, "model_frozen_at": "2025-04-30",
+        "start": "2025-07-01", "end": "2025-07-30", "days": len(daily),
+        "target": "Whole-floor daily coin-in USD; includes replayed wagers, not profit",
+        "gaming_day": "06:00 to 06:00 next day, America/Los_Angeles; date labels the starting day",
+        "training": {"start": "2025-01-01", "end": "2025-04-30", "days": len(fit)},
+        "calibration": {"fit_end": "2025-02-28", "start": "2025-03-01", "end": "2025-04-30",
+                        "nominal_coverage": .90, "radius_usd": radius,
+                        "method": "Original higher 90th percentile of March-April absolute errors from Jan-Feb fits; unchanged for July"},
+        "policy": {
+            "version": "july-monitoring-v1", "watch_below": "daily.watch_below", "watch_above": "daily.watch_above",
+            "comparison": "strict", "consecutive_review_days": 2, "missing_day": "reset streak",
+            "opposite_direction": "restart streak at one", "dollar_precision": 2,
+            "watch": "One completed gaming day below its lower threshold or above its upper threshold triggers a watch.",
+            "review": "Two consecutive completed gaming dates outside their thresholds in the same direction trigger operational review.",
+            "response": "First reconcile the meter feed and available machine-hours; then inspect events, outages, guest mix and displacement before changing the funded plan.",
+            "within_band": "A reading at either threshold is within the band. Within-band days reset the streak; they do not prove normal operation.",
+            "missing": "An absent or incomplete gaming day is not zero wagers and cannot trigger an alert; it resets the consecutive-day streak.",
+            "limit": "These are explicit operational screening rules, not calibrated false-alarm probabilities, statistical significance tests, or evidence that signage caused a change."
+        },
+        "daily": daily,
+        "limitations": [
+            "July actuals are not supplied. No July accuracy, alert rate or intervention effect has been measured.",
+            "This plan is prepared after examining the synthetic January-June data, not a claim of historical preregistration. The frozen reference itself still uses January-April only.",
+            "Keeping the April-30 reference makes comparisons auditable but can miss later drift. Weekday-only predictions do not model July 4, promotions, unusual events or changed capacity.",
+            "The empirical band is not guaranteed 90% coverage, and repeated daily checks increase the opportunity for alerts. The two-day review rule has no validated false-alarm rate.",
+            "Aggregate wagers cannot establish incremental profit or identify zone-level displacement. Review alerts alongside the pilot's matched controls, availability and whole-floor outcomes."
+        ],
+        "evidence": [{"id": "forecast-july-monitoring", "claim": "Every July decision date has an auditable reference and alert rule",
+                      "source": "property_day Jan-Apr; src/forecast.py:build_july_monitoring and evaluate_july_alerts",
+                      "method": "Extend the unchanged Apr-30 frozen model and pre-May error radius to July 1-30. Round thresholds to cents. Watch strict daily band breaches; review two consecutive same-direction breaches; missing dates reset.",
+                      "result": "30 daily references, explicit lower/upper thresholds and no invented July observations. Funded July-2 inspection timing remains tied to the original weekday means.",
+                      "alternative": "Events, availability, demand drift or a meter-feed error can move whole-floor wagers without a pilot effect.",
+                      "limitation": "Unobserved July plan, designed retrospectively. Empirical bands and operational alert rules do not guarantee coverage or false-alarm control and are not a causal evaluation."}]
+    }
+
+
+def evaluate_july_alerts(plan: dict, observations: Mapping[str, float | None]) -> list[dict]:
+    """Evaluate supplied complete-day totals; never fill absent days with zero.
+
+    Keys are gaming-date strings. Null means missing/incomplete, zero is a real
+    supplied observation. Invalid dates, booleans, strings, negative values and
+    nonfinite readings are rejected rather than silently changing an alert.
+    """
+    if not isinstance(observations, Mapping):
+        raise ValueError("July observations must map gaming dates to completed daily wager totals")
+    dates = {row["date"] for row in plan["daily"]}
+    if any(date not in dates for date in observations):
+        raise ValueError("Observed date is outside the July monitoring calendar")
+    for actual in observations.values():
+        if actual is None:
+            continue
+        try:
+            valid = (not isinstance(actual, bool) and
+                     isinstance(actual, (int, float, np.integer, np.floating)) and
+                     math.isfinite(float(actual)) and actual >= 0)
+        except (ValueError, TypeError, OverflowError):
+            valid = False
+        if not valid:
+            raise ValueError("Completed daily wagers must be finite nonnegative numbers or null")
+    results, previous_direction, streak, previous_date = [], None, 0, None
+    for row in sorted(plan["daily"], key=lambda r: r["date"]):
+        actual, date = observations.get(row["date"]), pd.Timestamp(row["date"])
+        direction = None
+        if actual is None:
+            status, streak = "awaiting_data", 0
+        else:
+            direction = "below" if actual < row["watch_below"] else "above" if actual > row["watch_above"] else None
+            consecutive = previous_date is not None and (date - previous_date).days == 1
+            streak = (streak + 1 if consecutive and direction == previous_direction else 1) if direction else 0
+            status = "review" if streak >= plan["policy"]["consecutive_review_days"] else "watch" if direction else "within_band"
+        results.append({"date": row["date"], "actual": None if actual is None else float(actual),
+                        "direction": direction, "consecutive_breaches": streak, "status": status})
+        previous_direction, previous_date = direction, date
+    return results
+
+
 def build_report(frame: pd.DataFrame | None = None) -> dict:
     if frame is None:
         frame = m.sql(f"SELECT gaming_date, coin_in_usd::DOUBLE AS coin_in_usd FROM {m.table('property_day')} ORDER BY gaming_date")
@@ -226,7 +334,9 @@ def build_report(frame: pd.DataFrame | None = None) -> dict:
                  "result": f"Lowest weekday {low['weekday']}: ${low['mean_coin_in']:,.0f}; highest {high['weekday']}: ${high['mean_coin_in']:,.0f}.",
                  "alternative": "Event-specific demand and breakdown risk could override the normal calendar pattern.",
                  "limitation": "Coin-in is wager throughput including replayed winnings, not revenue or unique guests."}]
-    return {"summary":summary, "daily":daily, "weekday":weekday_rows, "evidence":evidence,
+    july = build_july_monitoring(train, selected, radius)
+    return {"summary":summary, "daily":daily, "weekday":weekday_rows, "evidence":evidence + july["evidence"],
+            "july_monitoring": july,
             "frozen_monthly": _monthly_metrics(daily), "retrospective_validation": retrospective_validation(frame),
             "features":["gaming_date weekday"], "excluded_features":["holdout meter lags", "future repairs", "realized weather", "later-revised tourism", "holdout staffing"],
             "interval_method":"Training-only chronological error quantile; descriptive 7-day paired holdout bootstrap for MAE difference"}

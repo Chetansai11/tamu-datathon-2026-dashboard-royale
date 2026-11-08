@@ -56,7 +56,7 @@
       "contribution": "House win + POS cash \u2212 POS COGS \u2212 supplied machine costs \u2212 technician labor at property level; partial costs only.",
       "compCost": "Economic comp cost, already included in POS COGS. Never subtract it again."
     },
-    "teamReportSHA256": "9bdc79b7ca7d29fed866d201d5be8f112ee382152b4dfe88631066145e737f9d"
+    "teamReportSHA256": "acbebcac9dcade217923c1902b7cf2136ac81e46941162f8e4fe779869be01e4"
   },
   "facts": {
     "totalCoin": 248905219.25,

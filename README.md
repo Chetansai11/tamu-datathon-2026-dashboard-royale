@@ -26,13 +26,9 @@ build; `npm run build` also generates `dist/offline.html`. A static host can ser
 the contents of `web/dist/`. The raw challenge files are not required to open or
 build the dashboard because its verified data export is included.
 
-The team's original buildless dashboard is preserved at
-**[dashboard/index.html](dashboard/index.html)**, with its original analytics in
-**[src/](src/)** and research notes in **[docs/](docs/)**. Keep the original
-dashboard directory together when opening that edition offline. The enhancement
-retains the team's reports and methods, adds interactive investigation and action
-planning, and documents its independent review in
-[REVIEW_2026_11_07.md](docs/REVIEW_2026_11_07.md).
+The enhanced `web/` application is the submission edition. The older `dashboard/`
+implementation and `docs/` research notes are retained as development history;
+use the canonical documents below when preparing the submission.
 
 ## Judge walkthrough
 
@@ -59,24 +55,24 @@ wayfinding trial. It preserves **$91,300**. No revenue uplift is guaranteed.
 The frozen weekday forecast has **$68,698.55 MAE**, versus **$218,258.10** for the
 constant-training-mean baseline. Its nominal 90% band covers **85.25%** of test days.
 
-## Submission artifacts and credits
+## Canonical submission packet
 
-**Judges: use the four `web/public/docs/` links below.** The `docs/` files are the original-release archive.
+Use **only `web/public/docs/`** for judge-facing documents:
 
-- [Enhanced main write-up](web/public/docs/WRITEUP.md), under 400 words
+- [Main write-up](web/public/docs/WRITEUP.md), 351 words
 - [Claims & Evidence appendix](web/public/docs/CLAIMS_EVIDENCE.md)
-- [Methods, assumptions and enhancement AI disclosure](web/public/docs/METHODOLOGY.md)
-- [Walkthrough script](web/public/docs/VIDEO_SCRIPT.md), designed for under two minutes
-- [Devpost submission text: links, AI disclosure, checklist](docs/DEVPOST_SUBMISSION.md)
-- [Full AI-use disclosure and credits (Codex and Claude)](docs/AI_DISCLOSURE.md)
-- [Original write-up](docs/WRITEUP.md), [appendix](docs/CLAIMS_EVIDENCE.md),
-  [video script](docs/VIDEO_SCRIPT.md) and [human handoff](docs/HANDOFF.md)
+- [Methods and assumptions](web/public/docs/METHODOLOGY.md)
+- [Combined Codex + Claude AI disclosure](web/public/docs/AI_DISCLOSURE.md)
+- [Walkthrough recording script](web/public/docs/VIDEO_SCRIPT.md), target 1:50
+- [Devpost copy and handoff](web/public/docs/DEVPOST_COPY.md)
 
-The original `outputs/dashboard-royale-submission.zip` packaging command below
-produces the preserved dashboard release; it does not package `web/`. For the
-enhanced interactive-file submission, use `web/dist/offline.html` with the enhanced
-documents and source. The script is preparation for a recording, not a recorded
-video. A final Devpost submission and any published URL must be checked separately.
+The source includes the evaluator fixes and July monitoring updates. Deployment
+and submission must be verified separately. Open `web/dist/offline.html` after building; keep its `docs/` and
+`data/` folders for downloads. The source and offline release are packaged in
+`outputs/gilded-ace-enhanced-submission.zip`; regenerate it with
+`python web/scripts/package-submission.py` after the web build. The recording script is not a recorded video.
+Public URL access, a sub-1:55 recording, network checks and the Devpost form remain
+submission checks; no success on those is implied by a local build.
 
 ## Reproduce the data and analysis
 
@@ -123,7 +119,7 @@ $env:DR_DATA = 'C:\path\to\official\data'
 order, including the decomposition. Then rerun the enhanced data builder and
 web build to include updated reports. Node.js is also needed by the original
 dashboard's JavaScript checks. The broad starter `requirements.txt` is not needed
-for this dashboard. See [official starter provenance](docs/SETUP.md); contributors
+for this dashboard. Starter provenance remains in the historical research notes; contributors
 should follow [AGENTS.md](AGENTS.md) before changing a shared environment.
 
 ## Interpretation
@@ -137,14 +133,18 @@ action sensitivities are descriptive or assumption-dependent, never promised
 causal returns. The interactive replacement screen is exploratory; the fixed
 full-period statistical investigation governs the inspection recommendation.
 
-Original method details: [machines](docs/Q1_METHOD.md),
-[demand and forecast](docs/demand_forecast.md),
-[operations and guests](docs/OPS_GUESTS_METHODS.md).
+Current methods: [canonical methodology](web/public/docs/METHODOLOGY.md).
+
+## July monitoring and local verification
+
+Model lab now contains the July 1–30 frozen forecast, dated alert thresholds and an illustrative checker. Action Studio links directly to it. One strict band breach prompts a watch; two consecutive same-direction breaches prompt review. Missing days reset the streak. July observations are not supplied, and the original historical validation remains unchanged. See the [monitoring method](web/public/docs/METHODOLOGY.md#july-reference-and-alert-rules).
+
+The opening is remembered per tab session; the existing replay control remains available. Hosted builds defer secondary sections into separate chunks. The offline edition remains self-contained. After `npm run build`, run `npm run test:release` to verify the generated chunk graph and execute the actual offline file through its analytical routes and July checker. `npm run test:motion` covers intro session memory, replay and reduced motion.
 
 ## Placement Lab and analytical validation
 
 The desktop interface retains its card opening, particle ace and palette. Placement Lab compares staying, a vacant-slot move, or a two-machine swap using dated June 30 inventory. Both swap directions need at least three training machines and 120 machine-days for their game/zone combination. Move cost, two-day lead, three-hour disruption per machine, displacement, retained action budget and a zero-change baseline are explicit. These are predictive association scenarios, not causal relocation returns or a whole-floor optimum.
 
-`python -m src.placement_model` trains three fixed candidates using expanding chronological folds, calibrates ranges separately in April, evaluates May–June retrospectively, and refits the selected model for July 3–30 scenarios. It exports source hashes, library versions, seed, folds, per-zone errors, support counts and inventory to `outputs/placement_model.json`; the web builder copies it to `web/public/data/placement_model.json`. No paid AI service or runtime model server is needed. See [model specification](docs/PLACEMENT_MODEL.md).
+`python -m src.placement_model` trains three fixed candidates using expanding chronological folds, calibrates ranges separately in April, evaluates May–June retrospectively, and refits the selected model for July 3–30 scenarios. It exports source hashes, library versions, seed, folds, per-zone errors, support counts and inventory to `outputs/placement_model.json`; the web builder copies it to `web/public/data/placement_model.json`. No paid AI service or runtime model server is needed. See [model methodology](web/public/docs/METHODOLOGY.md#placement-lab-prediction-support-and-feasibility).
 
 The selected gradient boosting model achieves $3.6907 available-hour-weighted MAE versus $4.2858 for the configuration/weekday baseline, a 13.88% reduction. Nominal 90% daily-rate ranges cover 88.55% of observations. July ranges reuse historical residuals as sensitivity bounds, not calibrated relocation-effect intervals. The separate retrospective rolling floor forecast reports its adaptive challenger losing to the weekday reference by 8.79%; the original frozen benchmark is preserved. The decomposition excludes the target throughout its nested peer benchmark, and exploratory filtered residuals are distinguished from fixed, multiplicity-corrected investigation flags.

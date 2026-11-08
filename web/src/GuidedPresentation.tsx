@@ -16,7 +16,7 @@ type Props = {
 
 const chapters = [
   { label: 'The question', title: 'Should the bottom ten go?' },
-  { label: 'The earnings gap', title: 'Follow the gap, one cause at a time.' },
+  { label: 'The earnings gap', title: 'Follow the gap, one component at a time.' },
   { label: 'The location', title: 'A machine inherits its surroundings.' },
   { label: 'Your selection', title: 'Change the scope. Challenge the answer.' },
   { label: 'The holdout', title: 'A forecast has to earn its place.' },

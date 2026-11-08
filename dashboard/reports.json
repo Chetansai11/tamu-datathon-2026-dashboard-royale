@@ -163334,8 +163334,408 @@
         "result": "Lowest weekday Tuesday: $1,112,942; highest Saturday: $1,820,595.",
         "alternative": "Event-specific demand and breakdown risk could override the normal calendar pattern.",
         "limitation": "Coin-in is wager throughput including replayed winnings, not revenue or unique guests."
+      },
+      {
+        "id": "forecast-july-monitoring",
+        "claim": "Every July decision date has an auditable reference and alert rule",
+        "source": "property_day Jan-Apr; src/forecast.py:build_july_monitoring and evaluate_july_alerts",
+        "method": "Extend the unchanged Apr-30 frozen model and pre-May error radius to July 1-30. Round thresholds to cents. Watch strict daily band breaches; review two consecutive same-direction breaches; missing dates reset.",
+        "result": "30 daily references, explicit lower/upper thresholds and no invented July observations. Funded July-2 inspection timing remains tied to the original weekday means.",
+        "alternative": "Events, availability, demand drift or a meter-feed error can move whole-floor wagers without a pilot effect.",
+        "limitation": "Unobserved July plan, designed retrospectively. Empirical bands and operational alert rules do not guarantee coverage or false-alarm control and are not a causal evaluation."
       }
     ],
+    "july_monitoring": {
+      "label": "July 1-30 frozen reference and monitoring plan",
+      "status": "prospective_plan",
+      "prepared_retrospectively": true,
+      "model": "weekday_mean",
+      "model_frozen_at": "2025-04-30",
+      "start": "2025-07-01",
+      "end": "2025-07-30",
+      "days": 30,
+      "target": "Whole-floor daily coin-in USD; includes replayed wagers, not profit",
+      "gaming_day": "06:00 to 06:00 next day, America/Los_Angeles; date labels the starting day",
+      "training": {
+        "start": "2025-01-01",
+        "end": "2025-04-30",
+        "days": 120
+      },
+      "calibration": {
+        "fit_end": "2025-02-28",
+        "start": "2025-03-01",
+        "end": "2025-04-30",
+        "nominal_coverage": 0.9,
+        "radius_usd": 110036.98124999995,
+        "method": "Original higher 90th percentile of March-April absolute errors from Jan-Feb fits; unchanged for July"
+      },
+      "policy": {
+        "version": "july-monitoring-v1",
+        "watch_below": "daily.watch_below",
+        "watch_above": "daily.watch_above",
+        "comparison": "strict",
+        "consecutive_review_days": 2,
+        "missing_day": "reset streak",
+        "opposite_direction": "restart streak at one",
+        "dollar_precision": 2,
+        "watch": "One completed gaming day below its lower threshold or above its upper threshold triggers a watch.",
+        "review": "Two consecutive completed gaming dates outside their thresholds in the same direction trigger operational review.",
+        "response": "First reconcile the meter feed and available machine-hours; then inspect events, outages, guest mix and displacement before changing the funded plan.",
+        "within_band": "A reading at either threshold is within the band. Within-band days reset the streak; they do not prove normal operation.",
+        "missing": "An absent or incomplete gaming day is not zero wagers and cannot trigger an alert; it resets the consecutive-day streak.",
+        "limit": "These are explicit operational screening rules, not calibrated false-alarm probabilities, statistical significance tests, or evidence that signage caused a change."
+      },
+      "daily": [
+        {
+          "date": "2025-07-01",
+          "weekday": "Tuesday",
+          "weekday_index": 1,
+          "prediction": 1112941.95,
+          "lower": 1002904.97,
+          "upper": 1222978.93,
+          "watch_below": 1002904.97,
+          "watch_above": 1222978.93,
+          "actual": null
+        },
+        {
+          "date": "2025-07-02",
+          "weekday": "Wednesday",
+          "weekday_index": 2,
+          "prediction": 1149981.04,
+          "lower": 1039944.06,
+          "upper": 1260018.03,
+          "watch_below": 1039944.06,
+          "watch_above": 1260018.03,
+          "actual": null
+        },
+        {
+          "date": "2025-07-03",
+          "weekday": "Thursday",
+          "weekday_index": 3,
+          "prediction": 1290980.45,
+          "lower": 1180943.47,
+          "upper": 1401017.43,
+          "watch_below": 1180943.47,
+          "watch_above": 1401017.43,
+          "actual": null
+        },
+        {
+          "date": "2025-07-04",
+          "weekday": "Friday",
+          "weekday_index": 4,
+          "prediction": 1655737.2,
+          "lower": 1545700.22,
+          "upper": 1765774.18,
+          "watch_below": 1545700.22,
+          "watch_above": 1765774.18,
+          "actual": null
+        },
+        {
+          "date": "2025-07-05",
+          "weekday": "Saturday",
+          "weekday_index": 5,
+          "prediction": 1820595.19,
+          "lower": 1710558.2,
+          "upper": 1930632.17,
+          "watch_below": 1710558.2,
+          "watch_above": 1930632.17,
+          "actual": null
+        },
+        {
+          "date": "2025-07-06",
+          "weekday": "Sunday",
+          "weekday_index": 6,
+          "prediction": 1465879.08,
+          "lower": 1355842.1,
+          "upper": 1575916.06,
+          "watch_below": 1355842.1,
+          "watch_above": 1575916.06,
+          "actual": null
+        },
+        {
+          "date": "2025-07-07",
+          "weekday": "Monday",
+          "weekday_index": 0,
+          "prediction": 1212138.32,
+          "lower": 1102101.34,
+          "upper": 1322175.3,
+          "watch_below": 1102101.34,
+          "watch_above": 1322175.3,
+          "actual": null
+        },
+        {
+          "date": "2025-07-08",
+          "weekday": "Tuesday",
+          "weekday_index": 1,
+          "prediction": 1112941.95,
+          "lower": 1002904.97,
+          "upper": 1222978.93,
+          "watch_below": 1002904.97,
+          "watch_above": 1222978.93,
+          "actual": null
+        },
+        {
+          "date": "2025-07-09",
+          "weekday": "Wednesday",
+          "weekday_index": 2,
+          "prediction": 1149981.04,
+          "lower": 1039944.06,
+          "upper": 1260018.03,
+          "watch_below": 1039944.06,
+          "watch_above": 1260018.03,
+          "actual": null
+        },
+        {
+          "date": "2025-07-10",
+          "weekday": "Thursday",
+          "weekday_index": 3,
+          "prediction": 1290980.45,
+          "lower": 1180943.47,
+          "upper": 1401017.43,
+          "watch_below": 1180943.47,
+          "watch_above": 1401017.43,
+          "actual": null
+        },
+        {
+          "date": "2025-07-11",
+          "weekday": "Friday",
+          "weekday_index": 4,
+          "prediction": 1655737.2,
+          "lower": 1545700.22,
+          "upper": 1765774.18,
+          "watch_below": 1545700.22,
+          "watch_above": 1765774.18,
+          "actual": null
+        },
+        {
+          "date": "2025-07-12",
+          "weekday": "Saturday",
+          "weekday_index": 5,
+          "prediction": 1820595.19,
+          "lower": 1710558.2,
+          "upper": 1930632.17,
+          "watch_below": 1710558.2,
+          "watch_above": 1930632.17,
+          "actual": null
+        },
+        {
+          "date": "2025-07-13",
+          "weekday": "Sunday",
+          "weekday_index": 6,
+          "prediction": 1465879.08,
+          "lower": 1355842.1,
+          "upper": 1575916.06,
+          "watch_below": 1355842.1,
+          "watch_above": 1575916.06,
+          "actual": null
+        },
+        {
+          "date": "2025-07-14",
+          "weekday": "Monday",
+          "weekday_index": 0,
+          "prediction": 1212138.32,
+          "lower": 1102101.34,
+          "upper": 1322175.3,
+          "watch_below": 1102101.34,
+          "watch_above": 1322175.3,
+          "actual": null
+        },
+        {
+          "date": "2025-07-15",
+          "weekday": "Tuesday",
+          "weekday_index": 1,
+          "prediction": 1112941.95,
+          "lower": 1002904.97,
+          "upper": 1222978.93,
+          "watch_below": 1002904.97,
+          "watch_above": 1222978.93,
+          "actual": null
+        },
+        {
+          "date": "2025-07-16",
+          "weekday": "Wednesday",
+          "weekday_index": 2,
+          "prediction": 1149981.04,
+          "lower": 1039944.06,
+          "upper": 1260018.03,
+          "watch_below": 1039944.06,
+          "watch_above": 1260018.03,
+          "actual": null
+        },
+        {
+          "date": "2025-07-17",
+          "weekday": "Thursday",
+          "weekday_index": 3,
+          "prediction": 1290980.45,
+          "lower": 1180943.47,
+          "upper": 1401017.43,
+          "watch_below": 1180943.47,
+          "watch_above": 1401017.43,
+          "actual": null
+        },
+        {
+          "date": "2025-07-18",
+          "weekday": "Friday",
+          "weekday_index": 4,
+          "prediction": 1655737.2,
+          "lower": 1545700.22,
+          "upper": 1765774.18,
+          "watch_below": 1545700.22,
+          "watch_above": 1765774.18,
+          "actual": null
+        },
+        {
+          "date": "2025-07-19",
+          "weekday": "Saturday",
+          "weekday_index": 5,
+          "prediction": 1820595.19,
+          "lower": 1710558.2,
+          "upper": 1930632.17,
+          "watch_below": 1710558.2,
+          "watch_above": 1930632.17,
+          "actual": null
+        },
+        {
+          "date": "2025-07-20",
+          "weekday": "Sunday",
+          "weekday_index": 6,
+          "prediction": 1465879.08,
+          "lower": 1355842.1,
+          "upper": 1575916.06,
+          "watch_below": 1355842.1,
+          "watch_above": 1575916.06,
+          "actual": null
+        },
+        {
+          "date": "2025-07-21",
+          "weekday": "Monday",
+          "weekday_index": 0,
+          "prediction": 1212138.32,
+          "lower": 1102101.34,
+          "upper": 1322175.3,
+          "watch_below": 1102101.34,
+          "watch_above": 1322175.3,
+          "actual": null
+        },
+        {
+          "date": "2025-07-22",
+          "weekday": "Tuesday",
+          "weekday_index": 1,
+          "prediction": 1112941.95,
+          "lower": 1002904.97,
+          "upper": 1222978.93,
+          "watch_below": 1002904.97,
+          "watch_above": 1222978.93,
+          "actual": null
+        },
+        {
+          "date": "2025-07-23",
+          "weekday": "Wednesday",
+          "weekday_index": 2,
+          "prediction": 1149981.04,
+          "lower": 1039944.06,
+          "upper": 1260018.03,
+          "watch_below": 1039944.06,
+          "watch_above": 1260018.03,
+          "actual": null
+        },
+        {
+          "date": "2025-07-24",
+          "weekday": "Thursday",
+          "weekday_index": 3,
+          "prediction": 1290980.45,
+          "lower": 1180943.47,
+          "upper": 1401017.43,
+          "watch_below": 1180943.47,
+          "watch_above": 1401017.43,
+          "actual": null
+        },
+        {
+          "date": "2025-07-25",
+          "weekday": "Friday",
+          "weekday_index": 4,
+          "prediction": 1655737.2,
+          "lower": 1545700.22,
+          "upper": 1765774.18,
+          "watch_below": 1545700.22,
+          "watch_above": 1765774.18,
+          "actual": null
+        },
+        {
+          "date": "2025-07-26",
+          "weekday": "Saturday",
+          "weekday_index": 5,
+          "prediction": 1820595.19,
+          "lower": 1710558.2,
+          "upper": 1930632.17,
+          "watch_below": 1710558.2,
+          "watch_above": 1930632.17,
+          "actual": null
+        },
+        {
+          "date": "2025-07-27",
+          "weekday": "Sunday",
+          "weekday_index": 6,
+          "prediction": 1465879.08,
+          "lower": 1355842.1,
+          "upper": 1575916.06,
+          "watch_below": 1355842.1,
+          "watch_above": 1575916.06,
+          "actual": null
+        },
+        {
+          "date": "2025-07-28",
+          "weekday": "Monday",
+          "weekday_index": 0,
+          "prediction": 1212138.32,
+          "lower": 1102101.34,
+          "upper": 1322175.3,
+          "watch_below": 1102101.34,
+          "watch_above": 1322175.3,
+          "actual": null
+        },
+        {
+          "date": "2025-07-29",
+          "weekday": "Tuesday",
+          "weekday_index": 1,
+          "prediction": 1112941.95,
+          "lower": 1002904.97,
+          "upper": 1222978.93,
+          "watch_below": 1002904.97,
+          "watch_above": 1222978.93,
+          "actual": null
+        },
+        {
+          "date": "2025-07-30",
+          "weekday": "Wednesday",
+          "weekday_index": 2,
+          "prediction": 1149981.04,
+          "lower": 1039944.06,
+          "upper": 1260018.03,
+          "watch_below": 1039944.06,
+          "watch_above": 1260018.03,
+          "actual": null
+        }
+      ],
+      "limitations": [
+        "July actuals are not supplied. No July accuracy, alert rate or intervention effect has been measured.",
+        "This plan is prepared after examining the synthetic January-June data, not a claim of historical preregistration. The frozen reference itself still uses January-April only.",
+        "Keeping the April-30 reference makes comparisons auditable but can miss later drift. Weekday-only predictions do not model July 4, promotions, unusual events or changed capacity.",
+        "The empirical band is not guaranteed 90% coverage, and repeated daily checks increase the opportunity for alerts. The two-day review rule has no validated false-alarm rate.",
+        "Aggregate wagers cannot establish incremental profit or identify zone-level displacement. Review alerts alongside the pilot's matched controls, availability and whole-floor outcomes."
+      ],
+      "evidence": [
+        {
+          "id": "forecast-july-monitoring",
+          "claim": "Every July decision date has an auditable reference and alert rule",
+          "source": "property_day Jan-Apr; src/forecast.py:build_july_monitoring and evaluate_july_alerts",
+          "method": "Extend the unchanged Apr-30 frozen model and pre-May error radius to July 1-30. Round thresholds to cents. Watch strict daily band breaches; review two consecutive same-direction breaches; missing dates reset.",
+          "result": "30 daily references, explicit lower/upper thresholds and no invented July observations. Funded July-2 inspection timing remains tied to the original weekday means.",
+          "alternative": "Events, availability, demand drift or a meter-feed error can move whole-floor wagers without a pilot effect.",
+          "limitation": "Unobserved July plan, designed retrospectively. Empirical bands and operational alert rules do not guarantee coverage or false-alarm control and are not a causal evaluation."
+        }
+      ]
+    },
     "frozen_monthly": [
       {
         "month": "2025-05",
@@ -166090,7 +166490,7 @@
         "cost_formula": "1 \u00d7 (750000 + 0 \u00d7 max(0, 30 \u2212 10)) / 100 = $7,500",
         "expected_effect": "Test whether more guests reach Back Forty; no occupancy gain is assumed. In June its seats were occupied 24.9% of available hours versus 37.0% elsewhere, with 22 sensor entries per covered hour versus 94, while seated play earns nearly the same ($46.24 vs $48.56 theo per occupied hour). At June capacity and play rates, each additional occupancy point implies $521 gross theo per day. The conditional July break-even is +0.72 occupancy points with zero displacement and no additional operating costs.",
         "uncertainty": "Signage may not change footfall, and guests drawn to Back Forty may come from other zones (see the 50% displacement rows). During the March walkway closure the zone's location factor fell to 0.52, then recovered. This association is consistent with access pressure, but does not identify a causal access or signage effect; game mix, guest mix and concurrent changes remain alternatives.",
-        "measurement": "Pre-register June baselines for Back Forty: occupancy, entries per covered sensor-hour and location factor. From July 11 to 30, compare with June by difference-in-differences against Garage Entrance and Hotel Corridor on matched weekdays. Check floor-total coin-in against the frozen weekday forecast as a check for possible displacement, allowing for forecast error. The initial signal to review is Back Forty occupancy up at least 1 point with more entries, but that alone is not evidence of incremental revenue or cost recovery. Assess uncertainty, displaced play and statistical power before any expansion; a second zone requires a new decision.",
+        "measurement": "Pre-register June baselines for Back Forty: occupancy, entries per covered sensor-hour and location factor. From July 11 to 30, compare with June by difference-in-differences against Garage Entrance and Hotel Corridor on matched weekdays. Check floor-total coin-in against the exported July 1-30 frozen reference. Watch a completed gaming day outside its dated lower/upper thresholds; review two consecutive same-direction breaches. Missing days reset that streak. Reconcile meters and availability first; these operational alerts do not identify displacement or a causal pilot effect. The initial zone signal to review is Back Forty occupancy up at least 1 point with more entries, but that alone is not evidence of incremental revenue or cost recovery. Assess uncertainty, displaced play and statistical power before any expansion; a second zone requires a new decision.",
         "evidence_ids": [
           "q1-decomposition",
           "back-forty-footfall",
@@ -166246,7 +166646,7 @@
         "limitation": "These are conditional comparisons under measured historical rates, not universal benefit bounds or causal treatment estimates."
       }
     ],
-    "measurement_plan": "Before July 2, archive configuration ID, meter totals and an independent recalculation. On July 2, inspect and record no issue / verified mismatch / further diagnosis. If a correction is separately approved, document the change and monitor actual-minus-theo with supplied variance through July 30; do not judge success by a single month's hold returning to 10%. Pre-register June baselines for Back Forty: occupancy, entries per covered sensor-hour and location factor. From July 11 to 30, compare with June by difference-in-differences against Garage Entrance and Hotel Corridor on matched weekdays. Check floor-total coin-in against the frozen weekday forecast as a check for possible displacement, allowing for forecast error. The initial signal to review is Back Forty occupancy up at least 1 point with more entries, but that alone is not evidence of incremental revenue or cost recovery. Assess uncertainty, displaced play and statistical power before any expansion; a second zone requires a new decision.",
+    "measurement_plan": "Before July 2, archive configuration ID, meter totals and an independent recalculation. On July 2, inspect and record no issue / verified mismatch / further diagnosis. If a correction is separately approved, document the change and monitor actual-minus-theo with supplied variance through July 30; do not judge success by a single month's hold returning to 10%. Pre-register June baselines for Back Forty: occupancy, entries per covered sensor-hour and location factor. From July 11 to 30, compare with June by difference-in-differences against Garage Entrance and Hotel Corridor on matched weekdays. Check floor-total coin-in against the exported July 1-30 frozen reference. Watch a completed gaming day outside its dated lower/upper thresholds; review two consecutive same-direction breaches. Missing days reset that streak. Reconcile meters and availability first; these operational alerts do not identify displacement or a causal pilot effect. The initial zone signal to review is Back Forty occupancy up at least 1 point with more entries, but that alone is not evidence of incremental revenue or cost recovery. Assess uncertainty, displaced play and statistical power before any expansion; a second zone requires a new decision.",
     "scenario_rows": [
       {
         "restored_fraction": 0.0,

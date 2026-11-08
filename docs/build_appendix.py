@@ -100,5 +100,17 @@ lines += ["", "External observations describe destination tourism or calendar-da
           "## Scope and disclosure", "",
           "Guest figures are carded-only; concentration ranks each player's summed window results before computing shares. Loss concentration uses summed gross positive losses among losing players, not net losses after offsetting winners. Wagers include replay. Comp face value is not revenue or economic cost; comp cost is already inside POS cogs. Supplied costs do not establish net profit.", "",
           "Read [AI use disclosure](AI_DISCLOSURE.md) for tool contributions and review responsibilities. The local artifact is complete; public hosting, recorded video and Devpost submission are separate human gates.", ""]
+# Explicit candidate and shift answers reuse the audited report values.
+weak = reports["decomp"]["machine_weak_after_location"]
+gm_ids = {r["machine_id"] for r in reports["decomp"]["gm_bottom10"]}
+lines += ["## Q1: the adjusted candidate list", "", "Sorted by the descriptive machine factor among conditional intervals below one. These are investigation candidates, not automatic replacements. The intervals hold peer estimates fixed and are not simultaneous or causal.", "", "| Rank | Machine | Factor | Conditional 95% interval | GM bottom ten |", "| --- | --- | --- | --- | --- |"]
+for i, r in enumerate(weak[:10], 1):
+    lines.append(f"| {i} | {r['machine_id']} | {r['machine_factor']:.4f} | {r['machine_ci'][0]:.4f}–{r['machine_ci'][1]:.4f} | {'Yes' if r['machine_id'] in gm_ids else 'No'} |")
+lines += ["", "M-1244 is ninth, not fourth. M-1532 is the only Classic Sevens machine in High-Limit; Aurora Link is confined to Center Pit. Sparse game–zone comparisons limit separation of game and location. Four of the GM ten also have conditional upper bounds below one; the positive group term does not clear every machine.", "", "## Q3: when capacity was lost", "", "Fixed January–June full-floor totals from reports.q3.by_shift; actual local clock hours, not ticket-opening shift. Unavailable fraction uses down / (available + down) hours.", "", "| Shift | Unavailable hours | Unavailable fraction | Gross estimated missed theo |", "| --- | --- | --- | --- |"]
+for r in sorted(reports["q3"]["by_shift"], key=lambda r: -r["lost_theo"]):
+    lines.append(f"| {r['shift']} | {r['down_hours']:,.2f} | {r['down_hours']/(r['available_hours']+r['down_hours']):.3%} | ${r['lost_theo']:,.2f} |")
+lines += ["", "Swing is 14:00–22:00, day 06:00–14:00, graveyard 22:00–06:00, America/Los_Angeles. Swing has the greatest estimated missed theo; graveyard has the most unavailable hours. Opportunity is before displacement and is not guaranteed recovery.", ""]
 (root / "docs/CLAIMS_EVIDENCE.md").write_text("\n".join(lines), encoding="utf-8")
 print(f"Wrote {len(lines)} lines to docs/CLAIMS_EVIDENCE.md")
+
+(root / "web/public/docs/CLAIMS_EVIDENCE.md").write_text("\n".join(lines), encoding="utf-8")

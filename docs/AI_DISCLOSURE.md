@@ -1,3 +1,5 @@
+> Historical development copy. Use the [canonical submission ai disclosure](../web/public/docs/AI_DISCLOSURE.md).
+
 # AI use disclosure
 
 Two AI coding assistants contributed to this entry. The predictive models described below are trained statistical models; their scores and scenario outputs are computed from the supplied data, not generated as narrative guesses.
