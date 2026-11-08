@@ -194,6 +194,34 @@ def support_for(support: dict, zone: str, config: str) -> dict:
             "reason": None if supported else f"Needs at least {MIN_MACHINES} distinct machines and {MIN_MACHINE_DAYS} machine-days for this game configuration in this zone."}
 
 
+def held_machine_ids(rows: pd.DataFrame) -> set[str]:
+    known = rows.loc[rows.gaming_date <= pd.Timestamp(TRAIN_END), "machine_id"].unique()
+    return {m for m in known if int(hashlib.sha256(m.encode()).hexdigest()[:8], 16) % 5 == 0}
+
+
+def grouped_machine_check(rows: pd.DataFrame) -> dict:
+    """Hold machine outcomes out of candidate selection as well as model fitting."""
+    held_ids = held_machine_ids(rows)
+    retained = rows.loc[~rows.machine_id.isin(held_ids)]
+    selected, candidates, _ = select_candidate(retained)
+    train = retained.loc[retained.gaming_date <= pd.Timestamp(TRAIN_END)]
+    # Historical metadata is known at the origin. Only held-machine outcomes
+    # are quarantined; using their known game/zone to issue a prediction is valid.
+    raw_test = rows.loc[rows.gaming_date.between(TEST_START, TEST_END) & rows.machine_id.isin(held_ids)]
+    test, excluded = frozen_metadata(rows, raw_test, CALIBRATION_END)
+    model = RateModel(selected).fit(train)
+    baseline = RateModel("baseline").fit(train)
+    score = metrics(test, model.predict(test))
+    baseline_score = metrics(test, baseline.predict(test))
+    return {
+        "method": "Stable SHA-256 20% machine-ID holdout. Exclude these IDs from all inner model-selection folds and fitting; select independently, fit through April 15, then score held-out machines in May–June using origin-known metadata.",
+        "selectedModel": selected, "selectedModelName": MODEL_NAMES[selected], "candidates": candidates,
+        "trainMachines": int(train.machine_id.nunique()), "excludedUnknownMachineRows": excluded,
+        **score, "baselineWeightedMae": baseline_score["weightedMae"],
+        "improvementPct": 100*(1-score["weightedMae"]/baseline_score["weightedMae"]),
+    }
+
+
 def load_data() -> tuple[pd.DataFrame, dict[str, pd.DataFrame], dict]:
     base = data_dir()
     tables, provenance = {}, {}
@@ -280,14 +308,7 @@ def build_report() -> dict:
         mask = (test.zone_id == zone).to_numpy()
         per_zone.append({"zone": zone, "name": zone_names[zone], **metrics(test.loc[mask], pred[mask], widths[mask])})
     moved = (test.zone_id != test.actual_zone_id).to_numpy()
-    # Hold out complete machine IDs in addition to time. These are model features
-    # only through known category metadata; machine identity is never an input.
-    held_ids = {m for m in train.machine_id.unique() if int(hashlib.sha256(m.encode()).hexdigest()[:8], 16) % 5 == 0}
-    group_train = train.loc[~train.machine_id.isin(held_ids)]
-    group_test = test.loc[test.machine_id.isin(held_ids)]
-    group_model = RateModel(selected).fit(group_train)
-    grouped = {"method": "Stable SHA-256 20% machine-ID holdout; remaining machines train through April 15; score held-out machines in May–June.",
-               "trainMachines": int(group_train.machine_id.nunique()), **metrics(group_test, group_model.predict(group_test))}
+    grouped = grouped_machine_check(rows)
     # Model specification was frozen before the historical test. This deployment
     # refit may use all now-observed Jan–June outcomes, but never changes selection.
     final_model = RateModel(selected).fit(rows.loc[rows.gaming_date <= pd.Timestamp(AS_OF)])

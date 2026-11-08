@@ -5,7 +5,7 @@ import pytest
 from threadpoolctl import threadpool_limits
 
 from src.placement_model import (
-    FEATURES, RateModel, features, frozen_metadata, inventory, residual_quantile,
+    FEATURES, RateModel, features, frozen_metadata, grouped_machine_check, held_machine_ids, inventory, residual_quantile,
     scenario_predictions, select_candidate, support_for, support_table,
 )
 
@@ -119,3 +119,24 @@ def test_scenarios_use_post_lead_calendar_for_current_and_destination():
     assert result[0]["predictions"]["Z-A"]["lower"] == 11.
     assert result[0]["predictions"]["Z-A"]["upper"] == 15.
     assert result[0]["predictions"]["Z-B"]["mean"] is None  # Never expose an unsupported dollar estimate.
+
+
+def test_held_machine_outcomes_cannot_influence_grouped_model_selection():
+    rows = small_history()
+    # Expand IDs deterministically so the holdout includes multiple machines.
+    copies = []
+    for repeat in range(5):
+        frame = rows.copy()
+        frame["machine_id"] = frame.machine_id + f"-{repeat}"
+        copies.append(frame)
+    rows = pd.concat(copies, ignore_index=True)
+    held = held_machine_ids(rows)
+    assert held
+    altered = rows.copy()
+    altered.loc[altered.machine_id.isin(held), "rate"] = 1e8
+    with threadpool_limits(limits=2):
+        before = grouped_machine_check(rows)
+        after = grouped_machine_check(altered)
+    assert before["selectedModel"] == after["selectedModel"]
+    assert before["candidates"] == after["candidates"]
+    assert before["weightedMae"] != after["weightedMae"]  # Outcomes still correctly affect scoring.
