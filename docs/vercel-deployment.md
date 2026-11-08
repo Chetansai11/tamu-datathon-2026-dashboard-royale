@@ -1,5 +1,18 @@
 # Vercel deployment
 
+## Latest release: November 7, 2026 at 9:32 PM America/Chicago
+
+- Pulled `origin/main` at `7035c02` and merged cleanly into local main as `f631974`, preserving deployment and diagnostic records. The enhanced `web/` source matches the fetched commit exactly.
+- Published production deployment `dpl_8PHMdn9xpU12WbsGpxLUJXbkZ1sG`; Vercel confirms Ready and assigns https://gilded-ace-dashboard.vercel.app/ to this release.
+- Inspector: https://vercel.com/chetansai2003-7922s-projects/gilded-ace-dashboard/8PHMdn9xpU12WbsGpxLUJXbkZ1sG
+- Fresh prebuilt artifact directory: `C:\Users\asus\Desktop\MS\Datathon\outputs\gilded-ace-vercel-release-7035c02`.
+- Artifact contains 25 static files totaling 32,287,530 bytes. All 25 uploaded SHA-1 hashes match the tested local build. The retired video and poster are absent.
+- Validation passed: 8 budget tests; 13,616 calculation/placement assertions; seven-route interaction checks; storytelling checks; cinematic and particle lifecycle checks; exact aggregation parity for 72 real-data scopes plus 5 location edge cases; TypeScript/Vite production build and offline packaging. Vite retains its non-blocking large-chunk warning.
+- Browser QA verified automatic opening/handoff, visible tumbling cards, pause/resume/replay, the new ten-machine floor story and decision step, and return to the overview. No captured browser runtime errors. The updated local preview remains open at http://127.0.0.1:4173/#verdict.
+- Public browser verification remains limited by the current network: DNS still resolves the production hostname to Cisco Umbrella's `146.112.61.104` block page. No network settings or certificate checks were changed.
+
+## Initial release
+
 Published November 7, 2026 at 7:51 PM America/Chicago after the user explicitly requested Vercel hosting and stopping existing hosted apps.
 
 - Production: https://gilded-ace-dashboard.vercel.app/
