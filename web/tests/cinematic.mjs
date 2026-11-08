@@ -1,4 +1,4 @@
-/** Focused cinematic lifecycle checks. Media decoding and pixel transitions need browser QA. */
+/** Native deck lifecycle checks. Particle shaders and pixel transitions use browser QA. */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -64,28 +64,16 @@ function environment({ hash = '', reduced = false, motionOff = false, pendingDat
     while (remaining > 0) {
       if (!frames.size) { clock += remaining; remaining = 0; break; }
       const delta = Math.min(50, remaining); remaining -= delta; clock += delta;
-      const media = film();
-      if (media && !media.testPaused) {
-        media.currentTime = Math.min(5.366667, media.currentTime + delta / 1000);
-        if (media.currentTime >= 5.366667 && !media.testEnded) { media.testEnded = true; media.dispatchEvent(new w.Event('ended')); }
-      }
       const pending = [...frames.values()]; frames.clear();
       pending.forEach(callback => callback(clock));
       await flush();
     }
     await settle();
   }
-  async function ready() {
-    assert.ok(film(), 'Video mounted before readiness event');
-    Object.defineProperty(film(), 'readyState', { configurable: true, value: 4 });
-    Object.defineProperty(film(), 'duration', { configurable: true, value: 5.366667 });
-    film().dispatchEvent(new w.Event('canplay'));
-    await settle();
-  }
   async function click(name) { const button = label(name); assert.ok(button, `Control exists: ${name}`); button.focus(); button.click(); await settle(); }
   async function setHidden(value) { hidden = value; w.document.dispatchEvent(new w.Event('visibilitychange')); await settle(); }
   async function close() { w.unmountTest?.(); await settle(); assert.equal(errors.length, 0, errors.join('\n')); dom.window.close(); }
-  return { w, dom, counts, frames, errors, section, label, film, advance, ready, click, setHidden, close,
+  return { w, dom, counts, frames, errors, section, label, film, advance, click, setHidden, close,
     stats: () => ({ clock, plays, pauses, scrolls, fetches }),
     releaseData: async () => { assert.ok(resolveData, 'Dashboard fetch started before release'); resolveData({ ok: true, json: async () => data }); await settle(); },
   };
@@ -93,7 +81,7 @@ function environment({ hash = '', reduced = false, motionOff = false, pendingDat
 async function component(props = {}, settings = {}) {
   const env = environment(settings);
   env.w.eval(componentCode);
-  env.w.mountCinema({ motionEnabled: true, src: 'media/test-film.mp4', poster: 'media/test-poster.png', ...props });
+  env.w.mountCinema({ motionEnabled: true, ...props });
   await until(() => env.section(), 'Cinematic component mounts');
   await settle();
   return env;
@@ -103,19 +91,17 @@ async function component(props = {}, settings = {}) {
 process.stdout.write('Checking automatic cinematic lifecycle...\n');
 {
   const e = await component();
-  assert.equal(e.film().getAttribute('src'), 'media/test-film.mp4', 'Relative offline media path is retained');
-  assert.equal(e.film().muted, true, 'Autoplay is muted');
-  assert.ok(e.film().hasAttribute('playsinline'), 'Mobile playback stays inline');
-  await e.ready();
-  await e.advance(5000); assert.equal(e.section().dataset.phase, 'film');
-  await e.advance(800); assert.equal(e.section().dataset.phase, 'card');
-  await e.advance(1700); assert.equal(e.section().dataset.phase, 'zoom');
-  await e.advance(1000); assert.equal(e.section().dataset.phase, 'reveal');
+  assert.ok(e.film() === null, 'Native deck never mounts or requests video');
+  assert.ok(!e.section().textContent.includes('Skip to dashboard'), 'Prominent skip text is removed');
+  await e.advance(900); assert.equal(e.section().dataset.phase, 'deal');
+  await e.advance(1000); assert.equal(e.section().dataset.phase, 'ace');
+  await e.advance(1300); assert.equal(e.section().dataset.phase, 'zoom');
+  await e.advance(450); assert.equal(e.section().dataset.phase, 'reveal');
   assert.equal(e.counts.reveal.length, 1, 'Hero reveal begins exactly once');
   assert.equal(e.counts.complete.length, 0, 'Reveal starts before completion');
-  await e.advance(1300);
+  await e.advance(1250);
   assert.equal(e.counts.complete.length, 1, 'Automatic opening completes without scrolling');
-  assert.ok(e.counts.complete[0] >= 9600 && e.counts.complete[0] <= 9700, 'Completion follows the 9.6-second active timeline');
+  assert.ok(e.counts.complete[0] >= 4800 && e.counts.complete[0] <= 4900, 'Completion follows the 4.8-second active timeline without startup waiting');
   await e.advance(3000);
   assert.equal(e.counts.complete.length, 1, 'Finished frames cannot complete a second time');
   assert.equal(e.counts.reveal.length, 1, 'Finished frames cannot reveal a second time');
@@ -123,12 +109,11 @@ process.stdout.write('Checking automatic cinematic lifecycle...\n');
   await e.close();
 }
 
-// Pause and hidden tabs freeze both media and the active-time clock; replay resets them.
+// Pause and hidden tabs freeze the active-time clock; replay resets it.
 {
-  const e = await component(); await e.ready(); await e.advance(1800);
+  const e = await component(); await e.advance(1800);
   await e.click('Pause cinematic introduction');
   const pausedProgress = Number(e.section().dataset.progress);
-  assert.equal(e.film().testPaused, true, 'Pause control pauses the film');
   await e.advance(7000);
   assert.equal(Number(e.section().dataset.progress), pausedProgress, 'Paused wall time does not advance the story');
   await e.setHidden(true); await e.setHidden(false);
@@ -137,48 +122,32 @@ process.stdout.write('Checking automatic cinematic lifecycle...\n');
   assert.ok(Number(e.section().dataset.progress) > pausedProgress, 'Play resumes the active clock');
   await e.setHidden(true);
   const hiddenProgress = Number(e.section().dataset.progress);
-  assert.equal(e.film().testPaused, true, 'Hidden tabs pause film');
   await e.advance(12000);
   assert.equal(Number(e.section().dataset.progress), hiddenProgress, 'Hidden wall time is excluded');
   await e.setHidden(false); await e.advance(100);
-  assert.ok(Number(e.section().dataset.progress) - hiddenProgress < .02, 'Returning to the tab does not jump ahead');
+  assert.ok(Number(e.section().dataset.progress) - hiddenProgress < .03, 'Returning to the tab does not jump ahead');
   await e.click('Replay cinematic introduction');
   assert.equal(e.counts.replay, 1, 'Replay tells the shell to cover the hero again');
   assert.equal(Number(e.section().dataset.progress), 0, 'Replay resets the timeline');
-  assert.equal(e.section().dataset.phase, 'film', 'Replay restores the first phase');
-  assert.equal(e.film().currentTime, 0, 'Replay resets media time');
-  await e.advance(9800);
+  assert.equal(e.section().dataset.phase, 'deal', 'Replay restores the first phase');
+  await e.advance(5000);
   assert.equal(e.counts.complete.length, 1, 'Replayed run completes once');
   await e.close();
 }
 
-// Missing, failed, blocked and never-ready media all retain an automatic exit.
-for (const kind of ['missing', 'error', 'blocked', 'never-ready']) {
-  const e = await component({ src: kind === 'missing' ? '' : 'media/test-film.mp4' }, { rejectPlay: kind === 'blocked' });
-  if (kind === 'error') { e.film().dispatchEvent(new e.w.Event('error')); await settle(); }
-  if (kind === 'blocked') await e.ready();
-  if (kind === 'never-ready') {
-    await e.advance(1500);
-    assert.equal(e.section().dataset.media, 'loading', 'A cold film receives a bounded startup grace');
-    assert.equal(Number(e.section().dataset.progress), 0, 'Loading time does not consume the film timeline');
-    await e.click('Pause cinematic introduction'); await e.advance(5000);
-    assert.equal(e.section().dataset.media, 'loading', 'Manual pause suspends the startup grace');
-    await e.click('Play cinematic introduction');
-    await e.setHidden(true); await e.advance(5000); await e.setHidden(false);
-    assert.equal(e.section().dataset.media, 'loading', 'Hidden time does not exhaust the startup grace');
-    await e.advance(1500);
-  }
-  await until(() => e.section().dataset.media === 'fallback', `${kind} media selects the native fallback`);
-  assert.ok(e.label('Skip cinematic introduction'), `${kind} media still permits immediate skip`);
-  assert.notEqual(e.section().dataset.paused, 'true', `${kind} media does not trap the opening in a paused state`);
-  await e.advance(10000);
-  assert.equal(e.counts.complete.length, 1, `${kind} media completes automatically`);
+// Native rendering works without media APIs and still offers a bounded exit.
+{
+  const e = await component({}, { rejectPlay: true });
+  assert.ok(e.label('Skip cinematic introduction'), 'Subtle close control permits immediate entry');
+  await e.advance(5000);
+  assert.equal(e.counts.complete.length, 1, 'Opening completes with no video capability');
+  assert.equal(e.stats().plays, 0, 'No autoplay or external media dependency');
   await e.close();
 }
 
-// Controls retain keyboard access, Escape, and cleanup independent of real media.
+// Controls retain keyboard access, Escape, and complete cleanup.
 {
-  const e = await component(); await e.ready(); await e.advance(300);
+  const e = await component(); await e.advance(300);
   const buttons = [...e.section().querySelectorAll('button:not(:disabled)')];
   const first = buttons[0], last = buttons.at(-1);
   last.focus(); e.w.document.dispatchEvent(new e.w.KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
@@ -191,12 +160,12 @@ for (const kind of ['missing', 'error', 'blocked', 'never-ready']) {
   assert.equal(e.frames.size, 0, 'Unmount cancels every cinematic frame');
 }
 {
-  const e = await component(); await e.ready();
+  const e = await component();
   await e.click('Skip cinematic introduction'); assert.equal(e.counts.skip, 1, 'Visible skip button works immediately');
   const plays = e.stats().plays;
   e.w.unmountTest(); await settle();
   e.w.document.dispatchEvent(new e.w.Event('visibilitychange')); await e.advance(12000);
-  assert.equal(e.stats().plays, plays, 'Unmount removes media visibility listeners');
+  assert.equal(e.stats().plays, plays, 'Unmount never starts external media');
   assert.equal(e.counts.complete.length, 0, 'Unmount prevents a delayed completion');
   assert.equal(e.frames.size, 0, 'Unmount leaves no cinematic animation frame');
   assert.equal(e.errors.length, 0, e.errors.join('\n'));
@@ -233,16 +202,16 @@ process.stdout.write('Checking dashboard handoff and deep-link behavior...\n');
   const hero = e.w.document.querySelector('.ace-overview');
   assert.ok(actualMain !== loadingMain, 'The loaded dashboard replaces the loading main');
   assert.ok(e.w.document.activeElement === actualMain, `Late data restores focus instead of leaving it on ${e.w.document.activeElement.tagName}#${e.w.document.activeElement.id}`);
-  await e.click('Show cinematic introduction'); await e.ready();
+  await e.click('Show cinematic introduction');
   assert.equal(hero.dataset.motion, 'off', 'Hero entrance is held while the opening covers it');
-  await e.advance(8500);
+  await e.advance(3800);
   assert.equal(underlay.dataset.cinema, 'revealing', 'Hero appears before the overlay unmounts');
   assert.equal(hero.dataset.motion, 'on', 'Hero motion begins during the reveal');
   assert.ok(underlay.hasAttribute('inert'), 'Controls remain covered until the transition completes');
   await e.click('Replay cinematic introduction');
   assert.equal(underlay.dataset.cinema, 'covered', 'Internal replay covers an already-revealing hero again');
   assert.equal(hero.dataset.motion, 'off', 'Internal replay resets hero motion');
-  await e.advance(9800);
+  await e.advance(5000);
   assert.ok(e.section() === null, 'Automatic completion removes the opening');
   assert.equal(underlay.dataset.cinema, 'ready');
   assert.equal(underlay.hasAttribute('inert'), false, 'Completion restores dashboard interaction');
@@ -261,6 +230,18 @@ process.stdout.write('Checking dashboard handoff and deep-link behavior...\n');
   await e.close();
 }
 {
+  const e = environment({ pendingData: true }); e.w.eval(appCode);
+  await until(() => e.section(), 'The opening mounts before slow dashboard data');
+  await e.advance(5000);
+  assert.ok(e.section() === null, 'Automatic completion is independent of a slow data request');
+  assert.ok(e.w.document.activeElement === e.w.document.getElementById('main-content'), 'Automatic exit focuses the loading main');
+  await e.releaseData();
+  await until(() => e.w.document.querySelector('.ace-overview'), 'Slow data eventually renders the hero');
+  await e.advance(100);
+  assert.ok(e.w.document.activeElement === e.w.document.getElementById('main-content'), 'Focus follows the loaded dashboard after automatic entry');
+  await e.close();
+}
+{
   const e = environment({ hash: '#evidence/q1-decomposition' }); e.w.eval(appCode);
   await until(() => e.w.document.querySelector('.app-shell'), 'Direct evidence route loads');
   assert.ok(e.section() === null, 'Analytical deep links bypass the opening');
@@ -269,4 +250,4 @@ process.stdout.write('Checking dashboard handoff and deep-link behavior...\n');
   assert.equal(e.w.location.hash, '#evidence/q1-decomposition', 'The evidence anchor is preserved');
   await e.close();
 }
-process.stdout.write('PASS: automatic cinematic phases/completion, visible-time pause/replay, media fallbacks, keyboard/cleanup, reduced motion, pending-data handoff and direct-route bypass. Media decoding and pixel composition still require browser QA.\n');
+process.stdout.write('PASS: 4.8s native deck phases/completion, pause/replay, zero video dependency, keyboard/cleanup, reduced motion, pending-data handoff and direct-route bypass. Particle rendering and pixel composition also require browser QA.\n');

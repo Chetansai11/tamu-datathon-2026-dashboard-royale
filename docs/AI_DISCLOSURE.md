@@ -38,13 +38,14 @@ The original analytical agents did not create hosting accounts, publish the dash
 change repository visibility, record the submission video or submit to Devpost.
 Subsequent interface work with Codex was authorized by the user to update their
 GitHub branch and existing hosted dashboard, preserving its private audience.
-The cinematic opening uses a fictional performer generated with Higgsfield Soul
-Cinema and a 5.37-second Wan 2.2 Fast animation, using included Free Plan credits
-without a purchase or upgrade. SVG/CSS supplies the emerging gold spade. These
-decorative assets are not analytical evidence; see `CINEMATIC_OPENING.md`.
+An earlier cinematic opening used a fictional performer generated with Higgsfield
+Soul Cinema and Wan 2.2 Fast using included Free Plan credits, without purchase
+or upgrade. The current opening replaces that film with original native SVG/CSS
+king, joker and ace cards and a silver-white/gold WebGL particle transition.
+Historical asset provenance remains documented in `CINEMATIC_OPENING.md`.
 No player-level identities or raw LVCVA/Missouri tables are included in the
 dashboard bundle. Devpost submission and a recorded walkthrough are not claimed.
 
 The AXON-inspired visual revision adapts a user-supplied motion brief into original WebGL spade geometry, analytic pointer vortices and CSS floating cards. The shader is not a reproduction of the brief’s full GPU fluid simulation. Typography and palette references are documented in `AXON_DESIGN_REFERENCES.md`; IBM Plex fonts use the bundled OFL. Metric traces come from the supplied synthetic case data. No paid generation or new services were used for this revision.
 
-Codex implemented the signed earnings waterfall, manual guided presentation and readability revision. Following user feedback, the floor transition was simplified into a three-step story with ten stable machine cards, historical location highlights and a separate payout-inspection signal. The cinematic opening now uses an automatic native card/ace zoom and a timed blend into the existing overview, reusing the same generated film without additional generation or paid services. The components reuse existing published analytical outputs and active machine-day records. The one-cent difference between summed rounded components and the published gap is disclosed; no synthetic intervention benefits were added.
+Codex implemented the signed earnings waterfall, manual guided presentation and readability revision. Following user feedback, the floor transition was simplified into a three-step story with ten stable machine cards, historical location highlights and a separate payout-inspection signal. The current cinematic opening lasts 4.8 seconds and uses only native card artwork and particles, without external media, additional generation or paid services. The components reuse existing published analytical outputs and active machine-day records. The one-cent difference between summed rounded components and the published gap is disclosed; no synthetic intervention benefits were added.

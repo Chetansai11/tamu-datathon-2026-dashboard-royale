@@ -81,7 +81,7 @@ export default function App() {
     return () => cancelAnimationFrame(frame);
   }, [opening, openingVersion]);
   return <MotionContext.Provider value={motion.enabled}>
-    {opening && <div className="cinema-opening-shell" style={{ position: 'fixed', inset: 0, zIndex: 2000 }}><CinematicOpening key={openingVersion} motionEnabled={motion.enabled} src="media/ace-illusionist.mp4" poster="media/ace-illusionist-poster.png" onSkip={skipOpening} onComplete={skipOpening} onRevealStart={beginReveal} onReplayStart={restartReveal}/></div>}
+    {opening && <div className="cinema-opening-shell" style={{ position: 'fixed', inset: 0, zIndex: 2000 }}><CinematicOpening key={openingVersion} motionEnabled={motion.enabled} onSkip={skipOpening} onComplete={skipOpening} onRevealStart={beginReveal} onReplayStart={restartReveal}/></div>}
     <div className="dashboard-underlay" data-cinema={opening ? revealing ? 'revealing' : 'covered' : 'ready'} aria-hidden={opening ? true : undefined} {...(opening ? { inert: '' } : {})}>
       <DashboardApp motion={motion} openingCovered={opening && !revealing} onNavigate={closeOpening} onReplayOpening={replayOpening}/>
     </div>
