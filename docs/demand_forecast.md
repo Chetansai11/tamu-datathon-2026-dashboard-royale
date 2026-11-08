@@ -33,3 +33,35 @@ External data is retrospective context only. The [LVCVA publisher page](https://
 The measured test MAE is **$68,698.55** for weekday means versus **$218,258.10** for a constant mean, a **68.52% reduction**. Mean prediction bias is **+$39,285.62**. The approximate 90% band is **±$110,036.98**, but test coverage is **85.25%**; the interval misses more often than its nominal target. The 95% block interval for MAE improvement is **$132,519.69-$175,986.34** per day. These results describe this synthetic holdout, not expected performance at real casinos.
 
 The operational decision is to place discretionary maintenance on Tuesday rather than Saturday while preserving peak-day technician coverage: training means are **$1,112,942** and **$1,820,595** daily coin-in, respectively. The model cannot estimate required headcount or a causal staffing benefit, and event-specific demand may override the normal pattern. It is not used to target heavy losers or encourage additional gambling.
+
+## Separate retrospective rolling validation
+
+The original frozen benchmark, decision and summary remain unchanged. `forecast.json` now also exposes `frozen_monthly` diagnostics and `retrospective_validation`. This extension was developed after May–June had already been examined, so it is **retrospective**, not a new untouched holdout. Its seven-day horizon and April–June evaluation period differ from the original 61-day forecast; compare models within the new table rather than interpreting a cross-table MAE change as an improvement.
+
+Thirteen weekly origins from April 1 through June 24 each predict the following seven days, covering 91 unique dates through June 30. All candidates use the same origins, horizon and observed targets:
+
+- Expanding constant mean.
+- Expanding weekday mean, retaining the simple incumbent approach.
+- Weekday means from the preceding 28 days.
+- Seasonal naïve: the last observed value for each weekday, frozen across the whole horizon.
+- A past-only selection policy that chooses among those four candidates using two earlier seven-day validation blocks.
+
+At each origin, model selection ends before a separate 21-day calibration window. Each candidate's calibration errors come from three seven-day forecasts within that window, each fitted only on dates before its own origin. The 20th ordered absolute error among those 21 observations supplies the empirical interval radius. Candidates are then refitted through the day before the evaluation origin, and the entire seven-day forecast is frozen. No future daily meter value is used to refresh a lag within that block. Model choice cannot use calibration or evaluation outcomes.
+
+For example, the April 1 origin selects on February 25–March 10, calibrates on March 11–31, then predicts April 1–7. Its first tuning fit ends February 24. The same relative temporal boundaries move forward seven days for each subsequent origin. Intervals are empirical: serial dependence, few calibration observations, changing demand and refitting mean nominal 90% coverage is not guaranteed.
+
+Measured on the same 91 dates:
+
+| Model | Daily MAE | Mean bias | 90% band coverage | Mean band width |
+| --- | ---: | ---: | ---: | ---: |
+| Expanding constant mean | $213,104.85 | +$22,711.28 | 92.31% | $798,370.98 |
+| Expanding weekday mean | **$57,951.33** | +$20,539.70 | 93.41% | $317,713.59 |
+| Recent 28-day weekday mean | $58,786.82 | +$17,968.52 | 93.41% | $340,825.76 |
+| Last observed weekday | $71,157.81 | +$5,437.03 | 90.11% | $478,204.90 |
+| Past-only rolling selection | $63,045.45 | +$18,224.24 | 91.21% | $327,861.22 |
+
+The adaptive policy chose expanding weekday means nine times, recent weekday means three times, and seasonal naïve once. Its MAE is **8.79% higher** than the expanding weekday incumbent; the added selection complexity did not earn promotion. Preserve the weekday approach for maintenance timing. Lower bias alone does not make seasonal naïve better: its absolute errors and intervals are larger. Neither this comparison nor a forecasted demand difference establishes causal staffing or relocation uplift.
+
+The frozen benchmark's May and June diagnostics are respectively MAE $61,360.66 / $76,281.04, bias +$19,869.11 / +$59,349.35, and coverage 80.65% / 90.00%. These describe changing errors and motivate monitoring; they do not prove a specific cause of drift.
+
+`retrospective_validation` contains `models`, `incumbent`, `folds`, `daily`, `monthly`, `summary`, the exact interval method and limitations. `monthly` describes the adaptive selection policy; `incumbent` is the expanding weekday row. Every fold records tuning/calibration boundaries, selected model, candidate errors and interval radii for audit. Tests mutate all future outcomes and separately mutate calibration outcomes, verifying that future values cannot affect any earlier forecast/band and calibration cannot select the candidate. They also verify matching horizons, complete nonoverlapping evaluation dates, fixed seasonal lags, and monthly reconciliation.
