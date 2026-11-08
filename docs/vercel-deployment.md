@@ -51,3 +51,13 @@ The repository's `vercel.json` also defines source-build settings: install `npm 
 - Both older projects remain paused in the final account listing.
 - The same build passed local TypeScript/Vite compilation and rendered successfully on the local preview in the preceding task.
 - Public browser verification was attempted but blocked by `ERR_CERT_AUTHORITY_INVALID`; Windows HTTPS requests also reported an untrusted certificate root. No certificate validation was disabled. Rendered public-page and anonymous HTTP checks therefore remain unverified from this environment.
+
+## Privacy-warning diagnosis, November 7 at 7:57 PM
+
+The current Wi-Fi DNS resolves `gilded-ace-dashboard.vercel.app` to `146.112.61.104`. Both previously hosted Vercel app hostnames resolve to the same address. [Cisco identifies this address as its Domain List Block Page](https://www.cisco.com/c/en/us/support/docs/security/umbrella/224799-learn-the-umbrella-block-page-ip.html).
+
+A TLS handshake inspection with OpenSSL `-verify_return_error` found a leaf certificate for the dashboard issued by `Cisco Umbrella Secondary SubCA dfw-SG`, chaining through Cisco Umbrella Primary SubCA to Cisco Umbrella Root CA. Verification failed with `unable to get local issuer certificate`. The connection is reaching Cisco's network-policy block page, and its certificate is not trusted by the local browser. The block address does not establish a malware, phishing, or content-category classification.
+
+Vercel still reports the deployed release Ready. The local preview at `http://127.0.0.1:4173/` returns HTTP 200. Public rendering remains unverified from this filtered connection.
+
+Resolution requires the network administrator to review the domain-list rule and approve access to the dashboard hostname. [TAMU Help Desk Central](https://it.tamu.edu/help/) can be contacted at `helpdesk@tamu.edu` or `979-845-8300`. No ticket was submitted, certificates installed, resolver settings changed, or browser warnings bypassed during diagnosis.
