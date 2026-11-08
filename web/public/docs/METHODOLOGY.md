@@ -54,6 +54,8 @@ The catalog prices interventions; it does not estimate effects. Scenario recover
 
 ## AI-use disclosure
 
+The cinematic opening uses a fictional performer image generated with Higgsfield Soul Cinema and a 5.37-second Wan 2.2 Fast animation, created using the account's included Free Plan credits. The final card and emerging gold spade are SVG/CSS animation. These decorative assets are not analytical evidence or recordings of a real casino. Generation provenance is recorded in `docs/CINEMATIC_OPENING.md` in the source repository.
+
 The enhanced dashboard retains the team's earlier analytical code, report bundle and source provenance. The original repository's `docs/AI_DISCLOSURE.md` credits both OpenAI Codex and Anthropic Claude for that prior work; those contributions remain preserved.
 
 For this enhancement, OpenAI Codex assisted with reviewing the challenge materials and team repository, verifying and transforming supplied data, interface design, implementation, independent numerical checks, and drafting this submission package. AI assistance is not independent human verification. Team members must review the conclusions, final application and submission materials before presenting them. The dashboard does not use AI to infer private characteristics of real guests; the guest data is fictional challenge data.

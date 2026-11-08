@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { ArrowUpRight, ArrowDownRight, ArrowRight, Download, SlidersHorizontal, LayoutDashboard, Map as MapIcon, TrendingUp, Users, FlaskConical, Wallet, BookOpen, ChevronDown, ChevronRight, X, Search, RotateCcw, Info, Check, CalendarDays, CircleHelp, Menu, Wrench, Dices, MapPin, ShieldCheck, ExternalLink, ChevronLeft } from 'lucide-react';
 import { aggregate, AnyRecord, money, number, percent, ratio, shortDate, monthName, colors, csvDownload, niceName, sum } from './data';
 import { TrendChart, FloorMap, LuckChart, ModelChart, SimpleBar } from './Charts';
@@ -7,6 +7,7 @@ import Evidence from './components/Evidence';
 import GuestView from './GuestView';
 import Decomposition from './Decomposition';
 import MidnightHero from './MidnightHero';
+import CinematicOpening from './CinematicOpening';
 import FloorReplay from './FloorReplay';
 import ZoneComparison from './ZoneComparison';
 import { MotionContext, useMotionSettings } from './motion';
@@ -38,6 +39,35 @@ function Empty({ label = 'No records in this selection.' }: { label?: string }) 
 
 export default function App() {
   const motion = useMotionSettings();
+  const [opening, setOpening] = useState(() => !pages.some(p => p.id === location.hash.slice(1).split('/')[0] && p.id !== 'verdict'));
+  const [openingVersion, setOpeningVersion] = useState(0);
+  const skipFocus = useRef(false);
+  const replayFocus = useRef(false);
+  const closeOpening = useCallback(() => setOpening(false), []);
+  const skipOpening = useCallback(() => { skipFocus.current = true; setOpening(false); }, []);
+  const replayOpening = useCallback(() => { replayFocus.current = true; location.hash = 'verdict'; setOpeningVersion(value => value + 1); setOpening(true); window.scrollTo({ top: 0, behavior: 'auto' }); }, []);
+  useEffect(() => {
+    if (opening && replayFocus.current) {
+      replayFocus.current = false;
+      const frame = requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('[aria-label="Skip cinematic introduction"]')?.focus({ preventScroll: true }));
+      return () => cancelAnimationFrame(frame);
+    }
+    if (opening || !skipFocus.current) return;
+    skipFocus.current = false;
+    const frame = requestAnimationFrame(() => {
+      const content = document.getElementById('main-content');
+      content?.focus({ preventScroll: true });
+      content?.scrollIntoView({ behavior: 'auto', block: 'start' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [opening, openingVersion]);
+  return <MotionContext.Provider value={motion.enabled}>
+    {opening && <div className="cinema-opening-shell" style={{ position: 'relative', zIndex: 40, background: '#070b18', padding: '16px' }}><CinematicOpening key={openingVersion} motionEnabled={motion.enabled} src="media/ace-illusionist.mp4" poster="media/ace-illusionist-poster.png" onSkip={skipOpening}/></div>}
+    <DashboardApp motion={motion} onNavigate={closeOpening} onReplayOpening={replayOpening}/>
+  </MotionContext.Provider>;
+}
+
+function DashboardApp({ motion, onNavigate, onReplayOpening }: { motion: ReturnType<typeof useMotionSettings>; onNavigate: () => void; onReplayOpening: () => void }) {
   const [data, setData] = useState<any>(null), [error, setError] = useState('');
   const [page, setPage] = useState(() => pages.some(p => p.id === location.hash.slice(1).split('/')[0]) ? location.hash.slice(1).split('/')[0] : 'verdict');
   const [start, setStart] = useState('2025-01-01'), [end, setEnd] = useState('2025-06-30');
@@ -45,9 +75,9 @@ export default function App() {
   const [metric, setMetric] = useState('coin'), [mobileNav, setMobileNav] = useState(false);
   const [selectedMachine, setSelectedMachine] = useState<AnyRecord | null>(null);
   useEffect(() => { const embedded = document.getElementById('dashboard-payload'); if (embedded) { try { setData(JSON.parse(embedded.textContent || '{}')); } catch (e: any) { setError(e.message); } return; } fetch('/data/dashboard.json').then(r => { if (!r.ok) throw new Error(`Data request failed (${r.status})`); return r.json(); }).then(setData).catch(e => setError(e.message)); }, []);
-  useEffect(() => { const handler = () => { const id = location.hash.slice(1).split('/')[0]; if (pages.some(p => p.id === id)) setPage(id); }; const evidence = (event: any) => { location.hash = `evidence/${event.detail || ''}`; setPage('evidence'); window.scrollTo({ top: 0 }); }; window.addEventListener('hashchange', handler); window.addEventListener('open-evidence', evidence); return () => { window.removeEventListener('hashchange', handler); window.removeEventListener('open-evidence', evidence); }; }, []);
+  useEffect(() => { const handler = () => { const id = location.hash.slice(1).split('/')[0]; if (pages.some(p => p.id === id)) { setPage(id); if (id !== 'verdict') onNavigate(); } }; const evidence = (event: any) => { onNavigate(); location.hash = `evidence/${event.detail || ''}`; setPage('evidence'); window.scrollTo({ top: 0 }); }; window.addEventListener('hashchange', handler); window.addEventListener('open-evidence', evidence); return () => { window.removeEventListener('hashchange', handler); window.removeEventListener('open-evidence', evidence); }; }, [onNavigate]);
   const view = useMemo(() => data ? aggregate(data, start, end, zone, bank) : null, [data, start, end, zone, bank]);
-  const navigate = (id: string) => { setPage(id); location.hash = id; setMobileNav(false); window.scrollTo({ top: 0, behavior: motion.enabled ? 'smooth' : 'auto' }); };
+  const navigate = (id: string) => { onNavigate(); setPage(id); location.hash = id; setMobileNav(false); window.scrollTo({ top: 0, behavior: motion.enabled ? 'smooth' : 'auto' }); };
   const reset = () => { setStart('2025-01-01'); setEnd('2025-06-30'); setZone('all'); setBank('all'); };
   const drillBank = (id: string) => { setBank(id); setZone('all'); navigate('floor'); };
   const periodPreset = start === '2025-01-01' && end === '2025-06-30' ? 'full' : start === '2025-04-01' && end === '2025-06-30' ? 'q2' : start === '2025-06-01' && end === '2025-06-30' ? 'june' : 'custom';
@@ -55,9 +85,9 @@ export default function App() {
   const selectedPage = pages.find(p => p.id === page)!;
   const zoneOptions = data?.zones || [];
   const bankOptions = (data?.banks || []).filter((b: any) => zone === 'all' || (b.zone || b.zone_id) === zone);
-  if (!data) return <div className="loading-screen"><div className="brand-symbol">♠</div><div className="eyebrow">THE GILDED ACE</div><h1>{error ? 'The evidence could not load.' : 'Setting the table.'}</h1><p>{error || 'Loading the casino floor, its history, and the evidence.'}</p>{error ? <button className="btn btn-primary" onClick={() => location.reload()}>Try again</button> : <span className="loading-line"/>}</div>;
+  if (!data) return <div className="loading-screen" id="main-content" tabIndex={-1} role="main"><div className="brand-symbol">♠</div><div className="eyebrow">THE GILDED ACE</div><h1>{error ? 'The evidence could not load.' : 'Setting the table.'}</h1><p>{error || 'Loading the casino floor, its history, and the evidence.'}</p>{error ? <button className="btn btn-primary" onClick={() => location.reload()}>Try again</button> : <span className="loading-line"/>}</div>;
   const t = view!.totals;
-  return <MotionContext.Provider value={motion.enabled}><div className="app-shell midnight-shell" data-motion={motion.enabled ? 'on' : 'off'}>
+  return <div className="app-shell midnight-shell" data-motion={motion.enabled ? 'on' : 'off'}>
     {mobileNav && <button className="nav-scrim" aria-label="Close navigation" onClick={() => setMobileNav(false)}/>}
     <aside className={`sidebar ${mobileNav ? 'is-open' : ''}`}>
       <button className="brand" onClick={() => navigate('verdict')} aria-label="The Gilded Ace home"><span className="brand-symbol">♠</span><span><strong>THE GILDED ACE</strong><small>FLOOR INTELLIGENCE</small></span></button>
@@ -67,8 +97,8 @@ export default function App() {
       <div className="sidebar-footer"><span className="status-dot"/> DASHBOARD ROYALE <small>Synthetic case study · 2025</small></div>
     </aside>
     <div className="workspace">
-      <header className="topbar"><div className="breadcrumbs"><button className="mobile-menu" aria-label="Open navigation" onClick={() => setMobileNav(true)}><Menu size={20}/></button><span>THE GILDED ACE</span><ChevronRight size={12}/><strong>{selectedPage.label}</strong></div><div className="topbar-right"><button className="motion-toggle" aria-label="Toggle animations" aria-pressed={motion.enabled} disabled={motion.systemReduced} onClick={motion.toggle} title={motion.systemReduced ? 'Reduced motion follows your system preference' : 'Turn visual animations on or off'}><span className="motion-indicator"/>{motion.enabled ? 'Motion on' : 'Motion off'}</button><span className="data-badge"><span/> JAN–JUN 2025</span><button className="icon-btn" title="Definitions and methodology" aria-label="Definitions and methodology" onClick={() => navigate('evidence')}><CircleHelp size={18}/></button><div className="avatar" title="Floor analytics lead">GA</div></div></header>
-      <main id="main-content"><div className="page-stage" key={page}>
+      <header className="topbar"><div className="breadcrumbs"><button className="mobile-menu" aria-label="Open navigation" onClick={() => setMobileNav(true)}><Menu size={20}/></button><span>THE GILDED ACE</span><ChevronRight size={12}/><strong>{selectedPage.label}</strong></div><div className="topbar-right"><button className="motion-toggle" aria-label="Toggle animations" aria-pressed={motion.enabled} disabled={motion.systemReduced} onClick={motion.toggle} title={motion.systemReduced ? 'Reduced motion follows your system preference' : 'Turn visual animations on or off'}><span className="motion-indicator"/>{motion.enabled ? 'Motion on' : 'Motion off'}</button><span className="data-badge"><span/> JAN–JUN 2025</span><button className="icon-btn cinema-replay-trigger" title="Replay cinematic introduction" aria-label="Show cinematic introduction" onClick={onReplayOpening}><RotateCcw size={17}/></button><button className="icon-btn" title="Definitions and methodology" aria-label="Definitions and methodology" onClick={() => navigate('evidence')}><CircleHelp size={18}/></button><div className="avatar" title="Floor analytics lead">GA</div></div></header>
+      <main id="main-content" tabIndex={-1}><div className="page-stage" key={page}>
         {page === 'verdict' && <MidnightHero onExplore={() => navigate('floor')} onReplay={() => document.getElementById('historical-floor-replay')?.scrollIntoView({behavior: motion.enabled ? 'smooth' : 'auto', block: 'start'})}/>}<div className={`page-heading ${page === 'verdict' ? 'overview-heading' : ''}`}><div><div className="eyebrow">{page === 'verdict' ? 'LUCK, LOCATION, OR A LEAK? / THE SIX-MONTH REVIEW' : `THE INVESTIGATION / ${selectedPage.chapter}`}</div><h1>{page === 'verdict' ? <>Pause replacement. <em>Follow the evidence.</em></> : pageCopy[page][0]}</h1><p>{page === 'verdict' ? 'Separate game mix, location, exposure and luck from machine performance.' : pageCopy[page][1]}</p></div><button className="btn export-btn" onClick={() => csvDownload(view!.machines.map(({ metrics, ...m }) => m), `gilded-ace-machines-${start}-${end}.csv`)}><Download size={15}/> Export data</button></div>
         {!fixedScope && page !== 'guests' && <div className="filterbar"><div className="filter-label"><SlidersHorizontal size={15}/><span>Analysis scope</span></div><div className="select-wrap"><select aria-label="Analysis period preset" value={periodPreset} onChange={e => { const v = e.target.value; if (v !== 'custom') { setStart(v === 'full' ? '2025-01-01' : v === 'q2' ? '2025-04-01' : '2025-06-01'); setEnd('2025-06-30'); } }}><option value="full">Full six months</option><option value="q2">April – June</option><option value="june">June only</option><option value="custom">Custom period</option></select><ChevronDown size={13}/></div><div className="date-range"><CalendarDays size={14}/><input aria-label="Analysis start date" type="date" min="2025-01-01" max={end} value={start} onChange={e => { if (e.target.value) setStart(e.target.value); }}/><span>—</span><input aria-label="Analysis end date" type="date" min={start} max="2025-06-30" value={end} onChange={e => { if (e.target.value) setEnd(e.target.value); }}/></div><div className="select-wrap"><select aria-label="Zone filter" value={zone} onChange={e => { setZone(e.target.value); setBank('all'); }}><option value="all">All zones</option>{zoneOptions.map((z: any) => <option key={z.id || z.zone_id} value={z.id || z.zone_id}>{niceName(z.id || z.zone_id, zoneOptions)}</option>)}</select><ChevronDown size={13}/></div><div className="select-wrap bank-select"><select aria-label="Bank filter" value={bank} onChange={e => setBank(e.target.value)}><option value="all">All banks</option>{bankOptions.map((b: any) => <option key={b.id || b.bank_id} value={b.id || b.bank_id}>{b.name || b.id || b.bank_id}</option>)}</select><ChevronDown size={13}/></div><button className="reset-btn" onClick={reset} title="Reset all filters" aria-label="Reset all filters"><RotateCcw size={14}/></button></div>}
         {page === 'verdict' && <>
@@ -88,7 +118,7 @@ export default function App() {
       </div></main>
     </div>
     {selectedMachine && <MachineInspector machine={selectedMachine} data={data} view={view!} start={start} end={end} onClose={() => setSelectedMachine(null)}/>}
-  </div></MotionContext.Provider>;
+  </div>;
 }
 
 function FloorExplorer({ data, view, bank, onBank, onMachine }: any) {

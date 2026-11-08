@@ -34,7 +34,13 @@ checks do not replace human review of interpretation. The team member who
 submits this entry should review the findings, record the video and confirm
 public access before attesting to the submission.
 
-The agents did not create hosting accounts, publish the dashboard, change
-repository visibility, record the video or submit to Devpost. Those remain human
-actions. No player-level identities or raw LVCVA/Missouri tables are included in
-the public dashboard bundle.
+The original analytical agents did not create hosting accounts, publish the dashboard,
+change repository visibility, record the submission video or submit to Devpost.
+Subsequent interface work with Codex was authorized by the user to update their
+GitHub branch and existing hosted dashboard, preserving its private audience.
+The cinematic opening uses a fictional performer generated with Higgsfield Soul
+Cinema and a 5.37-second Wan 2.2 Fast animation, using included Free Plan credits
+without a purchase or upgrade. SVG/CSS supplies the emerging gold spade. These
+decorative assets are not analytical evidence; see `CINEMATIC_OPENING.md`.
+No player-level identities or raw LVCVA/Missouri tables are included in the
+dashboard bundle. Devpost submission and a recorded walkthrough are not claimed.

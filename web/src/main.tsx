@@ -6,4 +6,5 @@ import './midnight.css';
 import './ace-motion.css';
 import './zone-comparison.css';
 import './replay-refinement.css';
+import './cinematic-opening.css';
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>);

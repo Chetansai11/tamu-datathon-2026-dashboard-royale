@@ -9,7 +9,8 @@ The new `web/` interface preserves the original `dashboard/` and all analytical 
 - Historical January–June playback now shows a spacious daily performance chart, monthly average line, explicit totals, and day-normalized month comparisons. Its zero-based vertical scale stays fixed across months. Playback pauses on chart inspection, measure/month selection, hidden tabs, or motion disabled; its independent scope is explicit.
 - Location matters compares seven zones with ranked, zero-based hourly yield bars, exact values, a weighted scope average, and clickable zone drilldowns. These raw yields reflect game mix and location; the comparison does not claim causality. The detailed physical floor map remains in Floor explorer.
 - The gold ace turns on its own vertical axis every 20 seconds, separately from the orbit rings. A compact version appears beside the mobile heading.
-- `web/dist/offline.html`: self-contained dashboard; companion data/docs folders supply downloads.
+- A Higgsfield-generated card illusionist opens the experience, followed by a scroll-controlled 3D ace card and emerging gold spade. Generation used included Free Plan credits only. Skip, pause, replay, reduced-motion and missing-media fallback are supported. The seven analytical views remain intact. See `CINEMATIC_OPENING.md` for provenance.
+- `web/dist/offline.html`: embedded dashboard code, data and fonts; companion `media/` supplies the optional film/poster, and data/docs folders supply downloads. Keep the delivered folder together for cinematic offline playback.
 - Root `dist/`: the same build prepared for static hosting.
 - `web/public/docs/`: revised write-up, Claims & Evidence, methodology and AI disclosure, and a walkthrough script. A recorded video and Devpost submission are not claimed.
 - `web/scripts/build_data.py`: reproducible compact exporter, pinned source checksums, and independent verification of retained team analytics.

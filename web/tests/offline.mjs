@@ -12,6 +12,8 @@ const errors=[];const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(
 const dom=new JSDOM(html,{url:'file:///submission/offline.html',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
 const w=dom.window;
 w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
+w.HTMLMediaElement.prototype.pause=()=>{};
+w.HTMLMediaElement.prototype.play=()=>Promise.resolve();
 w.ResizeObserver=class{constructor(cb){this.cb=cb;}observe(el){this.cb([{target:el,contentRect:{width:900,height:310}}]);}unobserve(){}disconnect(){}};
 w.addEventListener('error',e=>errors.push(e.message));
 for(const script of w.document.querySelectorAll('script[type="module"]'))w.eval(script.textContent);
