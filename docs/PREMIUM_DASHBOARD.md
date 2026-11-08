@@ -15,6 +15,10 @@ The new `web/` interface preserves the original `dashboard/` and all analytical 
 - `web/public/docs/`: revised write-up, Claims & Evidence, methodology and AI disclosure, and a walkthrough script. A recorded video and Devpost submission are not claimed.
 - `web/scripts/build_data.py`: reproducible compact exporter, pinned source checksums, and independent verification of retained team analytics.
 
+## Evidence presentation
+
+The approved desktop opening remains in place. **Explore the floor** now transitions the decorative ace into a dated June 30 snapshot, then opens the full six-month explorer. Eight of the original ten candidates remain active on the snapshot; two absent candidates are disclosed. The waterfall expands the existing earnings decomposition into signed, sequential dollar contributions with manual controls and an accessible exact-value list. **Present** opens a six-chapter, manually navigated decision walkthrough with its own scope demonstration and direct routes to the evidence. Larger analytical labels and a persistent selection summary improve readability. See `PRESENTATION_GUIDE.md`.
+
 ## Rebuild
 
 Requires Node 22.12 or newer. From the repository root:
@@ -40,3 +44,5 @@ Original team repository: Chetansai11/tamu-datathon-2026-dashboard-royale. Origi
 The follow-up visualization revision was checked at the same desktop/mobile sizes: the ace uses a verified 20-second self-rotation, the monthly plot has a consistent cross-month scale, and zone rankings navigate to the correct filter. Monthly charts and zone rows remain readable without page overflow at 390px.
 
 The AXON-inspired edition additionally checks the four live card totals against date/zone filters, keyboard access to the optional film, a true zero reference for traces with negative observations, and a fixed 0–100% availability trace. Desktop, tablet and phone geometry are reviewed before publication.
+
+The evidence-presentation revision was browser-checked at 1440×1000 and 390×844. The full waterfall and holdout plot fit above the desktop presentation footer; the narrow-screen waterfall scrolls internally. Automated storytelling checks reconcile all 308 June 30 machine identities, eight present candidates, two absent candidates and 47 Back Forty machines; they also cover skip/continue, reduced motion, focus restoration, modal isolation, independent tour filters and direct evidence navigation. These checks are included in `npm test`.

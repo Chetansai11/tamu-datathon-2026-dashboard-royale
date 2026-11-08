@@ -46,3 +46,5 @@ No player-level identities or raw LVCVA/Missouri tables are included in the
 dashboard bundle. Devpost submission and a recorded walkthrough are not claimed.
 
 The AXON-inspired visual revision adapts a user-supplied motion brief into original WebGL spade geometry, analytic pointer vortices and CSS floating cards. The shader is not a reproduction of the brief’s full GPU fluid simulation. Typography and palette references are documented in `AXON_DESIGN_REFERENCES.md`; IBM Plex fonts use the bundled OFL. Metric traces come from the supplied synthetic case data. No paid generation or new services were used for this revision.
+
+Codex implemented the signed earnings waterfall, dated ace-to-floor transition, manual guided presentation and readability revision. The components reuse existing published analytical outputs and active machine-day records. The one-cent difference between summed rounded components and the published gap is disclosed; no synthetic intervention benefits were added.

@@ -8,4 +8,5 @@ import './zone-comparison.css';
 import './replay-refinement.css';
 import './cinematic-opening.css';
 import './axon.css';
+import './readability.css';
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>);
